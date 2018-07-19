@@ -1,0 +1,69 @@
+{
+    "version": 8,
+    "sources": {
+        "basemap": {
+            "type": "raster",
+            "tiles": [
+                "https://api.mapbox.com/v4/mapbox.light/{z}/{x}/{y}.png?access_token=pk.eyJ1IjoiYmN3YXJkIiwiYSI6InJ5NzUxQzAifQ.CVyzbyOpnStfYUQ_6r8AgQ"
+            ],
+            "tileSize": 256
+        },
+        "blueprint": {
+            "type": "raster",
+            "tiles": ["https://m.salcc.databasin.org/services/blueprint2_2/tiles/{z}/{x}/{y}.png"],
+            "tileSize": 256
+        },
+        "boundaries": {
+            "type": "vector",
+            "tiles": ["https://m.salcc.databasin.org/services/salcc_id/tiles/{z}/{x}/{y}.pbf"],
+            "tileSize": 256
+        }
+    },
+    "layers": [
+        {
+            "id": "basemap",
+            "type": "raster",
+            "source": "basemap"
+        },
+        {
+            "id": "blueprint",
+            "type": "raster",
+            "source": "blueprint",
+            "paint": {
+                "raster-opacity": 0.3
+            }
+        },
+        {
+            "id": "boundaries",
+            "source": "boundaries",
+            "source-layer": "inland_marine_id",
+            "type": "line",
+            "paint": {
+                "line-color": "#0892D0",
+                "line-width": 1
+            }
+        },
+        {
+            "id": "selected_boundary-fill",
+            "source": "boundaries",
+            "source-layer": "inland_marine_id",
+            "type": "fill",
+            "paint": {
+                "fill-color": "#0892D0",
+                "fill-opacity": 0.3
+            },
+            "filter": ["==", ["get", "ID"], "I1636"]
+        },
+        {
+            "id": "selected_boundary-outline",
+            "source": "boundaries",
+            "source-layer": "inland_marine_id",
+            "type": "line",
+            "paint": {
+                "line-color": "#0892D0",
+                "line-width": 3
+            },
+            "filter": ["==", ["get", "ID"], "I1636"]
+        }
+    ]
+}
