@@ -5,13 +5,19 @@
     "main": "index.js",
     "license": "ISC",
     "scripts": {
-        "it": "babel-node index.js",
-        "start": "babel-watch index.js",
-        "test": "jest"
+        "build": "babel ./src -d ./dist",
+        "it": "babel-node ./src/index.js",
+        "watch": "babel --watch ./src -d ./dist",
+        "test": "jest",
+        "prepublish": "babel ./src -d ./dist"
+    },
+    "bin": {
+        "mbgl-render": "dist/cli.js"
     },
     "dependencies": {
         "@mapbox/geo-viewport": "^0.3.0",
         "@mapbox/mapbox-gl-native": "^4.0.0-pre.8",
+        "commander": "^2.16.0",
         "dotenv": "^6.0.0",
         "request": "^2.87.0",
         "sharp": "^0.20.5"

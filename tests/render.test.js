@@ -2,7 +2,7 @@
 import path from 'path'
 import sharp from 'sharp'
 import pixelmatch from 'pixelmatch'
-import render from '../render'
+import render from '../src/render'
 import style from './fixtures/example-style.json'
 
 test('creates correct image width and height', () => render(style, 512, 256, {
