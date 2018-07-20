@@ -7,9 +7,17 @@ Object.defineProperty(exports, "__esModule", {
 var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }(); /* eslint-disable no-new */
 
 
+var _fs = require('fs');
+
+var _fs2 = _interopRequireDefault(_fs);
+
 var _path = require('path');
 
 var _path2 = _interopRequireDefault(_path);
+
+var _zlib = require('zlib');
+
+var _zlib2 = _interopRequireDefault(_zlib);
 
 var _geoViewport = require('@mapbox/geo-viewport');
 
@@ -36,6 +44,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
 
 var TILE_REGEXP = RegExp('mbtiles://([^/]+)/(\\d+)/(\\d+)/(\\d+)');
+var NAME_REGEXP = RegExp('(?<=mbtiles://)(\\S+?)(?=[/"]+)');
 
 /**
  * Very simplistic function that splits out mbtiles service name from the URL
@@ -54,7 +63,7 @@ var resolveNamefromURL = function resolveNamefromURL(url) {
  * @param {String} url - url of a data source in style.json file.
  */
 var resolveMBTilesURL = function resolveMBTilesURL(tilePath, url) {
-    return _path2.default.format({ root: tilePath, name: resolveNamefromURL(url), ext: '.mbtiles' });
+    return _path2.default.format({ dir: tilePath, name: resolveNamefromURL(url), ext: '.mbtiles' });
 };
 
 /**
@@ -83,12 +92,15 @@ var getTileJSON = function getTileJSON(tilePath, url, callback) {
             var minzoom = info.minzoom,
                 maxzoom = info.maxzoom,
                 center = info.center,
-                bounds = info.bounds;
+                bounds = info.bounds,
+                format = info.format;
 
+
+            var ext = format === 'pbf' ? '.pbf' : '';
 
             var tileJSON = {
                 tilejson: '1.0.0',
-                tiles: ['mbtiles://' + service + '/{z}/{x}/{y}'],
+                tiles: ['mbtiles://' + service + '/{z}/{x}/{y}' + ext],
                 minzoom: minzoom,
                 maxzoom: maxzoom,
                 center: center,
@@ -119,6 +131,7 @@ var getTile = function getTile(tilePath, url, callback) {
         x = _matches$slice2[1],
         y = _matches$slice2[2];
 
+    var isVector = _path2.default.extname(url) === '.pbf';
     var mbtilesFile = resolveMBTilesURL(tilePath, url);
 
     new _mbtiles2.default(mbtilesFile, function (err, mbtiles) {
@@ -129,16 +142,19 @@ var getTile = function getTile(tilePath, url, callback) {
 
         mbtiles.getTile(z, x, y, function (tileErr, data) {
             if (tileErr) {
-                console.log('error fetching tile: z:' + z + ' x:' + x + ' y:' + y + ' from ' + mbtilesFile);
+                // console.log(`error fetching tile: z:${z} x:${x} y:${y} from ${mbtilesFile}\n${tileErr}`)
                 callback(null, {});
                 return null;
             }
 
-            callback(null, { data: data });
-            // if the tile is compressed, unzip it (for vector tiles only!)
-            // zlib.unzip(data, (err, data) => {
-            //     callback(err, {data})
-            // })
+            if (isVector) {
+                // if the tile is compressed, unzip it (for vector tiles only!)
+                _zlib2.default.unzip(data, function (unzipErr, unzippedData) {
+                    callback(unzipErr, { data: unzippedData });
+                });
+            } else {
+                callback(null, { data: data });
+            }
 
             return null;
         });
@@ -203,13 +219,13 @@ var render = function render(style) {
     var options = arguments[3];
     return new Promise(function (resolve) {
         var _options$bounds = options.bounds,
-            bounds = _options$bounds === undefined ? null : _options$bounds,
-            _options$tilePath = options.tilePath,
-            tilePath = _options$tilePath === undefined ? null : _options$tilePath;
+            bounds = _options$bounds === undefined ? null : _options$bounds;
         var _options$center = options.center,
             center = _options$center === undefined ? null : _options$center,
             _options$zoom = options.zoom,
-            zoom = _options$zoom === undefined ? null : _options$zoom;
+            zoom = _options$zoom === undefined ? null : _options$zoom,
+            _options$tilePath = options.tilePath,
+            tilePath = _options$tilePath === undefined ? null : _options$tilePath;
 
 
         if (!style) {
@@ -250,6 +266,24 @@ var render = function render(style) {
             /* eslint-disable prefer-destructuring */
             center = viewport.center;
         }
+
+        // validate that all local mbtiles referenced in style are
+        // present in tilePath and that tilePath is not null
+        if (tilePath) {
+            tilePath = _path2.default.normalize(tilePath);
+        }
+
+        var localMbtilesMatches = NAME_REGEXP.exec(JSON.stringify(style));
+        if (localMbtilesMatches && !tilePath) {
+            throw new Error('Style has local mbtiles file sources, but no tilePath is set');
+        }
+
+        localMbtilesMatches.forEach(function (name) {
+            var mbtileFilename = _path2.default.normalize(_path2.default.format({ dir: tilePath, name: name, ext: '.mbtiles' }));
+            if (!_fs2.default.existsSync(mbtileFilename)) {
+                throw new Error('Mbtiles file ' + _path2.default.format({ name: name, ext: '.mbtiles' }) + ' in style file is not found in: ' + tilePath);
+            }
+        });
 
         // Options object for configuring loading of map data sources.
         // Note: could not find a way to make this work with mapbox vector sources and styles!

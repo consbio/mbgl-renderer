@@ -18,13 +18,15 @@ cli.version(version)
     .option('-c, --center <longitude,latitude>', 'center of map (NO SPACES)', parseListToFloat)
     .option('-z, --zoom <n>', 'Zoom level', parseInt)
     .option('-b, --bounds <west,south,east,north>', 'Bounds (NO SPACES)', parseListToFloat)
+    .option('-t, --tiles <mbtiles_path>', 'Directory containing local mbtiles files to render')
     .parse(process.argv)
 
 const {
     args: [styleFilename, imgFilename, width, height],
     center = null,
     zoom = null,
-    bounds = null
+    bounds = null,
+    tiles: tilePath = null
 } = cli
 
 const imgWidth = parseInt(width, 10)
@@ -62,15 +64,33 @@ if (bounds !== null) {
     }
 }
 
+if (tilePath !== null) {
+    if (!fs.existsSync(tilePath)) {
+        raiseError(`Path to mbtiles files does not exist: ${tilePath}`)
+    }
+}
+
 console.log('\n\n-------- Export Mapbox GL Map --------')
 console.log('style: %j', styleFilename)
-console.log(`output image (${width}w x ${height}h) to: ${imgFilename}\n\n`)
+console.log(`output image: ${imgFilename} (${width}w x ${height}h)`)
+console.log(`using local mbtiles in: ${tilePath}`)
 // console.log('center: %j', center)
 // console.log('zoom: %j', zoom)
 // console.log('bounds: %j', bounds)
 
 const style = JSON.parse(fs.readFileSync(styleFilename))
 
-render(style, imgWidth, imgHeight, { zoom, center, bounds }).then((data) => {
-    fs.writeFileSync(imgFilename, data)
+render(style, imgWidth, imgHeight, {
+    zoom,
+    center,
+    bounds,
+    tilePath
 })
+    .then((data) => {
+        fs.writeFileSync(imgFilename, data)
+        console.log('Done!')
+        console.log('\n')
+    })
+    .catch((err) => {
+        console.error(err)
+    })

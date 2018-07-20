@@ -1,5 +1,7 @@
 /* eslint-disable no-new */
+import fs from 'fs'
 import path from 'path'
+import zlib from 'zlib'
 import geoViewport from '@mapbox/geo-viewport'
 import mbgl from '@mapbox/mapbox-gl-native'
 import MBTiles from '@mapbox/mbtiles'
@@ -7,6 +9,7 @@ import webRequest from 'request'
 import sharp from 'sharp'
 
 const TILE_REGEXP = RegExp('mbtiles://([^/]+)/(\\d+)/(\\d+)/(\\d+)')
+const NAME_REGEXP = RegExp('(?<=mbtiles://)(\\S+?)(?=[/"]+)')
 
 /**
  * Very simplistic function that splits out mbtiles service name from the URL
@@ -22,7 +25,7 @@ const resolveNamefromURL = url => url.split('://')[1].split('/')[0]
  * @param {String} tilePath - path containing mbtiles files
  * @param {String} url - url of a data source in style.json file.
  */
-const resolveMBTilesURL = (tilePath, url) => path.format({ root: tilePath, name: resolveNamefromURL(url), ext: '.mbtiles' })
+const resolveMBTilesURL = (tilePath, url) => path.format({ dir: tilePath, name: resolveNamefromURL(url), ext: '.mbtiles' })
 
 /**
  * Given a URL to a local mbtiles file, get the TileJSON for that to load correct tiles.
@@ -48,12 +51,14 @@ const getTileJSON = (tilePath, url, callback) => {
             }
 
             const {
-                minzoom, maxzoom, center, bounds
+                minzoom, maxzoom, center, bounds, format
             } = info
+
+            const ext = format === 'pbf' ? '.pbf' : ''
 
             const tileJSON = {
                 tilejson: '1.0.0',
-                tiles: [`mbtiles://${service}/{z}/{x}/{y}`],
+                tiles: [`mbtiles://${service}/{z}/{x}/{y}${ext}`],
                 minzoom,
                 maxzoom,
                 center,
@@ -78,6 +83,7 @@ const getTileJSON = (tilePath, url, callback) => {
 const getTile = (tilePath, url, callback) => {
     const matches = url.match(TILE_REGEXP)
     const [z, x, y] = matches.slice(matches.length - 3, matches.length)
+    const isVector = path.extname(url) === '.pbf'
     const mbtilesFile = resolveMBTilesURL(tilePath, url)
 
     new MBTiles(mbtilesFile, (err, mbtiles) => {
@@ -88,16 +94,19 @@ const getTile = (tilePath, url, callback) => {
 
         mbtiles.getTile(z, x, y, (tileErr, data) => {
             if (tileErr) {
-                console.log(`error fetching tile: z:${z} x:${x} y:${y} from ${mbtilesFile}`)
+                // console.log(`error fetching tile: z:${z} x:${x} y:${y} from ${mbtilesFile}\n${tileErr}`)
                 callback(null, {})
                 return null
             }
 
-            callback(null, { data })
-            // if the tile is compressed, unzip it (for vector tiles only!)
-            // zlib.unzip(data, (err, data) => {
-            //     callback(err, {data})
-            // })
+            if (isVector) {
+                // if the tile is compressed, unzip it (for vector tiles only!)
+                zlib.unzip(data, (unzipErr, unzippedData) => {
+                    callback(unzipErr, { data: unzippedData })
+                })
+            } else {
+                callback(null, { data })
+            }
 
             return null
         })
@@ -160,8 +169,8 @@ const getRemoteTile = (url, callback) => {
  * referenced from the style.json as "mbtiles://<tileset>"
  */
 const render = (style, width = 1024, height = 1024, options) => new Promise((resolve) => {
-    const { bounds = null, tilePath = null } = options
-    let { center = null, zoom = null } = options
+    const { bounds = null } = options
+    let { center = null, zoom = null, tilePath = null } = options
 
     if (!style) {
         throw new Error('style is a required parameter')
@@ -202,6 +211,26 @@ const render = (style, width = 1024, height = 1024, options) => new Promise((res
         center = viewport.center
     }
 
+    // validate that all local mbtiles referenced in style are
+    // present in tilePath and that tilePath is not null
+    if (tilePath) {
+        tilePath = path.normalize(tilePath)
+    }
+
+    const localMbtilesMatches = NAME_REGEXP.exec(JSON.stringify(style))
+    if (localMbtilesMatches && !tilePath) {
+        throw new Error('Style has local mbtiles file sources, but no tilePath is set')
+    }
+
+    localMbtilesMatches.forEach((name) => {
+        const mbtileFilename = path.normalize(path.format({ dir: tilePath, name, ext: '.mbtiles' }))
+        if (!fs.existsSync(mbtileFilename)) {
+            throw new Error(
+                `Mbtiles file ${path.format({ name, ext: '.mbtiles' })} in style file is not found in: ${tilePath}`
+            )
+        }
+    })
+
     // Options object for configuring loading of map data sources.
     // Note: could not find a way to make this work with mapbox vector sources and styles!
     const mapOptions = {
@@ -211,14 +240,16 @@ const render = (style, width = 1024, height = 1024, options) => new Promise((res
 
             try {
                 switch (kind) {
-                    case 2: { // source
+                    case 2: {
+                        // source
                         if (isMBTiles) {
                             getTileJSON(tilePath, url, callback)
                         }
                         // else is not currently handled
                         break
                     }
-                    case 3: { // tile
+                    case 3: {
+                        // tile
                         if (isMBTiles) {
                             getTile(tilePath, url, callback)
                         } else {

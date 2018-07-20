@@ -1,0 +1,22 @@
+{
+    "version": 8,
+    "sources": {
+        "land": {
+            "type": "vector",
+            "tiles": ["mbtiles://land/{z}/{x}/{y}.pbf"],
+            "tileSize": 256
+        }
+    },
+    "layers": [
+        {
+            "id": "land",
+            "type": "fill",
+            "source": "land",
+            "source-layer": "land",
+            "paint": {
+                "fill-color": "#AAAAAA",
+                "fill-opacity": 1
+            }
+        }
+    ]
+}

@@ -30,7 +30,7 @@ var parseListToFloat = function parseListToFloat(text) {
     return text.split(',').map(Number);
 };
 
-_commander2.default.version(_package.version).description('Export a Mapbox GL map to image.  You must provide either center and zoom, or bounds.').arguments('<style.json> <img_filename> <width> <height>').option('-c, --center <longitude,latitude>', 'center of map (NO SPACES)', parseListToFloat).option('-z, --zoom <n>', 'Zoom level', parseInt).option('-b, --bounds <west,south,east,north>', 'Bounds (NO SPACES)', parseListToFloat).parse(process.argv);
+_commander2.default.version(_package.version).description('Export a Mapbox GL map to image.  You must provide either center and zoom, or bounds.').arguments('<style.json> <img_filename> <width> <height>').option('-c, --center <longitude,latitude>', 'center of map (NO SPACES)', parseListToFloat).option('-z, --zoom <n>', 'Zoom level', parseInt).option('-b, --bounds <west,south,east,north>', 'Bounds (NO SPACES)', parseListToFloat).option('-t, --tiles <mbtiles_path>', 'Directory containing local mbtiles files to render').parse(process.argv);
 
 var _cli$args = _slicedToArray(_commander2.default.args, 4),
     styleFilename = _cli$args[0],
@@ -42,7 +42,9 @@ var _cli$args = _slicedToArray(_commander2.default.args, 4),
     _cli$zoom = _commander2.default.zoom,
     zoom = _cli$zoom === undefined ? null : _cli$zoom,
     _cli$bounds = _commander2.default.bounds,
-    bounds = _cli$bounds === undefined ? null : _cli$bounds;
+    bounds = _cli$bounds === undefined ? null : _cli$bounds,
+    _cli$tiles = _commander2.default.tiles,
+    tilePath = _cli$tiles === undefined ? null : _cli$tiles;
 
 var imgWidth = parseInt(width, 10);
 var imgHeight = parseInt(height, 10);
@@ -79,15 +81,31 @@ if (bounds !== null) {
     }
 }
 
+if (tilePath !== null) {
+    if (!_fs2.default.existsSync(tilePath)) {
+        raiseError('Path to mbtiles files does not exist: ' + tilePath);
+    }
+}
+
 console.log('\n\n-------- Export Mapbox GL Map --------');
 console.log('style: %j', styleFilename);
-console.log('output image (' + width + 'w x ' + height + 'h) to: ' + imgFilename + '\n\n');
+console.log('output image: ' + imgFilename + ' (' + width + 'w x ' + height + 'h)');
+console.log('using local mbtiles in: ' + tilePath);
 // console.log('center: %j', center)
 // console.log('zoom: %j', zoom)
 // console.log('bounds: %j', bounds)
 
 var style = JSON.parse(_fs2.default.readFileSync(styleFilename));
 
-(0, _render2.default)(style, imgWidth, imgHeight, { zoom: zoom, center: center, bounds: bounds }).then(function (data) {
+(0, _render2.default)(style, imgWidth, imgHeight, {
+    zoom: zoom,
+    center: center,
+    bounds: bounds,
+    tilePath: tilePath
+}).then(function (data) {
     _fs2.default.writeFileSync(imgFilename, data);
+    console.log('Done!');
+    console.log('\n');
+}).catch(function (err) {
+    console.error(err);
 });
