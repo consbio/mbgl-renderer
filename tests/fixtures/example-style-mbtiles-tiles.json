@@ -1,0 +1,17 @@
+{
+    "version": 8,
+    "sources": {
+        "basemap": {
+            "type": "raster",
+            "tiles": ["mbtiles://geography-class-png/{z}/{x}/{y}"],
+            "tileSize": 256
+        }
+    },
+    "layers": [
+        {
+            "id": "basemap",
+            "type": "raster",
+            "source": "basemap"
+        }
+    ]
+}
