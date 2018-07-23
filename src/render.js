@@ -130,25 +130,44 @@ const getRemoteTile = (url, callback) => {
         },
         (err, res, body) => {
             if (err) {
-                callback(err)
-            } else if (res.statusCode === 200) {
-                const response = {}
+                return callback(err)
+            }
 
-                if (res.headers.modified) {
-                    response.modified = new Date(res.headers.modified)
-                }
-                if (res.headers.expires) {
-                    response.expires = new Date(res.headers.expires)
-                }
-                if (res.headers.etag) {
-                    response.etag = res.headers.etag
-                }
+            switch (res.statusCode) {
+                case 200: {
+                    const response = {}
 
-                response.data = body
+                    if (res.headers.modified) {
+                        response.modified = new Date(res.headers.modified)
+                    }
+                    if (res.headers.expires) {
+                        response.expires = new Date(res.headers.expires)
+                    }
+                    if (res.headers.etag) {
+                        response.etag = res.headers.etag
+                    }
 
-                callback(null, response)
-            } else {
-                callback(new Error(JSON.parse(body).message))
+                    response.data = body
+
+                    return callback(null, response)
+                }
+                case 204: {
+                    // No data for this tile
+                    return callback(null, {})
+                }
+                default: {
+                    // assume error
+                    console.log('unexpected tile response for: %j\n%j', url, res.statusCode)
+                    if (body) {
+                        try {
+                            return callback(new Error(JSON.parse(body).message))
+                        } catch (parseErr) {
+                            console.log('caught error parsing JSON error response from tile: %j\n%j', url, parseErr)
+                            return callback(new Error(parseErr))
+                        }
+                    }
+                    return callback(new Error('Error with tile request for: %j', url))
+                }
             }
         }
     )
@@ -168,7 +187,7 @@ const getRemoteTile = (url, callback) => {
  * @param {String} tilePath - path to directory containing local mbtiles files that are
  * referenced from the style.json as "mbtiles://<tileset>"
  */
-const render = (style, width = 1024, height = 1024, options) => new Promise((resolve) => {
+const render = (style, width = 1024, height = 1024, options) => new Promise((resolve, reject) => {
     const { bounds = null } = options
     let { center = null, zoom = null, tilePath = null } = options
 
@@ -222,14 +241,19 @@ const render = (style, width = 1024, height = 1024, options) => new Promise((res
         throw new Error('Style has local mbtiles file sources, but no tilePath is set')
     }
 
-    localMbtilesMatches.forEach((name) => {
-        const mbtileFilename = path.normalize(path.format({ dir: tilePath, name, ext: '.mbtiles' }))
-        if (!fs.existsSync(mbtileFilename)) {
-            throw new Error(
-                `Mbtiles file ${path.format({ name, ext: '.mbtiles' })} in style file is not found in: ${tilePath}`
-            )
-        }
-    })
+    if (localMbtilesMatches) {
+        localMbtilesMatches.forEach((name) => {
+            const mbtileFilename = path.normalize(path.format({ dir: tilePath, name, ext: '.mbtiles' }))
+            if (!fs.existsSync(mbtileFilename)) {
+                throw new Error(
+                    `Mbtiles file ${path.format({
+                        name,
+                        ext: '.mbtiles'
+                    })} in style file is not found in: ${tilePath}`
+                )
+            }
+        })
+    }
 
     // Options object for configuring loading of map data sources.
     // Note: could not find a way to make this work with mapbox vector sources and styles!
@@ -259,7 +283,7 @@ const render = (style, width = 1024, height = 1024, options) => new Promise((res
                     }
                 }
             } catch (err) {
-                console.error(err)
+                console.error('Error while making tile request: %j', err)
                 callback(err)
             }
         }
@@ -276,13 +300,23 @@ const render = (style, width = 1024, height = 1024, options) => new Promise((res
             width
         },
         (err, buffer) => {
-            if (err) throw err
+            // if (err) throw err
+            if (err) {
+                console.error('Error rendering map: %j', err)
+                return reject(err)
+            }
 
             // Convert raw image buffer to PNG
-            return sharp(buffer, { raw: { width, height, channels: 4 } })
-                .png()
-                .toBuffer()
-                .then(resolve)
+            try {
+                return sharp(buffer, { raw: { width, height, channels: 4 } })
+                    .png()
+                    .toBuffer()
+                    .then(resolve)
+                    .catch(reject)
+            } catch (pngErr) {
+                console.error('Error encoding PNG: %j', pngErr)
+                return reject(err)
+            }
         }
     )
 })

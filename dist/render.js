@@ -176,25 +176,47 @@ var getRemoteTile = function getRemoteTile(url, callback) {
         gzip: true
     }, function (err, res, body) {
         if (err) {
-            callback(err);
-        } else if (res.statusCode === 200) {
-            var response = {};
+            return callback(err);
+        }
 
-            if (res.headers.modified) {
-                response.modified = new Date(res.headers.modified);
-            }
-            if (res.headers.expires) {
-                response.expires = new Date(res.headers.expires);
-            }
-            if (res.headers.etag) {
-                response.etag = res.headers.etag;
-            }
+        switch (res.statusCode) {
+            case 200:
+                {
+                    var response = {};
 
-            response.data = body;
+                    if (res.headers.modified) {
+                        response.modified = new Date(res.headers.modified);
+                    }
+                    if (res.headers.expires) {
+                        response.expires = new Date(res.headers.expires);
+                    }
+                    if (res.headers.etag) {
+                        response.etag = res.headers.etag;
+                    }
 
-            callback(null, response);
-        } else {
-            callback(new Error(JSON.parse(body).message));
+                    response.data = body;
+
+                    return callback(null, response);
+                }
+            case 204:
+                {
+                    // No data for this tile
+                    return callback(null, {});
+                }
+            default:
+                {
+                    // assume error
+                    console.log('unexpected tile response for: %j\n%j', url, res.statusCode);
+                    if (body) {
+                        try {
+                            return callback(new Error(JSON.parse(body).message));
+                        } catch (parseErr) {
+                            console.log('caught error parsing JSON error response from tile: %j\n%j', url, parseErr);
+                            return callback(new Error(parseErr));
+                        }
+                    }
+                    return callback(new Error('Error with tile request for: %j', url));
+                }
         }
     });
 };
@@ -217,7 +239,7 @@ var render = function render(style) {
     var width = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 1024;
     var height = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 1024;
     var options = arguments[3];
-    return new Promise(function (resolve) {
+    return new Promise(function (resolve, reject) {
         var _options$bounds = options.bounds,
             bounds = _options$bounds === undefined ? null : _options$bounds;
         var _options$center = options.center,
@@ -278,12 +300,17 @@ var render = function render(style) {
             throw new Error('Style has local mbtiles file sources, but no tilePath is set');
         }
 
-        localMbtilesMatches.forEach(function (name) {
-            var mbtileFilename = _path2.default.normalize(_path2.default.format({ dir: tilePath, name: name, ext: '.mbtiles' }));
-            if (!_fs2.default.existsSync(mbtileFilename)) {
-                throw new Error('Mbtiles file ' + _path2.default.format({ name: name, ext: '.mbtiles' }) + ' in style file is not found in: ' + tilePath);
-            }
-        });
+        if (localMbtilesMatches) {
+            localMbtilesMatches.forEach(function (name) {
+                var mbtileFilename = _path2.default.normalize(_path2.default.format({ dir: tilePath, name: name, ext: '.mbtiles' }));
+                if (!_fs2.default.existsSync(mbtileFilename)) {
+                    throw new Error('Mbtiles file ' + _path2.default.format({
+                        name: name,
+                        ext: '.mbtiles'
+                    }) + ' in style file is not found in: ' + tilePath);
+                }
+            });
+        }
 
         // Options object for configuring loading of map data sources.
         // Note: could not find a way to make this work with mapbox vector sources and styles!
@@ -317,7 +344,7 @@ var render = function render(style) {
                             }
                     }
                 } catch (err) {
-                    console.error(err);
+                    console.error('Error while making tile request: %j', err);
                     callback(err);
                 }
             }
@@ -332,10 +359,19 @@ var render = function render(style) {
             height: height,
             width: width
         }, function (err, buffer) {
-            if (err) throw err;
+            // if (err) throw err
+            if (err) {
+                console.error('Error rendering map: %j', err);
+                return reject(err);
+            }
 
             // Convert raw image buffer to PNG
-            return (0, _sharp2.default)(buffer, { raw: { width: width, height: height, channels: 4 } }).png().toBuffer().then(resolve);
+            try {
+                return (0, _sharp2.default)(buffer, { raw: { width: width, height: height, channels: 4 } }).png().toBuffer().then(resolve).catch(reject);
+            } catch (pngErr) {
+                console.error('Error encoding PNG: %j', pngErr);
+                return reject(err);
+            }
         });
     });
 };
