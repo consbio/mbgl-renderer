@@ -1,4 +1,4 @@
-# Static Renderer for Mapbox GL
+# Static Map Renderer using Mapbox GL
 
 This package helps you create static map images using Mapbox GL. It currently provides:
 
@@ -12,9 +12,9 @@ to using map services over the web.
 
 ## Installation
 
-This package is not yet publicly posted, so you need to do a bit more work to get it setup:
+This package is not yet posted and easily installable from npm, so you need to do a bit more work to get it setup:
 
-1.  `git@github.com:consbio/mapbox-gl-static-render.git`
+1.  `git@github.com:consbio/mbgl-renderer.git`
 2.  `cd mapbox-gl-static`
 3.  `yarn install` (note: this might take a long time as the core dependency `mapbox-gl-native` needs to be compiled from source)
 4.  if the above compilation fails due to not finding an available pre-compiled binary, try again with `npm install @mapbox/mapbox-gl-native --build-from-source`
@@ -36,7 +36,7 @@ We are currently working on defining a Dockerfile for this package to aid in set
 ### NodeJS API:
 
 ```
-import render from 'mapbox-gl-static-render'
+import render from 'mbgl-renderer'
 
 import style from `tests/fixtures/example-style.json`
 // style JSON file with MapBox style.  Can also be opened and read instead of imported.
@@ -105,7 +105,7 @@ mbgl-render tests/fixtures/example-style-mbtiles-source-vector.json test.png 102
 You start this from the command line:
 
 ```
-  Usage: mbgl-static-server [options]
+  Usage: mbgl-server [options]
 
   Start a server to render Mapbox GL map requests to images.
 
