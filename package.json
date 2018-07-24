@@ -12,7 +12,8 @@
         "prepublish": "babel ./src -d ./dist"
     },
     "bin": {
-        "mbgl-render": "dist/cli.js"
+        "mbgl-render": "dist/cli.js",
+        "mbgl-static-server": "dist/server.js"
     },
     "dependencies": {
         "@mapbox/geo-viewport": "^0.3.0",

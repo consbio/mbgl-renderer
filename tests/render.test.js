@@ -9,7 +9,6 @@ import mbtilesSourceVectorStyle from './fixtures/example-style-mbtiles-source-ve
 import mbtilesTilesStyle from './fixtures/example-style-mbtiles-tiles.json'
 import mbtilesTilesVectorStyle from './fixtures/example-style-mbtiles-tiles-vector.json'
 
-console.log(JSON.stringify(style))
 
 test('creates correct image width and height', () => render(style, 512, 256, {
     zoom: 10,

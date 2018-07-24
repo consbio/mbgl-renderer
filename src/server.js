@@ -1,28 +1,31 @@
+#!/usr/bin/env node
 import restify from 'restify'
 import restifyValidation from 'node-restify-validation'
 import restifyErrors from 'restify-errors'
+import cli from 'commander'
 
+import { version } from '../package.json'
 import render from './render'
 
 const parseListToFloat = text => text.split(',').map(Number)
 
-const port = 8000
-const tilePath = 'tests/fixtures'
-
 const PARAMS = {
-    style: { isRequired: true, isString: true }, // stringified JSON.  TODO: add further validation of structure
+    style: { isRequired: true, isString: true },
     width: { isRequired: true, isInt: true },
     height: { isRequired: true, isInt: true },
     zoom: { isRequired: false, isInt: true }
 }
 
-const renderImage = (params, response, next) => {
+const renderImage = (params, response, next, tilePath) => {
     const { width, height } = params
     let {
         style, zoom = null, center = null, bounds = null
     } = params
 
-    if (style instanceof String) {
+    console.log('params', params)
+    console.log('center', center, typeof center)
+
+    if (typeof style === 'string') {
         try {
             style = JSON.parse(style)
         } catch (jsonErr) {
@@ -32,7 +35,7 @@ const renderImage = (params, response, next) => {
     }
 
     if (center !== null) {
-        if (center instanceof String) {
+        if (typeof center === 'string') {
             center = parseListToFloat(center)
         }
 
@@ -67,7 +70,7 @@ const renderImage = (params, response, next) => {
         }
     }
     if (bounds !== null) {
-        if (bounds instanceof String) {
+        if (typeof bounds === 'string') {
             bounds = parseListToFloat(bounds)
         }
 
@@ -122,6 +125,15 @@ const renderImage = (params, response, next) => {
     return null
 }
 
+// Provide the CLI
+cli.version(version)
+    .description('Start a server to render Mapbox GL map requests to images.')
+    .option('-p, --port <n>', 'Server port', parseInt)
+    .option('-t, --tiles <mbtiles_path>', 'Directory containing local mbtiles files to render')
+    .parse(process.argv)
+
+const { port = 8000, tiles: tilePath = null } = cli
+
 const server = restify.createServer()
 server.use(restify.plugins.queryParser())
 server.use(restify.plugins.bodyParser())
@@ -140,7 +152,7 @@ server.get(
             queries: PARAMS
         }
     },
-    (req, res, next) => renderImage(req.query, res, next)
+    (req, res, next) => renderImage(req.query, res, next, tilePath)
 )
 
 server.post(
@@ -150,8 +162,12 @@ server.post(
             content: PARAMS
         }
     },
-    (req, res, next) => renderImage(req.body, res, next)
+    (req, res, next) => renderImage(req.body, res, next, tilePath)
 )
+
+if (tilePath !== null) {
+    console.log('Using local mbtiles in: %j', tilePath)
+}
 
 server.listen(port, () => {
     console.log('Mapbox GL static rendering server started and listening at %s', server.url)

@@ -90,7 +90,10 @@ if (tilePath !== null) {
 console.log('\n\n-------- Export Mapbox GL Map --------');
 console.log('style: %j', styleFilename);
 console.log('output image: ' + imgFilename + ' (' + width + 'w x ' + height + 'h)');
-console.log('using local mbtiles in: ' + tilePath);
+if (tilePath !== null) {
+    console.log('using local mbtiles in: ' + tilePath);
+}
+
 // console.log('center: %j', center)
 // console.log('zoom: %j', zoom)
 // console.log('bounds: %j', bounds)

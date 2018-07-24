@@ -1,4 +1,7 @@
+#!/usr/bin/env node
 'use strict';
+
+var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 
 var _restify = require('restify');
 
@@ -12,6 +15,12 @@ var _restifyErrors = require('restify-errors');
 
 var _restifyErrors2 = _interopRequireDefault(_restifyErrors);
 
+var _commander = require('commander');
+
+var _commander2 = _interopRequireDefault(_commander);
+
+var _package = require('../package.json');
+
 var _render = require('./render');
 
 var _render2 = _interopRequireDefault(_render);
@@ -24,8 +33,8 @@ var parseListToFloat = function parseListToFloat(text) {
     return text.split(',').map(Number);
 };
 
-var port = 8000;
-var tilePath = 'tests/fixtures';
+// const port = 8000
+// const tilePath = 'tests/fixtures'
 
 var PARAMS = {
     style: { isRequired: true, isString: true }, // stringified JSON.  TODO: add further validation of structure
@@ -34,7 +43,7 @@ var PARAMS = {
     zoom: { isRequired: false, isInt: true }
 };
 
-var renderImage = function renderImage(params, response, next) {
+var renderImage = function renderImage(params, response, next, tilePath) {
     var width = params.width,
         height = params.height;
     var style = params.style,
@@ -46,7 +55,10 @@ var renderImage = function renderImage(params, response, next) {
         bounds = _params$bounds === undefined ? null : _params$bounds;
 
 
-    if (style instanceof String) {
+    console.log('params', params);
+    console.log('center', center, typeof center === 'undefined' ? 'undefined' : _typeof(center));
+
+    if (typeof style === 'string') {
         try {
             style = JSON.parse(style);
         } catch (jsonErr) {
@@ -56,7 +68,7 @@ var renderImage = function renderImage(params, response, next) {
     }
 
     if (center !== null) {
-        if (center instanceof String) {
+        if (typeof center === 'string') {
             center = parseListToFloat(center);
         }
 
@@ -79,7 +91,7 @@ var renderImage = function renderImage(params, response, next) {
         }
     }
     if (bounds !== null) {
-        if (bounds instanceof String) {
+        if (typeof bounds === 'string') {
             bounds = parseListToFloat(bounds);
         }
 
@@ -122,6 +134,15 @@ var renderImage = function renderImage(params, response, next) {
     return null;
 };
 
+// Provide the CLI
+_commander2.default.version(_package.version).description('Start a server to render Mapbox GL map requests to images.').option('-p, --port <n>', 'Server port', parseInt).option('-t, --tiles <mbtiles_path>', 'Directory containing local mbtiles files to render').parse(process.argv);
+
+var _cli$port = _commander2.default.port,
+    port = _cli$port === undefined ? 8000 : _cli$port,
+    _cli$tiles = _commander2.default.tiles,
+    tilePath = _cli$tiles === undefined ? null : _cli$tiles;
+
+
 var server = _restify2.default.createServer();
 server.use(_restify2.default.plugins.queryParser());
 server.use(_restify2.default.plugins.bodyParser());
@@ -137,7 +158,7 @@ server.get({
         queries: PARAMS
     }
 }, function (req, res, next) {
-    return renderImage(req.query, res, next);
+    return renderImage(req.query, res, next, tilePath);
 });
 
 server.post({
@@ -146,8 +167,12 @@ server.post({
         content: PARAMS
     }
 }, function (req, res, next) {
-    return renderImage(req.body, res, next);
+    return renderImage(req.body, res, next, tilePath);
 });
+
+if (tilePath !== null) {
+    console.log('Using local mbtiles in: %j', tilePath);
+}
 
 server.listen(port, function () {
     console.log('Mapbox GL static rendering server started and listening at %s', server.url);
