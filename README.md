@@ -157,6 +157,16 @@ POST may be necessary where your style JSON file exceeds the maximum number of c
 
 Use `yarn watch` to start up a filewatcher to recompile ES6 files in `src/` to ES5 files that are executable in Node in `dist/`. These are compiled using `babel`.
 
+Tests are run using `jest`. Right now, our coverage is not great, and tests only exercise the core functionality of the render function.
+
+To run tests:
+
+```
+yarn test
+```
+
+This uses the `pixelmatch` package to determine if output images match those that are expected. This may fail when rendered on different machines for reasons we have not completely sorted out, so don't necessarily be alarmed that tests are failing for you - check the outputs.
+
 ## Credits
 
 -   Nik Molnar (https://github.com/nikmolnar) did much of the initial development that was used in this project

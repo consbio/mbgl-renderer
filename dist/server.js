@@ -33,11 +33,8 @@ var parseListToFloat = function parseListToFloat(text) {
     return text.split(',').map(Number);
 };
 
-// const port = 8000
-// const tilePath = 'tests/fixtures'
-
 var PARAMS = {
-    style: { isRequired: true, isString: true }, // stringified JSON.  TODO: add further validation of structure
+    style: { isRequired: true, isString: true },
     width: { isRequired: true, isInt: true },
     height: { isRequired: true, isInt: true },
     zoom: { isRequired: false, isInt: true }
