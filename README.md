@@ -168,6 +168,17 @@ yarn test
 
 This uses the `pixelmatch` package to determine if output images match those that are expected. This may fail when rendered on different machines for reasons we have not completely sorted out, so don't necessarily be alarmed that tests are failing for you - check the outputs.
 
+## Docker
+
+To build the docker container:
+
+```
+docker build -t static-map -f docker/Dockerfile .
+```
+
+TODO: instructions for using this Docker container
+TODO: instructions for how to mount volume to use local tiles
+
 ## Credits
 
 -   Nik Molnar (https://github.com/nikmolnar) did much of the initial development that was used in this project
