@@ -38,7 +38,8 @@ We are currently working on defining a Dockerfile for this package to aid in set
 ```
 import render from 'mapbox-gl-static-render'
 
-import style from `tests/fixtures/example-style.json` // style JSON file with MapBox style.  Can also be opened and read instead of imported.
+import style from `tests/fixtures/example-style.json`
+// style JSON file with MapBox style.  Can also be opened and read instead of imported.
 
 const width = 512
 const height = 256
@@ -96,7 +97,7 @@ mbgl-render tests/fixtures/example-style.json test.png 512 256 -b -80.23,32.678,
 To use local mbtiles tilesets:
 
 ```
-mbgl-render tests/fixtures/example-style-mbtiles-source-vector.json test.png 1024 1024 -z 0 -c 0,0 -ttests/fixtures
+mbgl-render tests/fixtures/example-style-mbtiles-source-vector.json test.png 1024 1024 -z 0 -c 0,0 -t tests/fixtures
 ```
 
 ### Static image server
