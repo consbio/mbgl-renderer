@@ -173,7 +173,7 @@ This uses the `pixelmatch` package to determine if output images match those tha
 To build the docker container:
 
 ```
-docker build -t static-map -f docker/Dockerfile .
+docker build -t mbgl-server -f docker/Dockerfile .
 ```
 
 TODO: instructions for using this Docker container
