@@ -5,9 +5,19 @@
             "type": "vector",
             "url": "mbtiles://land",
             "tileSize": 256
+        },
+        "basemap": {
+            "type": "raster",
+            "url": "mbtiles://geography-class-png",
+            "tileSize": 256
         }
     },
     "layers": [
+        {
+            "id": "basemap",
+            "type": "raster",
+            "source": "basemap"
+        },
         {
             "id": "land",
             "type": "fill",

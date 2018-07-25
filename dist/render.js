@@ -44,7 +44,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
 
 var TILE_REGEXP = RegExp('mbtiles://([^/]+)/(\\d+)/(\\d+)/(\\d+)');
-var NAME_REGEXP = RegExp('(?<=mbtiles://)(\\S+?)(?=[/"]+)');
+var MBTILES_REGEXP = /mbtiles:\/\/(\S+?)(?=[/"]+)/gi;
 
 /**
  * Very simplistic function that splits out mbtiles service name from the URL
@@ -295,14 +295,14 @@ var render = function render(style) {
             tilePath = _path2.default.normalize(tilePath);
         }
 
-        var localMbtilesMatches = NAME_REGEXP.exec(JSON.stringify(style));
+        var localMbtilesMatches = JSON.stringify(style).match(MBTILES_REGEXP);
         if (localMbtilesMatches && !tilePath) {
             throw new Error('Style has local mbtiles file sources, but no tilePath is set');
         }
 
         if (localMbtilesMatches) {
             localMbtilesMatches.forEach(function (name) {
-                var mbtileFilename = _path2.default.normalize(_path2.default.format({ dir: tilePath, name: name, ext: '.mbtiles' }));
+                var mbtileFilename = _path2.default.normalize(_path2.default.format({ dir: tilePath, name: name.split('://')[1], ext: '.mbtiles' }));
                 if (!_fs2.default.existsSync(mbtileFilename)) {
                     throw new Error('Mbtiles file ' + _path2.default.format({
                         name: name,

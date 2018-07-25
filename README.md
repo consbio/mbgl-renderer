@@ -12,12 +12,9 @@ to using map services over the web.
 
 ## Installation
 
-This package is not yet posted and easily installable from npm, so you need to do a bit more work to get it setup:
+`yarn add mbgl-renderer`
 
-1.  `git@github.com:consbio/mbgl-renderer.git`
-2.  `cd mapbox-gl-static`
-3.  `yarn install` (note: this might take a long time as the core dependency `mapbox-gl-native` needs to be compiled from source)
-4.  if the above compilation fails due to not finding an available pre-compiled binary, try again with `npm install @mapbox/mapbox-gl-native --build-from-source`
+This depends on `mapbox-gl-js` which in most cases must be compiled from source.
 
 You need to have your system setup to compile C/C++, and have `cmake` installed.
 
@@ -25,7 +22,7 @@ On Mac, you might need to install some dependencies. You might need to do one of
 
 -   setup XCode and its command line tools
 -   install `cmake`
--   install the ruby gem `xcpretty` which requires installing a fairly recent version of ruby. You can intall `rvm` to help set up a controlled version of ruby, then `gem install xcpretty`
+-   install the ruby gem `xcpretty` which requires installing a fairly recent version of ruby. You can install `rvm` to help set up a controlled version of ruby, then `gem install xcpretty`
 
 On a server, in addition to build tools, you need to install a GL environment.
 

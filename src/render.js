@@ -9,7 +9,7 @@ import webRequest from 'request'
 import sharp from 'sharp'
 
 const TILE_REGEXP = RegExp('mbtiles://([^/]+)/(\\d+)/(\\d+)/(\\d+)')
-const NAME_REGEXP = RegExp('(?<=mbtiles://)(\\S+?)(?=[/"]+)')
+const MBTILES_REGEXP = /mbtiles:\/\/(\S+?)(?=[/"]+)/gi
 
 /**
  * Very simplistic function that splits out mbtiles service name from the URL
@@ -236,14 +236,14 @@ const render = (style, width = 1024, height = 1024, options) => new Promise((res
         tilePath = path.normalize(tilePath)
     }
 
-    const localMbtilesMatches = NAME_REGEXP.exec(JSON.stringify(style))
+    const localMbtilesMatches = JSON.stringify(style).match(MBTILES_REGEXP)
     if (localMbtilesMatches && !tilePath) {
         throw new Error('Style has local mbtiles file sources, but no tilePath is set')
     }
 
     if (localMbtilesMatches) {
         localMbtilesMatches.forEach((name) => {
-            const mbtileFilename = path.normalize(path.format({ dir: tilePath, name, ext: '.mbtiles' }))
+            const mbtileFilename = path.normalize(path.format({ dir: tilePath, name: name.split('://')[1], ext: '.mbtiles' }))
             if (!fs.existsSync(mbtileFilename)) {
                 throw new Error(
                     `Mbtiles file ${path.format({
