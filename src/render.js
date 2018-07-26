@@ -1,19 +1,18 @@
 /* eslint-disable no-new */
 import fs from 'fs'
 import path from 'path'
+// sharp must be before zlib and other imports or sharp gets wrong version of zlib and breaks on some servers
+import sharp from 'sharp'
 import zlib from 'zlib'
 import geoViewport from '@mapbox/geo-viewport'
 import mbgl from '@mapbox/mapbox-gl-native'
 import MBTiles from '@mapbox/mbtiles'
 import webRequest from 'request'
-import sharp from 'sharp'
 
 import URL from 'url'
 
 const TILE_REGEXP = RegExp('mbtiles://([^/]+)/(\\d+)/(\\d+)/(\\d+)')
 const MBTILES_REGEXP = /mbtiles:\/\/(\S+?)(?=[/"]+)/gi
-
-// const FIXME_MAPBOX_TOKEN = 'pk.eyJ1IjoiYmN3YXJkIiwiYSI6InJ5NzUxQzAifQ.CVyzbyOpnStfYUQ_6r8AgQ' // TODO: pass this in
 
 export const isMapboxURL = url => url.startsWith('mapbox://')
 export const isMapboxStyleURL = url => url.startsWith('mapbox://styles/')

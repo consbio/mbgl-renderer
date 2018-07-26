@@ -50,6 +50,22 @@ var _cli$args = _slicedToArray(_commander2.default.args, 4),
     _cli$token = _commander2.default.token,
     token = _cli$token === undefined ? null : _cli$token;
 
+// verify that all arguments are present
+
+
+if (!styleFilename) {
+    raiseError('style is a required parameter');
+}
+if (!imgFilename) {
+    raiseError('output image filename is a required parameter');
+}
+if (!width) {
+    raiseError('width is a required parameter');
+}
+if (!height) {
+    raiseError('height is a required parameter');
+}
+
 var imgWidth = parseInt(width, 10);
 var imgHeight = parseInt(height, 10);
 

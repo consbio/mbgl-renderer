@@ -32,6 +32,20 @@ const {
     token: token = null
 } = cli
 
+// verify that all arguments are present
+if (!styleFilename) {
+    raiseError('style is a required parameter')
+}
+if (!imgFilename) {
+    raiseError('output image filename is a required parameter')
+}
+if (!width) {
+    raiseError('width is a required parameter')
+}
+if (!height) {
+    raiseError('height is a required parameter')
+}
+
 const imgWidth = parseInt(width, 10)
 const imgHeight = parseInt(height, 10)
 
