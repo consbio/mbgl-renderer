@@ -1,9 +1,10 @@
 #!/usr/bin/env node
 import fs from 'fs'
 import cli from 'commander'
+import webRequest from 'request'
 
 import { version } from '../package.json'
-import render from './render'
+import { render, isMapboxStyleURL, normalizeMapboxStyleURL } from './render'
 
 const raiseError = (msg) => {
     console.error('ERROR:', msg)
@@ -19,6 +20,7 @@ cli.version(version)
     .option('-z, --zoom <n>', 'Zoom level', parseInt)
     .option('-b, --bounds <west,south,east,north>', 'Bounds (NO SPACES)', parseListToFloat)
     .option('-t, --tiles <mbtiles_path>', 'Directory containing local mbtiles files to render')
+    .option('--token <mapbox access token>', 'Mapbox access token (required for using Mapbox styles and sources)')
     .parse(process.argv)
 
 const {
@@ -26,13 +28,16 @@ const {
     center = null,
     zoom = null,
     bounds = null,
-    tiles: tilePath = null
+    tiles: tilePath = null,
+    token: token = null
 } = cli
 
 const imgWidth = parseInt(width, 10)
 const imgHeight = parseInt(height, 10)
 
-if (!fs.existsSync(styleFilename)) {
+const isMapboxStyle = isMapboxStyleURL(styleFilename)
+
+if (!(isMapboxStyle || fs.existsSync(styleFilename))) {
     raiseError(`Style JSON file does not exist: ${styleFilename}`)
 }
 
@@ -77,23 +82,52 @@ if (tilePath !== null) {
     console.log(`using local mbtiles in: ${tilePath}`)
 }
 
-// console.log('center: %j', center)
-// console.log('zoom: %j', zoom)
-// console.log('bounds: %j', bounds)
-
-const style = JSON.parse(fs.readFileSync(styleFilename))
-
-render(style, imgWidth, imgHeight, {
-    zoom,
-    center,
-    bounds,
-    tilePath
-})
-    .then((data) => {
-        fs.writeFileSync(imgFilename, data)
-        console.log('Done!')
-        console.log('\n')
+const renderRequest = (style) => {
+    render(style, imgWidth, imgHeight, {
+        zoom,
+        center,
+        bounds,
+        tilePath,
+        token
     })
-    .catch((err) => {
-        console.error(err)
+        .then((data) => {
+            fs.writeFileSync(imgFilename, data)
+            console.log('Done!')
+            console.log('\n')
+        })
+        .catch((err) => {
+            console.error(err)
+        })
+}
+
+if (isMapboxStyle) {
+    if (!token) {
+        raiseError('mapbox access token is required')
+    }
+
+    // load the style then call the render function
+    const styleURL = normalizeMapboxStyleURL(styleFilename, token)
+    console.log(`requesting mapbox style:${styleFilename}\nfrom: ${styleURL}`)
+    webRequest(styleURL, (err, res, body) => {
+        if (err) {
+            return raiseError(err)
+        }
+
+        switch (res.statusCode) {
+            case 200: {
+                return renderRequest(JSON.parse(body))
+            }
+            case 401: {
+                return raiseError('Mapbox token is not authorized for this style')
+            }
+            default: {
+                return raiseError(`Unexpected response for mapbox style request: ${styleURL}\n${res.statusCode}`)
+            }
+        }
     })
+} else {
+    // read styleJSON
+    fs.readFile(styleFilename, (err, data) => {
+        renderRequest(JSON.parse(data))
+    })
+}

@@ -10,6 +10,19 @@ One of the nifty features of this package is that you can use locally hosted mbt
 with your raster or vector tiles. This saves considerable time during rendering compared
 to using map services over the web.
 
+This package is intended to help with generating static maps for download or use in reports,
+especially when combined with your own styles or overlays.
+
+If you are only using hosted Mapbox styles and vector tiles, please use the [Mapbox Static API](https://www.mapbox.com/api-documentation/#static) instead; it is more full featured and more
+appropriate for static Mapbox maps.
+
+### Attribution
+
+Please make sure to give appropriate attribution to the data sources and styles used in your maps,
+in the manner that those providers specify.
+
+If you use Mapbox styles or hosted tiles, make sure to include appropriate [attribution](https://www.mapbox.com/help/how-attribution-works/) in your output maps.
+
 ## Installation
 
 `yarn add mbgl-renderer`
@@ -76,6 +89,7 @@ render(style, width, height, { bounds })
     -z, --zoom <n>                        Zoom level
     -b, --bounds <west,south,east,north>  Bounds (NO SPACES)
     -t, --tiles <mbtiles_path>            Directory containing local mbtiles files to render
+    --token <mapbox access token>         Mapbox access token (required for using Mapbox styles and sources)
     -h, --help                            output usage information
 ```
 
@@ -96,6 +110,14 @@ To use local mbtiles tilesets:
 ```
 mbgl-render tests/fixtures/example-style-mbtiles-source-vector.json test.png 1024 1024 -z 0 -c 0,0 -t tests/fixtures
 ```
+
+To use an Mapbox hosted style (see attribution above!):
+
+```
+mbgl-render mapbox://styles/mapbox/outdoors-v10 test.png 1024 1024 -c 0,0 -z 0 --token <your mapbox token>
+```
+
+Note: support for Mapbox hosted styles is still considered experimental.
 
 ### Static image server
 
