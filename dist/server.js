@@ -1,8 +1,6 @@
 #!/usr/bin/env node
 'use strict';
 
-var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
-
 var _restify = require('restify');
 
 var _restify2 = _interopRequireDefault(_restify);
@@ -37,7 +35,7 @@ var PARAMS = {
     style: { isRequired: true, isString: true },
     width: { isRequired: true, isInt: true },
     height: { isRequired: true, isInt: true },
-    zoom: { isRequired: false, isInt: true }
+    zoom: { isRequired: false, isDecimal: true }
 };
 
 var renderImage = function renderImage(params, response, next, tilePath) {
@@ -51,9 +49,6 @@ var renderImage = function renderImage(params, response, next, tilePath) {
         _params$bounds = params.bounds,
         bounds = _params$bounds === undefined ? null : _params$bounds;
 
-
-    console.log('params', params);
-    console.log('center', center, typeof center === 'undefined' ? 'undefined' : _typeof(center));
 
     if (typeof style === 'string') {
         try {
@@ -103,7 +98,7 @@ var renderImage = function renderImage(params, response, next, tilePath) {
         });
     }
 
-    if (!(center && zoom !== null) || bounds) {
+    if (!(center && zoom !== null || bounds)) {
         return next(new _restifyErrors2.default.BadRequestError('Either center and zoom OR bounds must be provided'));
     }
 
@@ -146,7 +141,7 @@ server.use(_restify2.default.plugins.bodyParser());
 server.use(_nodeRestifyValidation2.default.validationPlugin({
     errorsAsArray: false,
     forbidUndefinedVariables: false,
-    errorHandler: _restifyErrors2.default.InvalidArgumentError
+    errorHandler: _restifyErrors2.default.BadRequestError
 }));
 
 server.get({
