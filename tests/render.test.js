@@ -131,7 +131,8 @@ test('resolves local mbtiles from vector tiles', () => render(mbtilesTilesVector
 
 test('resolves from mapbox source', () => render(mapboxSourceStyle, 512, 512, {
     zoom: 0,
-    center: [0, 0]
+    center: [0, 0],
+    token: 'pk.eyJ1IjoiYmN3YXJkIiwiYSI6InJ5NzUxQzAifQ.CVyzbyOpnStfYUQ_6r8AgQ' // mapbox docs token
 }).then((data) => {
     // feed it back through sharp to verify that we got an image
     sharp(data)

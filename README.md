@@ -75,6 +75,17 @@ render(style, width, height, { bounds })
     }))
 ```
 
+If your style includes a Mapbox hosted source (e.g., `"url": "mapbox://mapbox.mapbox-streets-v7"`),
+you need to pass in your Mapbox access token as well:
+```
+render(style, width, height, { bounds, token: '<your access token>' })
+    .then((data) => {
+        fs.writeFileSync('test.png', data)
+    }))
+```
+
+
+
 ### Command line interface:
 
 ```
