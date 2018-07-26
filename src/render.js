@@ -29,7 +29,7 @@ const isMBTilesURL = url => url.startsWith('mbtiles://')
 const normalizeMapboxSourceURL = (url, token) => {
     const urlObject = URL.parse(url)
     urlObject.query = urlObject.query || {}
-    urlObject.pathname = `/v4/${urlObject.host}.json`
+    urlObject.pathname = `/v4/${url.split('mapbox://')[1]}.json`
     urlObject.protocol = 'https'
     urlObject.host = 'api.mapbox.com'
     urlObject.query.secure = true
@@ -104,7 +104,6 @@ export const normalizeMapboxGlyphURL = (url, token) => {
     urlObject.host = 'api.mapbox.com'
     return URL.format(urlObject)
 }
-
 
 /**
  * Very simplistic function that splits out mbtiles service name from the URL
