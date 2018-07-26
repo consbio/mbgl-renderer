@@ -39,12 +39,56 @@ var _sharp = require('sharp');
 
 var _sharp2 = _interopRequireDefault(_sharp);
 
+var _url = require('url');
+
+var _url2 = _interopRequireDefault(_url);
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
 
+// const MAPBOX_API_URL = 'https://api.mapbox.com'
+// const MAPBOX_API_URL_OBJ = URL.parse(MAPBOX_API_URL)
+// const MAPBOX_TILE_URL = 'https://a.tiles.mapbox.com'
+// const MAPBOX_TILE_URL_OBJ = URL.parse(MAPBOX_TILE_URL)
+var MAPBOX_API_VERSION = 4;
+
 var TILE_REGEXP = RegExp('mbtiles://([^/]+)/(\\d+)/(\\d+)/(\\d+)');
 var MBTILES_REGEXP = /mbtiles:\/\/(\S+?)(?=[/"]+)/gi;
+
+var FIXME_MAPBOX_TOKEN = 'pk.eyJ1IjoiYmN3YXJkIiwiYSI6InJ5NzUxQzAifQ.CVyzbyOpnStfYUQ_6r8AgQ'; // TODO: pass this in
+
+/**
+ * Normalize a Mapbox source URL to a full URL
+ * @param {string} url - url to mapbox source in style json, e.g. "url": "mapbox://mapbox.mapbox-streets-v7"
+ * @param {string} token - mapbox public token
+ */
+var normalizeMapboxSourceURL = function normalizeMapboxSourceURL(url, token) {
+    var urlObject = _url2.default.parse(url);
+    urlObject.query = urlObject.query || {};
+    urlObject.pathname = '/v' + MAPBOX_API_VERSION + '/' + urlObject.host + '.json';
+    urlObject.protocol = 'https';
+    urlObject.host = 'api.mapbox.com';
+    urlObject.query.secure = true;
+    urlObject.query.access_token = token;
+    return _url2.default.format(urlObject);
+};
+
+/**
+ * Normalize a Mapbox tile URL to a full URL
+ * @param {string} url - url to mapbox tile in style json or resolved from source
+ * e.g. mapbox://tiles/mapbox.mapbox-streets-v7/1/0/1.vector.pbf
+ * @param {string} token - mapbox public token
+ */
+var normalizeMapboxTileURL = function normalizeMapboxTileURL(url, token) {
+    var urlObject = _url2.default.parse(url);
+    urlObject.query = urlObject.query || {};
+    urlObject.pathname = '/v' + MAPBOX_API_VERSION + urlObject.path;
+    urlObject.protocol = 'https';
+    urlObject.host = 'a.tiles.mapbox.com';
+    urlObject.query.access_token = token;
+    return _url2.default.format(urlObject);
+};
 
 /**
  * Very simplistic function that splits out mbtiles service name from the URL
@@ -71,7 +115,7 @@ var resolveMBTilesURL = function resolveMBTilesURL(tilePath, url) {
  *
  * @param {String} tilePath - path containing mbtiles files.
  * @param {String} url - url of a data source in style.json file.
- * @param {function} callback - function to call with (err, data).
+ * @param {function} callback - function to call with (err, {data}).
  */
 var getTileJSON = function getTileJSON(tilePath, url, callback) {
     var mbtilesFilename = resolveMBTilesURL(tilePath, url);
@@ -120,7 +164,7 @@ var getTileJSON = function getTileJSON(tilePath, url, callback) {
  *
  * @param {String} tilePath - path containing mbtiles files.
  * @param {String} url - url of a data source in style.json file.
- * @param {function} callback - function to call with (err, data).
+ * @param {function} callback - function to call with (err, {data}).
  */
 var getTile = function getTile(tilePath, url, callback) {
     var matches = url.match(TILE_REGEXP);
@@ -160,6 +204,59 @@ var getTile = function getTile(tilePath, url, callback) {
         });
 
         return null;
+    });
+};
+
+/**
+ * Fetch a remotely hosted tile JSON
+ *
+ * @param {String} url - URL of remote tile json
+ * @param {function} callback - callback to call with (err, {data})
+ */
+var getRemoteTileJSON = function getRemoteTileJSON(url, callback) {
+    (0, _request2.default)({
+        url: url,
+        encoding: null,
+        gzip: true
+    }, function (err, res, body) {
+        if (err) {
+            return callback(err);
+        }
+
+        switch (res.statusCode) {
+            case 200:
+                {
+                    var response = {};
+
+                    if (res.headers.modified) {
+                        response.modified = new Date(res.headers.modified);
+                    }
+                    if (res.headers.expires) {
+                        response.expires = new Date(res.headers.expires);
+                    }
+                    if (res.headers.etag) {
+                        response.etag = res.headers.etag;
+                    }
+
+                    response.data = body;
+
+                    return callback(null, response);
+                }
+            default:
+                {
+                    // assume error
+                    console.log('unexpected tile response for: %j\n%j', url, res.statusCode);
+                    if (body) {
+                        try {
+                            return callback(new Error(JSON.parse(body).message));
+                        } catch (parseErr) {
+                            console.log('caught error parsing JSON error response from tile: %j\n%j', url, parseErr);
+                            return callback(new Error(parseErr));
+                        }
+                    }
+                    return callback(new Error('Error with tile request for: %j', url));
+                }
+        }
     });
 };
 
@@ -320,6 +417,7 @@ var render = function render(style) {
                     kind = req.kind;
 
                 var isMBTiles = url.startsWith('mbtiles://');
+                var isMapbox = url.startsWith('mapbox://');
 
                 try {
                     switch (kind) {
@@ -328,6 +426,8 @@ var render = function render(style) {
                                 // source
                                 if (isMBTiles) {
                                     getTileJSON(tilePath, url, callback);
+                                } else if (isMapbox) {
+                                    getRemoteTileJSON(normalizeMapboxSourceURL(url, FIXME_MAPBOX_TOKEN), callback);
                                 }
                                 // else is not currently handled
                                 break;
@@ -337,6 +437,10 @@ var render = function render(style) {
                                 // tile
                                 if (isMBTiles) {
                                     getTile(tilePath, url, callback);
+                                } else if (isMapbox) {
+                                    // This seems to be due to a bug in how the mapbox tile JSON is handled within mapbox-gl-native
+                                    // since it returns fully resolved tiles!
+                                    getRemoteTile(normalizeMapboxTileURL(url, FIXME_MAPBOX_TOKEN), callback);
                                 } else {
                                     getRemoteTile(url, callback);
                                 }

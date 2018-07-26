@@ -8,7 +8,7 @@ import mbtilesSourceStyle from './fixtures/example-style-mbtiles-source.json'
 import mbtilesSourceVectorStyle from './fixtures/example-style-mbtiles-source-vector.json'
 import mbtilesTilesStyle from './fixtures/example-style-mbtiles-tiles.json'
 import mbtilesTilesVectorStyle from './fixtures/example-style-mbtiles-tiles-vector.json'
-
+import mapboxSourceStyle from './fixtures/example-style-mapbox-source.json'
 
 test('creates correct image width and height', () => render(style, 512, 256, {
     zoom: 10,
@@ -127,4 +127,23 @@ test('resolves local mbtiles from vector tiles', () => render(mbtilesTilesVector
 
         // to write out known good image:
         // fs.writeFileSync(path.join(__dirname, './fixtures/expected-mbtiles-tiles-vector.png'), data)
+}))
+
+test('resolves from mapbox source', () => render(mapboxSourceStyle, 512, 512, {
+    zoom: 0,
+    center: [0, 0]
+}).then((data) => {
+    // feed it back through sharp to verify that we got an image
+    sharp(data)
+        .metadata((_, { format, width, height }) => {
+            expect(format).toBe('png')
+            expect(width).toBe(512)
+            expect(height).toBe(512)
+        })
+        .stats((_, { channels }) => {
+            expect(channels[0].squaresSum).toBeGreaterThan(0)
+        })
+
+        // to write out known good image:
+        // fs.writeFileSync(path.join(__dirname, './fixtures/expected-mapbox-source.png'), data)
 }))

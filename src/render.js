@@ -8,8 +8,50 @@ import MBTiles from '@mapbox/mbtiles'
 import webRequest from 'request'
 import sharp from 'sharp'
 
+import URL from 'url'
+
+// const MAPBOX_API_URL = 'https://api.mapbox.com'
+// const MAPBOX_API_URL_OBJ = URL.parse(MAPBOX_API_URL)
+// const MAPBOX_TILE_URL = 'https://a.tiles.mapbox.com'
+// const MAPBOX_TILE_URL_OBJ = URL.parse(MAPBOX_TILE_URL)
+const MAPBOX_API_VERSION = 4
+
 const TILE_REGEXP = RegExp('mbtiles://([^/]+)/(\\d+)/(\\d+)/(\\d+)')
 const MBTILES_REGEXP = /mbtiles:\/\/(\S+?)(?=[/"]+)/gi
+
+const FIXME_MAPBOX_TOKEN = 'pk.eyJ1IjoiYmN3YXJkIiwiYSI6InJ5NzUxQzAifQ.CVyzbyOpnStfYUQ_6r8AgQ' // TODO: pass this in
+
+/**
+ * Normalize a Mapbox source URL to a full URL
+ * @param {string} url - url to mapbox source in style json, e.g. "url": "mapbox://mapbox.mapbox-streets-v7"
+ * @param {string} token - mapbox public token
+ */
+const normalizeMapboxSourceURL = (url, token) => {
+    const urlObject = URL.parse(url)
+    urlObject.query = urlObject.query || {}
+    urlObject.pathname = `/v${MAPBOX_API_VERSION}/${urlObject.host}.json`
+    urlObject.protocol = 'https'
+    urlObject.host = 'api.mapbox.com'
+    urlObject.query.secure = true
+    urlObject.query.access_token = token
+    return URL.format(urlObject)
+}
+
+/**
+ * Normalize a Mapbox tile URL to a full URL
+ * @param {string} url - url to mapbox tile in style json or resolved from source
+ * e.g. mapbox://tiles/mapbox.mapbox-streets-v7/1/0/1.vector.pbf
+ * @param {string} token - mapbox public token
+ */
+const normalizeMapboxTileURL = (url, token) => {
+    const urlObject = URL.parse(url)
+    urlObject.query = urlObject.query || {}
+    urlObject.pathname = `/v${MAPBOX_API_VERSION}${urlObject.path}`
+    urlObject.protocol = 'https'
+    urlObject.host = 'a.tiles.mapbox.com'
+    urlObject.query.access_token = token
+    return URL.format(urlObject)
+}
 
 /**
  * Very simplistic function that splits out mbtiles service name from the URL
@@ -32,7 +74,7 @@ const resolveMBTilesURL = (tilePath, url) => path.format({ dir: tilePath, name: 
  *
  * @param {String} tilePath - path containing mbtiles files.
  * @param {String} url - url of a data source in style.json file.
- * @param {function} callback - function to call with (err, data).
+ * @param {function} callback - function to call with (err, {data}).
  */
 const getTileJSON = (tilePath, url, callback) => {
     const mbtilesFilename = resolveMBTilesURL(tilePath, url)
@@ -78,7 +120,7 @@ const getTileJSON = (tilePath, url, callback) => {
  *
  * @param {String} tilePath - path containing mbtiles files.
  * @param {String} url - url of a data source in style.json file.
- * @param {function} callback - function to call with (err, data).
+ * @param {function} callback - function to call with (err, {data}).
  */
 const getTile = (tilePath, url, callback) => {
     const matches = url.match(TILE_REGEXP)
@@ -113,6 +155,60 @@ const getTile = (tilePath, url, callback) => {
 
         return null
     })
+}
+
+/**
+ * Fetch a remotely hosted tile JSON
+ *
+ * @param {String} url - URL of remote tile json
+ * @param {function} callback - callback to call with (err, {data})
+ */
+const getRemoteTileJSON = (url, callback) => {
+    webRequest(
+        {
+            url,
+            encoding: null,
+            gzip: true
+        },
+        (err, res, body) => {
+            if (err) {
+                return callback(err)
+            }
+
+            switch (res.statusCode) {
+                case 200: {
+                    const response = {}
+
+                    if (res.headers.modified) {
+                        response.modified = new Date(res.headers.modified)
+                    }
+                    if (res.headers.expires) {
+                        response.expires = new Date(res.headers.expires)
+                    }
+                    if (res.headers.etag) {
+                        response.etag = res.headers.etag
+                    }
+
+                    response.data = body
+
+                    return callback(null, response)
+                }
+                default: {
+                    // assume error
+                    console.log('unexpected tile response for: %j\n%j', url, res.statusCode)
+                    if (body) {
+                        try {
+                            return callback(new Error(JSON.parse(body).message))
+                        } catch (parseErr) {
+                            console.log('caught error parsing JSON error response from tile: %j\n%j', url, parseErr)
+                            return callback(new Error(parseErr))
+                        }
+                    }
+                    return callback(new Error('Error with tile request for: %j', url))
+                }
+            }
+        }
+    )
 }
 
 /**
@@ -243,7 +339,9 @@ const render = (style, width = 1024, height = 1024, options) => new Promise((res
 
     if (localMbtilesMatches) {
         localMbtilesMatches.forEach((name) => {
-            const mbtileFilename = path.normalize(path.format({ dir: tilePath, name: name.split('://')[1], ext: '.mbtiles' }))
+            const mbtileFilename = path.normalize(
+                path.format({ dir: tilePath, name: name.split('://')[1], ext: '.mbtiles' })
+            )
             if (!fs.existsSync(mbtileFilename)) {
                 throw new Error(
                     `Mbtiles file ${path.format({
@@ -261,6 +359,7 @@ const render = (style, width = 1024, height = 1024, options) => new Promise((res
         request: (req, callback) => {
             const { url, kind } = req
             const isMBTiles = url.startsWith('mbtiles://')
+            const isMapbox = url.startsWith('mapbox://')
 
             try {
                 switch (kind) {
@@ -268,6 +367,8 @@ const render = (style, width = 1024, height = 1024, options) => new Promise((res
                         // source
                         if (isMBTiles) {
                             getTileJSON(tilePath, url, callback)
+                        } else if (isMapbox) {
+                            getRemoteTileJSON(normalizeMapboxSourceURL(url, FIXME_MAPBOX_TOKEN), callback)
                         }
                         // else is not currently handled
                         break
@@ -276,6 +377,10 @@ const render = (style, width = 1024, height = 1024, options) => new Promise((res
                         // tile
                         if (isMBTiles) {
                             getTile(tilePath, url, callback)
+                        } else if (isMapbox) {
+                            // This seems to be due to a bug in how the mapbox tile JSON is handled within mapbox-gl-native
+                            // since it returns fully resolved tiles!
+                            getRemoteTile(normalizeMapboxTileURL(url, FIXME_MAPBOX_TOKEN), callback)
                         } else {
                             getRemoteTile(url, callback)
                         }
