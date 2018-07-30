@@ -417,8 +417,9 @@ var render = exports.render = function render(style) {
                                     getLocalTileJSON(tilePath, url, callback);
                                 } else if (isMapbox) {
                                     getRemoteAsset(normalizeMapboxSourceURL(url, token), callback);
+                                } else {
+                                    getRemoteAsset(url, callback);
                                 }
-                                // else is not currently handled
                                 break;
                             }
                         case 3:

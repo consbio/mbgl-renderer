@@ -347,8 +347,9 @@ export const render = (style, width = 1024, height = 1024, options) => new Promi
                             getLocalTileJSON(tilePath, url, callback)
                         } else if (isMapbox) {
                             getRemoteAsset(normalizeMapboxSourceURL(url, token), callback)
+                        } else {
+                            getRemoteAsset(url, callback)
                         }
-                        // else is not currently handled
                         break
                     }
                     case 3: {
