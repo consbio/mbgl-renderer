@@ -482,6 +482,8 @@ var render = exports.render = function render(style) {
                 return reject(err);
             }
 
+            map.release(); // release map resources to prevent reusing in future render requests
+
             // Convert raw image buffer to PNG
             try {
                 return (0, _sharp2.default)(buffer, { raw: { width: width, height: height, channels: 4 } }).png().toBuffer().then(resolve).catch(reject);

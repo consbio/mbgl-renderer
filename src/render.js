@@ -409,6 +409,8 @@ export const render = (style, width = 1024, height = 1024, options) => new Promi
                 return reject(err)
             }
 
+            map.release() // release map resources to prevent reusing in future render requests
+
             // Convert raw image buffer to PNG
             try {
                 return sharp(buffer, { raw: { width, height, channels: 4 } })
