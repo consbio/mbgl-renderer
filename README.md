@@ -6,6 +6,8 @@ This package helps you create static map images using Mapbox GL. It currently pr
 -   a command line interface
 -   an HTTP interface
 
+[Blog post](https://medium.com/@brendan_ward/creating-a-static-map-renderer-using-the-mapbox-gl-native-nodejs-api-23db560b219e) describing the background and goals in a bit more detail.
+
 One of the nifty features of this package is that you can use locally hosted mbtiles files
 with your raster or vector tiles. This saves considerable time during rendering compared
 to using map services over the web.
