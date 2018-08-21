@@ -202,5 +202,7 @@ This uses the `pixelmatch` package to determine if output images match those tha
 
 ## Credits
 
--   Nik Molnar (https://github.com/nikmolnar) did much of the initial development that was used in this project
+-   Nik Molnar (https://github.com/nikmolnar)
 -   Brendan Ward (https://github.com/brendan-ward)
+
+This project was made possible based on support from the South Atlantic Landscape Conservation Cooperative (http://www.southatlanticlcc.org/) and the Paulson Institute (http://www.paulsoninstitute.org/).
