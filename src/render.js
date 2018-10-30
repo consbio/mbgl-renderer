@@ -367,17 +367,17 @@ export const render = (style, width = 1024, height = 1024, options) => new Promi
                     }
                     case 4: {
                         // glyph
-                        getRemoteAsset(normalizeMapboxGlyphURL(url, token), callback)
+                        getRemoteAsset(isMapbox ? normalizeMapboxGlyphURL(url, token) : URL.parse(url), callback)
                         break
                     }
                     case 5: {
                         // sprite image
-                        getRemoteAsset(normalizeMapboxSpriteURL(url, token), callback)
+                        getRemoteAsset(isMapbox ? normalizeMapboxSpriteURL(url, token) : URL.parse(url), callback)
                         break
                     }
                     case 6: {
                         // sprite json
-                        getRemoteAsset(normalizeMapboxSpriteURL(url, token), callback)
+                        getRemoteAsset(isMapbox ? normalizeMapboxSpriteURL(url, token) : URL.parse(url), callback)
                         break
                     }
                     default: {

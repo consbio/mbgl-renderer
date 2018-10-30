@@ -2,7 +2,7 @@
     "name": "mbgl-renderer",
     "version": "0.2.1",
     "description": "Static Map Renderer using Mapbox GL",
-    "main": "index.js",
+    "main": "dist/index.js",
     "license": "ISC",
     "scripts": {
         "build": "babel ./src -d ./dist",
