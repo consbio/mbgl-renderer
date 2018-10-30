@@ -439,19 +439,19 @@ var render = exports.render = function render(style) {
                         case 4:
                             {
                                 // glyph
-                                getRemoteAsset(normalizeMapboxGlyphURL(url, token), callback);
+                                getRemoteAsset(isMapbox ? normalizeMapboxGlyphURL(url, token) : _url2.default.parse(url), callback);
                                 break;
                             }
                         case 5:
                             {
                                 // sprite image
-                                getRemoteAsset(normalizeMapboxSpriteURL(url, token), callback);
+                                getRemoteAsset(isMapbox ? normalizeMapboxSpriteURL(url, token) : _url2.default.parse(url), callback);
                                 break;
                             }
                         case 6:
                             {
                                 // sprite json
-                                getRemoteAsset(normalizeMapboxSpriteURL(url, token), callback);
+                                getRemoteAsset(isMapbox ? normalizeMapboxSpriteURL(url, token) : _url2.default.parse(url), callback);
                                 break;
                             }
                         default:
