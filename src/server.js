@@ -61,7 +61,7 @@ const renderImage = (params, response, next, tilePath) => {
         }
     }
     if (zoom !== null) {
-        zoom = parseInt(zoom, 10)
+        zoom = parseFloat(zoom)
         if (zoom < 0 || zoom > 22) {
             return next(new restifyErrors.BadRequestError(`Zoom level is outside supported range (0-22): ${zoom}`))
         }
