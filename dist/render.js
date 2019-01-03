@@ -3,8 +3,11 @@
 Object.defineProperty(exports, "__esModule", {
     value: true
 });
+exports.render = exports.normalizeMapboxGlyphURL = exports.normalizeMapboxSpriteURL = exports.normalizeMapboxStyleURL = exports.isMapboxStyleURL = exports.isMapboxURL = undefined;
 
 var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }(); /* eslint-disable no-new */
+
+// sharp must be before zlib and other imports or sharp gets wrong version of zlib and breaks on some servers
 
 
 var _fs = require('fs');
@@ -14,6 +17,10 @@ var _fs2 = _interopRequireDefault(_fs);
 var _path = require('path');
 
 var _path2 = _interopRequireDefault(_path);
+
+var _sharp = require('sharp');
+
+var _sharp2 = _interopRequireDefault(_sharp);
 
 var _zlib = require('zlib');
 
@@ -35,16 +42,112 @@ var _request = require('request');
 
 var _request2 = _interopRequireDefault(_request);
 
-var _sharp = require('sharp');
+var _url = require('url');
 
-var _sharp2 = _interopRequireDefault(_sharp);
+var _url2 = _interopRequireDefault(_url);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
 
 var TILE_REGEXP = RegExp('mbtiles://([^/]+)/(\\d+)/(\\d+)/(\\d+)');
-var NAME_REGEXP = RegExp('(?<=mbtiles://)(\\S+?)(?=[/"]+)');
+var MBTILES_REGEXP = /mbtiles:\/\/(\S+?)(?=[/"]+)/gi;
+
+var isMapboxURL = exports.isMapboxURL = function isMapboxURL(url) {
+    return url.startsWith('mapbox://');
+};
+var isMapboxStyleURL = exports.isMapboxStyleURL = function isMapboxStyleURL(url) {
+    return url.startsWith('mapbox://styles/');
+};
+var isMBTilesURL = function isMBTilesURL(url) {
+    return url.startsWith('mbtiles://');
+};
+
+// normalize functions derived from: https://github.com/mapbox/mapbox-gl-js/blob/master/src/util/mapbox.js
+
+/**
+ * Normalize a Mapbox source URL to a full URL
+ * @param {string} url - url to mapbox source in style json, e.g. "url": "mapbox://mapbox.mapbox-streets-v7"
+ * @param {string} token - mapbox public token
+ */
+var normalizeMapboxSourceURL = function normalizeMapboxSourceURL(url, token) {
+    var urlObject = _url2.default.parse(url);
+    urlObject.query = urlObject.query || {};
+    urlObject.pathname = '/v4/' + url.split('mapbox://')[1] + '.json';
+    urlObject.protocol = 'https';
+    urlObject.host = 'api.mapbox.com';
+    urlObject.query.secure = true;
+    urlObject.query.access_token = token;
+    return _url2.default.format(urlObject);
+};
+
+/**
+ * Normalize a Mapbox tile URL to a full URL
+ * @param {string} url - url to mapbox tile in style json or resolved from source
+ * e.g. mapbox://tiles/mapbox.mapbox-streets-v7/1/0/1.vector.pbf
+ * @param {string} token - mapbox public token
+ */
+var normalizeMapboxTileURL = function normalizeMapboxTileURL(url, token) {
+    var urlObject = _url2.default.parse(url);
+    urlObject.query = urlObject.query || {};
+    urlObject.pathname = '/v4' + urlObject.path;
+    urlObject.protocol = 'https';
+    urlObject.host = 'a.tiles.mapbox.com';
+    urlObject.query.access_token = token;
+    return _url2.default.format(urlObject);
+};
+
+/**
+ * Normalize a Mapbox style URL to a full URL
+ * @param {string} url - url to mapbox source in style json, e.g. "url": "mapbox://styles/mapbox/streets-v9"
+ * @param {string} token - mapbox public token
+ */
+var normalizeMapboxStyleURL = exports.normalizeMapboxStyleURL = function normalizeMapboxStyleURL(url, token) {
+    var urlObject = _url2.default.parse(url);
+    urlObject.query = {
+        access_token: token,
+        secure: true
+    };
+    urlObject.pathname = 'styles/v1' + urlObject.path;
+    urlObject.protocol = 'https';
+    urlObject.host = 'api.mapbox.com';
+    return _url2.default.format(urlObject);
+};
+
+/**
+ * Normalize a Mapbox sprite URL to a full URL
+ * @param {string} url - url to mapbox sprite, e.g. "url": "mapbox://sprites/mapbox/streets-v9.png"
+ * @param {string} token - mapbox public token
+ *
+ * Returns {string} - url, e.g., "https://api.mapbox.com/styles/v1/mapbox/streets-v9/sprite.png?access_token=<token>"
+ */
+var normalizeMapboxSpriteURL = exports.normalizeMapboxSpriteURL = function normalizeMapboxSpriteURL(url, token) {
+    var extMatch = /(.png|.json)$/g.exec(url);
+    var urlObject = _url2.default.parse(url.substring(0, extMatch.index));
+    urlObject.query = urlObject.query || {};
+    urlObject.query.access_token = token;
+    urlObject.pathname = '/styles/v1' + urlObject.path + '/sprite' + extMatch[1];
+    urlObject.protocol = 'https';
+    urlObject.host = 'api.mapbox.com';
+    return _url2.default.format(urlObject);
+};
+
+/**
+ * Normalize a Mapbox glyph URL to a full URL
+ * @param {string} url - url to mapbox sprite, e.g. "url": "mapbox://sprites/mapbox/streets-v9.png"
+ * @param {string} token - mapbox public token
+ *
+ * Returns {string} - url, e.g., "https://api.mapbox.com/styles/v1/mapbox/streets-v9/sprite.png?access_token=<token>"
+ */
+var normalizeMapboxGlyphURL = exports.normalizeMapboxGlyphURL = function normalizeMapboxGlyphURL(url, token) {
+    var urlObject = _url2.default.parse(url);
+    urlObject.query = urlObject.query || {};
+    urlObject.query.access_token = token;
+    urlObject.pathname = '/fonts/v1' + urlObject.path;
+    urlObject.protocol = 'https';
+    urlObject.host = 'api.mapbox.com';
+    return _url2.default.format(urlObject);
+};
 
 /**
  * Very simplistic function that splits out mbtiles service name from the URL
@@ -71,9 +174,9 @@ var resolveMBTilesURL = function resolveMBTilesURL(tilePath, url) {
  *
  * @param {String} tilePath - path containing mbtiles files.
  * @param {String} url - url of a data source in style.json file.
- * @param {function} callback - function to call with (err, data).
+ * @param {function} callback - function to call with (err, {data}).
  */
-var getTileJSON = function getTileJSON(tilePath, url, callback) {
+var getLocalTileJSON = function getLocalTileJSON(tilePath, url, callback) {
     var mbtilesFilename = resolveMBTilesURL(tilePath, url);
     var service = resolveNamefromURL(url);
 
@@ -120,9 +223,9 @@ var getTileJSON = function getTileJSON(tilePath, url, callback) {
  *
  * @param {String} tilePath - path containing mbtiles files.
  * @param {String} url - url of a data source in style.json file.
- * @param {function} callback - function to call with (err, data).
+ * @param {function} callback - function to call with (err, {data}).
  */
-var getTile = function getTile(tilePath, url, callback) {
+var getLocalTile = function getLocalTile(tilePath, url, callback) {
     var matches = url.match(TILE_REGEXP);
 
     var _matches$slice = matches.slice(matches.length - 3, matches.length),
@@ -164,17 +267,17 @@ var getTile = function getTile(tilePath, url, callback) {
 };
 
 /**
- * Fetch a remotely hosted tile
+ * Fetch a remotely hosted asset: tile, sprite, etc
  *
- * @param {String} url - URL of remote tile
+ * @param {String} url - URL of the asset
  * @param {function} callback - callback to call with (err, {data})
  */
-var getRemoteTile = function getRemoteTile(url, callback) {
+var getRemoteAsset = function getRemoteAsset(url, callback) {
     (0, _request2.default)({
         url: url,
         encoding: null,
         gzip: true
-    }, function (err, res, body) {
+    }, function (err, res, data) {
         if (err) {
             return callback(err);
         }
@@ -182,40 +285,18 @@ var getRemoteTile = function getRemoteTile(url, callback) {
         switch (res.statusCode) {
             case 200:
                 {
-                    var response = {};
-
-                    if (res.headers.modified) {
-                        response.modified = new Date(res.headers.modified);
-                    }
-                    if (res.headers.expires) {
-                        response.expires = new Date(res.headers.expires);
-                    }
-                    if (res.headers.etag) {
-                        response.etag = res.headers.etag;
-                    }
-
-                    response.data = body;
-
-                    return callback(null, response);
+                    return callback(null, { data: data });
                 }
             case 204:
                 {
-                    // No data for this tile
+                    // No data for this url
                     return callback(null, {});
                 }
             default:
                 {
                     // assume error
-                    console.log('unexpected tile response for: %j\n%j', url, res.statusCode);
-                    if (body) {
-                        try {
-                            return callback(new Error(JSON.parse(body).message));
-                        } catch (parseErr) {
-                            console.log('caught error parsing JSON error response from tile: %j\n%j', url, parseErr);
-                            return callback(new Error(parseErr));
-                        }
-                    }
-                    return callback(new Error('Error with tile request for: %j', url));
+                    console.log('Error with request for: ' + url + '\nstatus: ' + res.statusCode);
+                    return callback(new Error('Error with request for: ' + url + '\nstatus: ' + res.statusCode));
                 }
         }
     });
@@ -235,13 +316,15 @@ var getRemoteTile = function getRemoteTile(url, callback) {
  * @param {String} tilePath - path to directory containing local mbtiles files that are
  * referenced from the style.json as "mbtiles://<tileset>"
  */
-var render = function render(style) {
+var render = exports.render = function render(style) {
     var width = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 1024;
     var height = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 1024;
     var options = arguments[3];
     return new Promise(function (resolve, reject) {
         var _options$bounds = options.bounds,
-            bounds = _options$bounds === undefined ? null : _options$bounds;
+            bounds = _options$bounds === undefined ? null : _options$bounds,
+            _options$token = options.token,
+            token = _options$token === undefined ? null : _options$token;
         var _options$center = options.center,
             center = _options$center === undefined ? null : _options$center,
             _options$zoom = options.zoom,
@@ -295,14 +378,14 @@ var render = function render(style) {
             tilePath = _path2.default.normalize(tilePath);
         }
 
-        var localMbtilesMatches = NAME_REGEXP.exec(JSON.stringify(style));
+        var localMbtilesMatches = JSON.stringify(style).match(MBTILES_REGEXP);
         if (localMbtilesMatches && !tilePath) {
             throw new Error('Style has local mbtiles file sources, but no tilePath is set');
         }
 
         if (localMbtilesMatches) {
             localMbtilesMatches.forEach(function (name) {
-                var mbtileFilename = _path2.default.normalize(_path2.default.format({ dir: tilePath, name: name, ext: '.mbtiles' }));
+                var mbtileFilename = _path2.default.normalize(_path2.default.format({ dir: tilePath, name: name.split('://')[1], ext: '.mbtiles' }));
                 if (!_fs2.default.existsSync(mbtileFilename)) {
                     throw new Error('Mbtiles file ' + _path2.default.format({
                         name: name,
@@ -319,28 +402,62 @@ var render = function render(style) {
                 var url = req.url,
                     kind = req.kind;
 
-                var isMBTiles = url.startsWith('mbtiles://');
+
+                var isMapbox = isMapboxURL(url);
+                if (isMapbox && !token) {
+                    throw new Error('ERROR: mapbox access token is required');
+                }
 
                 try {
                     switch (kind) {
                         case 2:
                             {
                                 // source
-                                if (isMBTiles) {
-                                    getTileJSON(tilePath, url, callback);
+                                if (isMBTilesURL(url)) {
+                                    getLocalTileJSON(tilePath, url, callback);
+                                } else if (isMapbox) {
+                                    getRemoteAsset(normalizeMapboxSourceURL(url, token), callback);
+                                } else {
+                                    getRemoteAsset(url, callback);
                                 }
-                                // else is not currently handled
                                 break;
                             }
                         case 3:
                             {
                                 // tile
-                                if (isMBTiles) {
-                                    getTile(tilePath, url, callback);
+                                if (isMBTilesURL(url)) {
+                                    getLocalTile(tilePath, url, callback);
+                                } else if (isMapbox) {
+                                    // This seems to be due to a bug in how the mapbox tile JSON is handled within mapbox-gl-native
+                                    // since it returns fully resolved tiles!
+                                    getRemoteAsset(normalizeMapboxTileURL(url, token), callback);
                                 } else {
-                                    getRemoteTile(url, callback);
+                                    getRemoteAsset(url, callback);
                                 }
                                 break;
+                            }
+                        case 4:
+                            {
+                                // glyph
+                                getRemoteAsset(isMapbox ? normalizeMapboxGlyphURL(url, token) : _url2.default.parse(url), callback);
+                                break;
+                            }
+                        case 5:
+                            {
+                                // sprite image
+                                getRemoteAsset(isMapbox ? normalizeMapboxSpriteURL(url, token) : _url2.default.parse(url), callback);
+                                break;
+                            }
+                        case 6:
+                            {
+                                // sprite json
+                                getRemoteAsset(isMapbox ? normalizeMapboxSpriteURL(url, token) : _url2.default.parse(url), callback);
+                                break;
+                            }
+                        default:
+                            {
+                                // NOT HANDLED!
+                                throw new Error('ERROR: Request kind not handled: ' + kind);
                             }
                     }
                 } catch (err) {
@@ -364,6 +481,8 @@ var render = function render(style) {
                 console.error('Error rendering map: %j', err);
                 return reject(err);
             }
+
+            map.release(); // release map resources to prevent reusing in future render requests
 
             // Convert raw image buffer to PNG
             try {

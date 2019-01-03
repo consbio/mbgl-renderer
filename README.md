@@ -1,4 +1,4 @@
-# Static Renderer for Mapbox GL
+# Static Map Renderer using Mapbox GL
 
 This package helps you create static map images using Mapbox GL. It currently provides:
 
@@ -6,18 +6,30 @@ This package helps you create static map images using Mapbox GL. It currently pr
 -   a command line interface
 -   an HTTP interface
 
+[Blog post](https://medium.com/@brendan_ward/creating-a-static-map-renderer-using-the-mapbox-gl-native-nodejs-api-23db560b219e) describing the background and goals in a bit more detail.
+
 One of the nifty features of this package is that you can use locally hosted mbtiles files
 with your raster or vector tiles. This saves considerable time during rendering compared
 to using map services over the web.
 
+This package is intended to help with generating static maps for download or use in reports,
+especially when combined with your own styles or overlays.
+
+If you are only using hosted Mapbox styles and vector tiles, please use the [Mapbox Static API](https://www.mapbox.com/api-documentation/#static) instead; it is more full featured and more
+appropriate for static Mapbox maps.
+
+### Attribution
+
+Please make sure to give appropriate attribution to the data sources and styles used in your maps,
+in the manner that those providers specify.
+
+If you use Mapbox styles or hosted tiles, make sure to include appropriate [attribution](https://www.mapbox.com/help/how-attribution-works/) in your output maps.
+
 ## Installation
 
-This package is not yet publicly posted, so you need to do a bit more work to get it setup:
+`yarn add mbgl-renderer`
 
-1.  `git@github.com:consbio/mapbox-gl-static-render.git`
-2.  `cd mapbox-gl-static`
-3.  `yarn install` (note: this might take a long time as the core dependency `mapbox-gl-native` needs to be compiled from source)
-4.  if the above compilation fails due to not finding an available pre-compiled binary, try again with `npm install @mapbox/mapbox-gl-native --build-from-source`
+This depends on `mapbox-gl-js` which in most cases must be compiled from source.
 
 You need to have your system setup to compile C/C++, and have `cmake` installed.
 
@@ -25,7 +37,7 @@ On Mac, you might need to install some dependencies. You might need to do one of
 
 -   setup XCode and its command line tools
 -   install `cmake`
--   install the ruby gem `xcpretty` which requires installing a fairly recent version of ruby. You can intall `rvm` to help set up a controlled version of ruby, then `gem install xcpretty`
+-   install the ruby gem `xcpretty` which requires installing a fairly recent version of ruby. You can install `rvm` to help set up a controlled version of ruby, then `gem install xcpretty`
 
 On a server, in addition to build tools, you need to install a GL environment.
 
@@ -36,7 +48,7 @@ We are currently working on defining a Dockerfile for this package to aid in set
 ### NodeJS API:
 
 ```
-import render from 'mapbox-gl-static-render'
+import render from 'mbgl-renderer'
 
 import style from `tests/fixtures/example-style.json`
 // style JSON file with MapBox style.  Can also be opened and read instead of imported.
@@ -65,6 +77,17 @@ render(style, width, height, { bounds })
     }))
 ```
 
+If your style includes a Mapbox hosted source (e.g., `"url": "mapbox://mapbox.mapbox-streets-v7"`),
+you need to pass in your Mapbox access token as well:
+```
+render(style, width, height, { bounds, token: '<your access token>' })
+    .then((data) => {
+        fs.writeFileSync('test.png', data)
+    }))
+```
+
+
+
 ### Command line interface:
 
 ```
@@ -79,6 +102,7 @@ render(style, width, height, { bounds })
     -z, --zoom <n>                        Zoom level
     -b, --bounds <west,south,east,north>  Bounds (NO SPACES)
     -t, --tiles <mbtiles_path>            Directory containing local mbtiles files to render
+    --token <mapbox access token>         Mapbox access token (required for using Mapbox styles and sources)
     -h, --help                            output usage information
 ```
 
@@ -100,12 +124,20 @@ To use local mbtiles tilesets:
 mbgl-render tests/fixtures/example-style-mbtiles-source-vector.json test.png 1024 1024 -z 0 -c 0,0 -t tests/fixtures
 ```
 
+To use an Mapbox hosted style (see attribution above!):
+
+```
+mbgl-render mapbox://styles/mapbox/outdoors-v10 test.png 1024 1024 -c 0,0 -z 0 --token <your mapbox token>
+```
+
+Note: support for Mapbox hosted styles is still considered experimental.
+
 ### Static image server
 
 You start this from the command line:
 
 ```
-  Usage: mbgl-static-server [options]
+  Usage: mbgl-server [options]
 
   Start a server to render Mapbox GL map requests to images.
 
@@ -181,5 +213,7 @@ TODO: instructions for how to mount volume to use local tiles
 
 ## Credits
 
--   Nik Molnar (https://github.com/nikmolnar) did much of the initial development that was used in this project
+-   Nik Molnar (https://github.com/nikmolnar)
 -   Brendan Ward (https://github.com/brendan-ward)
+
+This project was made possible based on support from the South Atlantic Landscape Conservation Cooperative (http://www.southatlanticlcc.org/) and the Paulson Institute (http://www.paulsoninstitute.org/).

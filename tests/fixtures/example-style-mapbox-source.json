@@ -1,0 +1,45 @@
+{
+    "version": 8,
+    "sources": {
+        "mapbox": {
+            "type": "vector",
+            "url": "mapbox://mapbox.mapbox-streets-v7"
+        }
+    },
+    "layers": [
+        {
+            "id": "background",
+            "type": "background",
+            "paint": {
+                "background-color": "#dedede"
+            }
+        },
+        {
+            "id": "water",
+            "type": "fill",
+            "source": "mapbox",
+            "source-layer": "water",
+            "paint": {
+                "fill-color": "#a0cfdf"
+            }
+        },
+        {
+            "layout": {
+                "line-cap": "round",
+                "line-join": "round"
+            },
+            "filter": ["all", ["==", "$type", "LineString"], ["all", ["<=", "admin_level", 2], ["==", "maritime", 0]]],
+            "type": "line",
+            "source": "mapbox",
+            "id": "admin_country",
+            "paint": {
+                "line-color": "#8b8a8a",
+                "line-width": {
+                    "base": 1.3,
+                    "stops": [[3, 0.5], [22, 15]]
+                }
+            },
+            "source-layer": "admin"
+        }
+    ]
+}

@@ -98,9 +98,9 @@
   dependencies:
     "@mapbox/sphericalmercator" "~1.1.0"
 
-"@mapbox/mapbox-gl-native@^4.0.0-pre.8":
-  version "4.0.0-pre.8"
-  resolved "https://registry.yarnpkg.com/@mapbox/mapbox-gl-native/-/mapbox-gl-native-4.0.0-pre.8.tgz#0de485c683afd0dff39b7053fe7ef5c66e789173"
+"@mapbox/mapbox-gl-native@4.0.0-pre.13":
+  version "4.0.0-pre.13"
+  resolved "https://registry.yarnpkg.com/@mapbox/mapbox-gl-native/-/mapbox-gl-native-4.0.0-pre.13.tgz#8cfb887087cbcebdeeb513df78cd2d6eeda68e63"
   dependencies:
     nan "~2.8"
     node-pre-gyp "^0.6.39"
@@ -1431,10 +1431,6 @@ domexception@^1.0.0:
   resolved "https://registry.yarnpkg.com/domexception/-/domexception-1.0.1.tgz#937442644ca6a31261ef36e3ec677fe805582c90"
   dependencies:
     webidl-conversions "^4.0.2"
-
-dotenv@^6.0.0:
-  version "6.0.0"
-  resolved "https://registry.yarnpkg.com/dotenv/-/dotenv-6.0.0.tgz#24e37c041741c5f4b25324958ebbc34bca965935"
 
 dtrace-provider@^0.8.1, dtrace-provider@~0.8:
   version "0.8.7"

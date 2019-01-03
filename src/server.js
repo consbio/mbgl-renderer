@@ -13,7 +13,7 @@ const PARAMS = {
     style: { isRequired: true, isString: true },
     width: { isRequired: true, isInt: true },
     height: { isRequired: true, isInt: true },
-    zoom: { isRequired: false, isInt: true }
+    zoom: { isRequired: false, isDecimal: true }
 }
 
 const renderImage = (params, response, next, tilePath) => {
@@ -21,9 +21,6 @@ const renderImage = (params, response, next, tilePath) => {
     let {
         style, zoom = null, center = null, bounds = null
     } = params
-
-    console.log('params', params)
-    console.log('center', center, typeof center)
 
     if (typeof style === 'string') {
         try {
@@ -64,7 +61,7 @@ const renderImage = (params, response, next, tilePath) => {
         }
     }
     if (zoom !== null) {
-        zoom = parseInt(zoom, 10)
+        zoom = parseFloat(zoom)
         if (zoom < 0 || zoom > 22) {
             return next(new restifyErrors.BadRequestError(`Zoom level is outside supported range (0-22): ${zoom}`))
         }
@@ -93,7 +90,7 @@ const renderImage = (params, response, next, tilePath) => {
         })
     }
 
-    if (!(center && zoom !== null) || bounds) {
+    if (!((center && zoom !== null) || bounds)) {
         return next(new restifyErrors.BadRequestError('Either center and zoom OR bounds must be provided'))
     }
 
@@ -141,7 +138,7 @@ server.use(
     restifyValidation.validationPlugin({
         errorsAsArray: false,
         forbidUndefinedVariables: false,
-        errorHandler: restifyErrors.InvalidArgumentError
+        errorHandler: restifyErrors.BadRequestError
     })
 )
 

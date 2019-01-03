@@ -11,11 +11,13 @@ var _commander = require('commander');
 
 var _commander2 = _interopRequireDefault(_commander);
 
+var _request = require('request');
+
+var _request2 = _interopRequireDefault(_request);
+
 var _package = require('../package.json');
 
 var _render = require('./render');
-
-var _render2 = _interopRequireDefault(_render);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -30,7 +32,7 @@ var parseListToFloat = function parseListToFloat(text) {
     return text.split(',').map(Number);
 };
 
-_commander2.default.version(_package.version).description('Export a Mapbox GL map to image.  You must provide either center and zoom, or bounds.').arguments('<style.json> <img_filename> <width> <height>').option('-c, --center <longitude,latitude>', 'center of map (NO SPACES)', parseListToFloat).option('-z, --zoom <n>', 'Zoom level', parseInt).option('-b, --bounds <west,south,east,north>', 'Bounds (NO SPACES)', parseListToFloat).option('-t, --tiles <mbtiles_path>', 'Directory containing local mbtiles files to render').parse(process.argv);
+_commander2.default.version(_package.version).description('Export a Mapbox GL map to image.  You must provide either center and zoom, or bounds.').arguments('<style.json> <img_filename> <width> <height>').option('-c, --center <longitude,latitude>', 'center of map (NO SPACES)', parseListToFloat).option('-z, --zoom <n>', 'Zoom level', parseFloat).option('-b, --bounds <west,south,east,north>', 'Bounds (NO SPACES)', parseListToFloat).option('-t, --tiles <mbtiles_path>', 'Directory containing local mbtiles files to render').option('--token <mapbox access token>', 'Mapbox access token (required for using Mapbox styles and sources)').parse(process.argv);
 
 var _cli$args = _slicedToArray(_commander2.default.args, 4),
     styleFilename = _cli$args[0],
@@ -44,12 +46,32 @@ var _cli$args = _slicedToArray(_commander2.default.args, 4),
     _cli$bounds = _commander2.default.bounds,
     bounds = _cli$bounds === undefined ? null : _cli$bounds,
     _cli$tiles = _commander2.default.tiles,
-    tilePath = _cli$tiles === undefined ? null : _cli$tiles;
+    tilePath = _cli$tiles === undefined ? null : _cli$tiles,
+    _cli$token = _commander2.default.token,
+    token = _cli$token === undefined ? null : _cli$token;
+
+// verify that all arguments are present
+
+
+if (!styleFilename) {
+    raiseError('style is a required parameter');
+}
+if (!imgFilename) {
+    raiseError('output image filename is a required parameter');
+}
+if (!width) {
+    raiseError('width is a required parameter');
+}
+if (!height) {
+    raiseError('height is a required parameter');
+}
 
 var imgWidth = parseInt(width, 10);
 var imgHeight = parseInt(height, 10);
 
-if (!_fs2.default.existsSync(styleFilename)) {
+var isMapboxStyle = (0, _render.isMapboxStyleURL)(styleFilename);
+
+if (!(isMapboxStyle || _fs2.default.existsSync(styleFilename))) {
     raiseError('Style JSON file does not exist: ' + styleFilename);
 }
 
@@ -94,21 +116,53 @@ if (tilePath !== null) {
     console.log('using local mbtiles in: ' + tilePath);
 }
 
-// console.log('center: %j', center)
-// console.log('zoom: %j', zoom)
-// console.log('bounds: %j', bounds)
+var renderRequest = function renderRequest(style) {
+    (0, _render.render)(style, imgWidth, imgHeight, {
+        zoom: zoom,
+        center: center,
+        bounds: bounds,
+        tilePath: tilePath,
+        token: token
+    }).then(function (data) {
+        _fs2.default.writeFileSync(imgFilename, data);
+        console.log('Done!');
+        console.log('\n');
+    }).catch(function (err) {
+        console.error(err);
+    });
+};
 
-var style = JSON.parse(_fs2.default.readFileSync(styleFilename));
+if (isMapboxStyle) {
+    if (!token) {
+        raiseError('mapbox access token is required');
+    }
 
-(0, _render2.default)(style, imgWidth, imgHeight, {
-    zoom: zoom,
-    center: center,
-    bounds: bounds,
-    tilePath: tilePath
-}).then(function (data) {
-    _fs2.default.writeFileSync(imgFilename, data);
-    console.log('Done!');
-    console.log('\n');
-}).catch(function (err) {
-    console.error(err);
-});
+    // load the style then call the render function
+    var styleURL = (0, _render.normalizeMapboxStyleURL)(styleFilename, token);
+    console.log('requesting mapbox style:' + styleFilename + '\nfrom: ' + styleURL);
+    (0, _request2.default)(styleURL, function (err, res, body) {
+        if (err) {
+            return raiseError(err);
+        }
+
+        switch (res.statusCode) {
+            case 200:
+                {
+                    return renderRequest(JSON.parse(body));
+                }
+            case 401:
+                {
+                    return raiseError('Mapbox token is not authorized for this style');
+                }
+            default:
+                {
+                    return raiseError('Unexpected response for mapbox style request: ' + styleURL + '\n' + res.statusCode);
+                }
+        }
+    });
+} else {
+    // read styleJSON
+    _fs2.default.readFile(styleFilename, function (err, data) {
+        renderRequest(JSON.parse(data));
+    });
+}
