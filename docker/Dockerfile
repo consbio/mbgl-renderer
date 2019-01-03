@@ -1,30 +1,25 @@
-FROM ubuntu:18.04
+FROM node:10-stretch
 
 WORKDIR /app
-COPY ./ .
+COPY . /app
 
-# TODO merge below
-RUN apt-get update  
-
-RUN apt-get install -y make automake gcc build-essential g++ cpp libc6-dev libstdc++6 man-db \
-    autoconf pkg-config zlib1g-dev libcairo2-dev libgles2-mesa-dev libgbm-dev libllvm3.9 libprotobuf-dev \
-    libxxf86vm-dev xvfb mesa-common-dev libgl1-mesa-dev cmake nodejs curl npm
-
-# Remove cmdtest, it gets in the way
-RUN apt-get remove cmdtest
-
-# # Install yarn
-# RUN curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add -
-# RUN echo "deb https://dl.yarnpkg.com/debian/ stable main" | tee /etc/apt/sources.list.d/yarn.list
-# RUN apt-get update && apt-get install yarn
-
-RUN npm install -g npm@latest node-gyp
-
-RUN npm install
-# RUN yarn install --verbose
-
-# # symlink our bin files to /usr/local/bin
-# RUN yarn link
+RUN apt-get update \
+  && DEBIAN_FRONTEND=noninteractive apt-get -y install \
+      apt-transport-https \
+      curl \
+      unzip \
+      build-essential \
+      python \
+      libcairo2-dev \
+      libgles2-mesa-dev \
+      libgbm-dev \
+      libllvm3.9 \
+      libprotobuf-dev \
+      libxxf86vm-dev \
+      xvfb \
+      x11-utils \
+  && rm -rf /var/lib/apt/lists/* \
+  && yarn install --frozen-lockfile
 
 EXPOSE 80
 
