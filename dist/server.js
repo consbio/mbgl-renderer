@@ -162,6 +162,10 @@ server.post({
     return renderImage(req.body, res, next, tilePath);
 });
 
+server.get({ url: '/health' }, function (req, res) {
+    res.end("Ok");
+});
+
 if (tilePath !== null) {
     console.log('Using local mbtiles in: %j', tilePath);
 }
