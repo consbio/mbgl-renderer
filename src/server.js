@@ -166,6 +166,11 @@ server.post(
     (req, res, next) => renderImage(req.body, res, next, tilePath)
 )
 
+server.get(
+    { url: '/health' },
+    (req, res) => { res.end("Ok"); }
+)
+
 if (tilePath !== null) {
     console.log('Using local mbtiles in: %j', tilePath)
 }
