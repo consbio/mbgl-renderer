@@ -122,11 +122,16 @@ var normalizeMapboxStyleURL = exports.normalizeMapboxStyleURL = function normali
  * Returns {string} - url, e.g., "https://api.mapbox.com/styles/v1/mapbox/streets-v9/sprite.png?access_token=<token>"
  */
 var normalizeMapboxSpriteURL = exports.normalizeMapboxSpriteURL = function normalizeMapboxSpriteURL(url, token) {
-    var extMatch = /(.png|.json)$/g.exec(url);
-    var urlObject = _url2.default.parse(url.substring(0, extMatch.index));
+    var extMatch = /(\.png|\.json)$/g.exec(url);
+    var ratioMatch = /(@\d+x)\./g.exec(url);
+    var trimIndex = Math.min(ratioMatch != null ? ratioMatch.index : Infinity, extMatch.index);
+    var urlObject = _url2.default.parse(url.substring(0, trimIndex));
+
+    var extPart = extMatch[1];
+    var ratioPart = ratioMatch != null ? ratioMatch[1] : "";
     urlObject.query = urlObject.query || {};
     urlObject.query.access_token = token;
-    urlObject.pathname = '/styles/v1' + urlObject.path + '/sprite' + extMatch[1];
+    urlObject.pathname = '/styles/v1' + urlObject.path + '/sprite' + ratioPart + extPart;
     urlObject.protocol = 'https';
     urlObject.host = 'api.mapbox.com';
     return _url2.default.format(urlObject);
@@ -312,7 +317,7 @@ var getRemoteAsset = function getRemoteAsset(url, callback) {
  * @param {number} width - width of output map (default: 1024)
  * @param {number} height - height of output map (default: 1024)
  * @param {Object} - configuration object containing style, zoom, center: [lng, lat],
- * width, height, bounds: [west, south, east, north]
+ * width, height, bounds: [west, south, east, north], ratio
  * @param {String} tilePath - path to directory containing local mbtiles files that are
  * referenced from the style.json as "mbtiles://<tileset>"
  */
@@ -330,7 +335,9 @@ var render = exports.render = function render(style) {
             _options$zoom = options.zoom,
             zoom = _options$zoom === undefined ? null : _options$zoom,
             _options$tilePath = options.tilePath,
-            tilePath = _options$tilePath === undefined ? null : _options$tilePath;
+            tilePath = _options$tilePath === undefined ? null : _options$tilePath,
+            _options$ratio = options.ratio,
+            ratio = _options$ratio === undefined ? 1 : _options$ratio;
 
 
         if (!style) {
@@ -464,7 +471,8 @@ var render = exports.render = function render(style) {
                     console.error('Error while making tile request: %j', err);
                     callback(err);
                 }
-            }
+            },
+            ratio: ratio
         };
 
         var map = new _mapboxGlNative2.default.Map(mapOptions);
@@ -486,7 +494,7 @@ var render = exports.render = function render(style) {
 
             // Convert raw image buffer to PNG
             try {
-                return (0, _sharp2.default)(buffer, { raw: { width: width, height: height, channels: 4 } }).png().toBuffer().then(resolve).catch(reject);
+                return (0, _sharp2.default)(buffer, { raw: { width: width * ratio, height: height * ratio, channels: 4 } }).png().toBuffer().then(resolve).catch(reject);
             } catch (pngErr) {
                 console.error('Error encoding PNG: %j', pngErr);
                 return reject(err);

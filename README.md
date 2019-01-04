@@ -77,6 +77,21 @@ render(style, width, height, { bounds })
     }))
 ```
 
+You can also supply a pixel ratio for High DPI screens:
+
+```
+const width = 512
+const height = 256
+const center = [-79.86, 32.68]
+const zoom = 10
+const ratio = 2
+
+render(style, width, height, { zoom, center, ratio })
+    .then((data) => {
+        fs.writeFileSync('test.png', data)
+    }))
+```
+
 If your style includes a Mapbox hosted source (e.g., `"url": "mapbox://mapbox.mapbox-streets-v7"`),
 you need to pass in your Mapbox access token as well:
 ```
@@ -100,6 +115,7 @@ render(style, width, height, { bounds, token: '<your access token>' })
     -V, --version                         output the version number
     -c, --center <longitude,latitude>     center of map (NO SPACES)
     -z, --zoom <n>                        Zoom level
+    -r, --ratio <n>                       Pixel ratio
     -b, --bounds <west,south,east,north>  Bounds (NO SPACES)
     -t, --tiles <mbtiles_path>            Directory containing local mbtiles files to render
     --token <mapbox access token>         Mapbox access token (required for using Mapbox styles and sources)
@@ -169,8 +185,10 @@ In your client of choice, you can make either HTTP GET or POST requests.
 
 `height` and `width` are integer values
 `zoom` is a floating point value
+`ratio` is an integer value
 `center` if provided must be a `longitude,latitude` with floating point values (NO spaces or brackets)
 `bounds` if provided must be `west,south,east,north` with floating point values (NO spaces or brackets)
+`token` if provided must a string
 
 Your style JSON needs to be URL encoded:
 

@@ -35,7 +35,9 @@ var PARAMS = {
     style: { isRequired: true, isString: true },
     width: { isRequired: true, isInt: true },
     height: { isRequired: true, isInt: true },
-    zoom: { isRequired: false, isDecimal: true }
+    zoom: { isRequired: false, isDecimal: true },
+    ratio: { isRequired: false, isDecimal: true },
+    token: { isRequired: false, isString: true }
 };
 
 var renderImage = function renderImage(params, response, next, tilePath) {
@@ -47,7 +49,11 @@ var renderImage = function renderImage(params, response, next, tilePath) {
         _params$center = params.center,
         center = _params$center === undefined ? null : _params$center,
         _params$bounds = params.bounds,
-        bounds = _params$bounds === undefined ? null : _params$bounds;
+        bounds = _params$bounds === undefined ? null : _params$bounds,
+        _params$token = params.token,
+        token = _params$token === undefined ? null : _params$token,
+        _params$ratio = params.ratio,
+        ratio = _params$ratio === undefined ? null : _params$ratio;
 
 
     if (typeof style === 'string') {
@@ -107,7 +113,9 @@ var renderImage = function renderImage(params, response, next, tilePath) {
             zoom: zoom,
             center: center,
             bounds: bounds,
-            tilePath: tilePath
+            tilePath: tilePath,
+            ratio: ratio,
+            token: token
         }).then(function (data, rejected) {
             if (rejected) {
                 console.error('render request rejected', rejected);

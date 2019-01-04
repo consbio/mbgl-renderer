@@ -3,7 +3,7 @@ import path from 'path'
 import sharp from 'sharp'
 import pixelmatch from 'pixelmatch'
 import render from '../src/render'
-import style from './fixtures/example-style.json'
+import style from './fixtures/example-style2.json'
 import mbtilesSourceStyle from './fixtures/example-style-mbtiles-source.json'
 import mbtilesSourceVectorStyle from './fixtures/example-style-mbtiles-source-vector.json'
 import mbtilesTilesStyle from './fixtures/example-style-mbtiles-tiles.json'
@@ -147,4 +147,25 @@ test('resolves from mapbox source', () => render(mapboxSourceStyle, 512, 512, {
 
         // to write out known good image:
         // fs.writeFileSync(path.join(__dirname, './fixtures/expected-mapbox-source.png'), data)
+}))
+
+test('resolves from mapbox source with ratio', () => render(mapboxSourceStyle, 512, 512, {
+    zoom: 0,
+    ratio: 2,
+    center: [0, 0],
+    token: 'pk.eyJ1IjoiYmN3YXJkIiwiYSI6InJ5NzUxQzAifQ.CVyzbyOpnStfYUQ_6r8AgQ' // mapbox docs token
+}).then((data) => {
+    // feed it back through sharp to verify that we got an image
+    sharp(data)
+        .metadata((_, { format, width, height }) => {
+            expect(format).toBe('png')
+            expect(width).toBe(1024)
+            expect(height).toBe(1024)
+        })
+        .stats((_, { channels }) => {
+            expect(channels[0].squaresSum).toBeGreaterThan(0)
+        })
+
+        // to write out known good image:
+        // fs.writeFileSync(path.join(__dirname, './fixtures/expected-mapbox-source@2x.png'), data)
 }))

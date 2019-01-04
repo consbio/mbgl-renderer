@@ -1,0 +1,19 @@
+{
+    "version": 8,
+    "sources": {
+        "basemap": {
+            "type": "raster",
+            "tiles": [
+                "https://api.mapbox.com/v4/mapbox.light/{z}/{x}/{y}.png?access_token=pk.eyJ1IjoiYmN3YXJkIiwiYSI6InJ5NzUxQzAifQ.CVyzbyOpnStfYUQ_6r8AgQ"
+            ],
+            "tileSize": 256
+        }
+    },
+    "layers": [
+        {
+            "id": "basemap",
+            "type": "raster",
+            "source": "basemap"
+        }
+    ]
+}
