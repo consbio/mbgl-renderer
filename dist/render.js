@@ -128,7 +128,7 @@ var normalizeMapboxSpriteURL = exports.normalizeMapboxSpriteURL = function norma
     var urlObject = _url2.default.parse(url.substring(0, trimIndex));
 
     var extPart = extMatch[1];
-    var ratioPart = ratioMatch != null ? ratioMatch[1] : "";
+    var ratioPart = ratioMatch != null ? ratioMatch[1] : '';
     urlObject.query = urlObject.query || {};
     urlObject.query.access_token = token;
     urlObject.pathname = '/styles/v1' + urlObject.path + '/sprite' + ratioPart + extPart;
@@ -171,7 +171,11 @@ var resolveNamefromURL = function resolveNamefromURL(url) {
  * @param {String} url - url of a data source in style.json file.
  */
 var resolveMBTilesURL = function resolveMBTilesURL(tilePath, url) {
-    return _path2.default.format({ dir: tilePath, name: resolveNamefromURL(url), ext: '.mbtiles' });
+    return _path2.default.format({
+        dir: tilePath,
+        name: resolveNamefromURL(url),
+        ext: '.mbtiles'
+    });
 };
 
 /**
@@ -329,15 +333,15 @@ var render = exports.render = function render(style) {
         var _options$bounds = options.bounds,
             bounds = _options$bounds === undefined ? null : _options$bounds,
             _options$token = options.token,
-            token = _options$token === undefined ? null : _options$token;
+            token = _options$token === undefined ? null : _options$token,
+            _options$ratio = options.ratio,
+            ratio = _options$ratio === undefined ? 1 : _options$ratio;
         var _options$center = options.center,
             center = _options$center === undefined ? null : _options$center,
             _options$zoom = options.zoom,
             zoom = _options$zoom === undefined ? null : _options$zoom,
             _options$tilePath = options.tilePath,
-            tilePath = _options$tilePath === undefined ? null : _options$tilePath,
-            _options$ratio = options.ratio,
-            ratio = _options$ratio === undefined ? 1 : _options$ratio;
+            tilePath = _options$tilePath === undefined ? null : _options$tilePath;
 
 
         if (!style) {
@@ -435,7 +439,8 @@ var render = exports.render = function render(style) {
                                 if (isMBTilesURL(url)) {
                                     getLocalTile(tilePath, url, callback);
                                 } else if (isMapbox) {
-                                    // This seems to be due to a bug in how the mapbox tile JSON is handled within mapbox-gl-native
+                                    // This seems to be due to a bug in how the mapbox tile
+                                    // JSON is handled within mapbox-gl-native
                                     // since it returns fully resolved tiles!
                                     getRemoteAsset(normalizeMapboxTileURL(url, token), callback);
                                 } else {

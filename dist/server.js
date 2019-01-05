@@ -42,18 +42,18 @@ var PARAMS = {
 
 var renderImage = function renderImage(params, response, next, tilePath) {
     var width = params.width,
-        height = params.height;
+        height = params.height,
+        _params$token = params.token,
+        token = _params$token === undefined ? null : _params$token,
+        _params$ratio = params.ratio,
+        ratio = _params$ratio === undefined ? null : _params$ratio;
     var style = params.style,
         _params$zoom = params.zoom,
         zoom = _params$zoom === undefined ? null : _params$zoom,
         _params$center = params.center,
         center = _params$center === undefined ? null : _params$center,
         _params$bounds = params.bounds,
-        bounds = _params$bounds === undefined ? null : _params$bounds,
-        _params$token = params.token,
-        token = _params$token === undefined ? null : _params$token,
-        _params$ratio = params.ratio,
-        ratio = _params$ratio === undefined ? null : _params$ratio;
+        bounds = _params$bounds === undefined ? null : _params$bounds;
 
 
     if (typeof style === 'string') {
@@ -171,7 +171,7 @@ server.post({
 });
 
 server.get({ url: '/health' }, function (req, res) {
-    res.end("Ok");
+    res.end('Ok');
 });
 
 if (tilePath !== null) {

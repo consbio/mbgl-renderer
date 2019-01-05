@@ -79,11 +79,11 @@ export const normalizeMapboxStyleURL = (url, token) => {
 export const normalizeMapboxSpriteURL = (url, token) => {
     const extMatch = /(\.png|\.json)$/g.exec(url)
     const ratioMatch = /(@\d+x)\./g.exec(url)
-    const trimIndex = Math.min(ratioMatch != null ? ratioMatch.index : Infinity, extMatch.index);
+    const trimIndex = Math.min(ratioMatch != null ? ratioMatch.index : Infinity, extMatch.index)
     const urlObject = URL.parse(url.substring(0, trimIndex))
 
     const extPart = extMatch[1]
-    const ratioPart = ratioMatch != null ? ratioMatch[1] : ""
+    const ratioPart = ratioMatch != null ? ratioMatch[1] : ''
     urlObject.query = urlObject.query || {}
     urlObject.query.access_token = token
     urlObject.pathname = `/styles/v1${urlObject.path}/sprite${ratioPart}${extPart}`
@@ -123,7 +123,11 @@ const resolveNamefromURL = url => url.split('://')[1].split('/')[0]
  * @param {String} tilePath - path containing mbtiles files
  * @param {String} url - url of a data source in style.json file.
  */
-const resolveMBTilesURL = (tilePath, url) => path.format({ dir: tilePath, name: resolveNamefromURL(url), ext: '.mbtiles' })
+const resolveMBTilesURL = (tilePath, url) => path.format({
+    dir: tilePath,
+    name: resolveNamefromURL(url),
+    ext: '.mbtiles'
+})
 
 /**
  * Given a URL to a local mbtiles file, get the TileJSON for that to load correct tiles.
@@ -264,8 +268,8 @@ const getRemoteAsset = (url, callback) => {
  * referenced from the style.json as "mbtiles://<tileset>"
  */
 export const render = (style, width = 1024, height = 1024, options) => new Promise((resolve, reject) => {
-    const { bounds = null, token = null } = options
-    let { center = null, zoom = null, tilePath = null, ratio = 1 } = options
+    const { bounds = null, token = null, ratio = 1 } = options
+    let { center = null, zoom = null, tilePath = null } = options
 
     if (!style) {
         throw new Error('style is a required parameter')
@@ -362,7 +366,8 @@ export const render = (style, width = 1024, height = 1024, options) => new Promi
                         if (isMBTilesURL(url)) {
                             getLocalTile(tilePath, url, callback)
                         } else if (isMapbox) {
-                            // This seems to be due to a bug in how the mapbox tile JSON is handled within mapbox-gl-native
+                            // This seems to be due to a bug in how the mapbox tile
+                            // JSON is handled within mapbox-gl-native
                             // since it returns fully resolved tiles!
                             getRemoteAsset(normalizeMapboxTileURL(url, token), callback)
                         } else {

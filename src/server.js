@@ -19,9 +19,11 @@ const PARAMS = {
 }
 
 const renderImage = (params, response, next, tilePath) => {
-    const { width, height } = params
+    const {
+        width, height, token = null, ratio = null
+    } = params
     let {
-        style, zoom = null, center = null, bounds = null, token = null, ratio = null
+        style, zoom = null, center = null, bounds = null
     } = params
 
     if (typeof style === 'string') {
@@ -166,10 +168,9 @@ server.post(
     (req, res, next) => renderImage(req.body, res, next, tilePath)
 )
 
-server.get(
-    { url: '/health' },
-    (req, res) => { res.end("Ok"); }
-)
+server.get({ url: '/health' }, (req, res) => {
+    res.end('Ok')
+})
 
 if (tilePath !== null) {
     console.log('Using local mbtiles in: %j', tilePath)
