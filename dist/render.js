@@ -122,11 +122,16 @@ var normalizeMapboxStyleURL = exports.normalizeMapboxStyleURL = function normali
  * Returns {string} - url, e.g., "https://api.mapbox.com/styles/v1/mapbox/streets-v9/sprite.png?access_token=<token>"
  */
 var normalizeMapboxSpriteURL = exports.normalizeMapboxSpriteURL = function normalizeMapboxSpriteURL(url, token) {
-    var extMatch = /(.png|.json)$/g.exec(url);
-    var urlObject = _url2.default.parse(url.substring(0, extMatch.index));
+    var extMatch = /(\.png|\.json)$/g.exec(url);
+    var ratioMatch = /(@\d+x)\./g.exec(url);
+    var trimIndex = Math.min(ratioMatch != null ? ratioMatch.index : Infinity, extMatch.index);
+    var urlObject = _url2.default.parse(url.substring(0, trimIndex));
+
+    var extPart = extMatch[1];
+    var ratioPart = ratioMatch != null ? ratioMatch[1] : '';
     urlObject.query = urlObject.query || {};
     urlObject.query.access_token = token;
-    urlObject.pathname = '/styles/v1' + urlObject.path + '/sprite' + extMatch[1];
+    urlObject.pathname = '/styles/v1' + urlObject.path + '/sprite' + ratioPart + extPart;
     urlObject.protocol = 'https';
     urlObject.host = 'api.mapbox.com';
     return _url2.default.format(urlObject);
@@ -166,7 +171,11 @@ var resolveNamefromURL = function resolveNamefromURL(url) {
  * @param {String} url - url of a data source in style.json file.
  */
 var resolveMBTilesURL = function resolveMBTilesURL(tilePath, url) {
-    return _path2.default.format({ dir: tilePath, name: resolveNamefromURL(url), ext: '.mbtiles' });
+    return _path2.default.format({
+        dir: tilePath,
+        name: resolveNamefromURL(url),
+        ext: '.mbtiles'
+    });
 };
 
 /**
@@ -312,7 +321,7 @@ var getRemoteAsset = function getRemoteAsset(url, callback) {
  * @param {number} width - width of output map (default: 1024)
  * @param {number} height - height of output map (default: 1024)
  * @param {Object} - configuration object containing style, zoom, center: [lng, lat],
- * width, height, bounds: [west, south, east, north]
+ * width, height, bounds: [west, south, east, north], ratio
  * @param {String} tilePath - path to directory containing local mbtiles files that are
  * referenced from the style.json as "mbtiles://<tileset>"
  */
@@ -324,7 +333,9 @@ var render = exports.render = function render(style) {
         var _options$bounds = options.bounds,
             bounds = _options$bounds === undefined ? null : _options$bounds,
             _options$token = options.token,
-            token = _options$token === undefined ? null : _options$token;
+            token = _options$token === undefined ? null : _options$token,
+            _options$ratio = options.ratio,
+            ratio = _options$ratio === undefined ? 1 : _options$ratio;
         var _options$center = options.center,
             center = _options$center === undefined ? null : _options$center,
             _options$zoom = options.zoom,
@@ -428,7 +439,8 @@ var render = exports.render = function render(style) {
                                 if (isMBTilesURL(url)) {
                                     getLocalTile(tilePath, url, callback);
                                 } else if (isMapbox) {
-                                    // This seems to be due to a bug in how the mapbox tile JSON is handled within mapbox-gl-native
+                                    // This seems to be due to a bug in how the mapbox tile
+                                    // JSON is handled within mapbox-gl-native
                                     // since it returns fully resolved tiles!
                                     getRemoteAsset(normalizeMapboxTileURL(url, token), callback);
                                 } else {
@@ -464,7 +476,8 @@ var render = exports.render = function render(style) {
                     console.error('Error while making tile request: %j', err);
                     callback(err);
                 }
-            }
+            },
+            ratio: ratio
         };
 
         var map = new _mapboxGlNative2.default.Map(mapOptions);
@@ -486,7 +499,7 @@ var render = exports.render = function render(style) {
 
             // Convert raw image buffer to PNG
             try {
-                return (0, _sharp2.default)(buffer, { raw: { width: width, height: height, channels: 4 } }).png().toBuffer().then(resolve).catch(reject);
+                return (0, _sharp2.default)(buffer, { raw: { width: width * ratio, height: height * ratio, channels: 4 } }).png().toBuffer().then(resolve).catch(reject);
             } catch (pngErr) {
                 console.error('Error encoding PNG: %j', pngErr);
                 return reject(err);

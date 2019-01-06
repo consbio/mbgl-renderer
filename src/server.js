@@ -13,11 +13,15 @@ const PARAMS = {
     style: { isRequired: true, isString: true },
     width: { isRequired: true, isInt: true },
     height: { isRequired: true, isInt: true },
-    zoom: { isRequired: false, isDecimal: true }
+    zoom: { isRequired: false, isDecimal: true },
+    ratio: { isRequired: false, isDecimal: true },
+    token: { isRequired: false, isString: true }
 }
 
 const renderImage = (params, response, next, tilePath) => {
-    const { width, height } = params
+    const {
+        width, height, token = null, ratio = null
+    } = params
     let {
         style, zoom = null, center = null, bounds = null
     } = params
@@ -99,7 +103,9 @@ const renderImage = (params, response, next, tilePath) => {
             zoom,
             center,
             bounds,
-            tilePath
+            tilePath,
+            ratio,
+            token
         })
             .then((data, rejected) => {
                 if (rejected) {

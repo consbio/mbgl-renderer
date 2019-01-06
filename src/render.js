@@ -77,11 +77,16 @@ export const normalizeMapboxStyleURL = (url, token) => {
  * Returns {string} - url, e.g., "https://api.mapbox.com/styles/v1/mapbox/streets-v9/sprite.png?access_token=<token>"
  */
 export const normalizeMapboxSpriteURL = (url, token) => {
-    const extMatch = /(.png|.json)$/g.exec(url)
-    const urlObject = URL.parse(url.substring(0, extMatch.index))
+    const extMatch = /(\.png|\.json)$/g.exec(url)
+    const ratioMatch = /(@\d+x)\./g.exec(url)
+    const trimIndex = Math.min(ratioMatch != null ? ratioMatch.index : Infinity, extMatch.index)
+    const urlObject = URL.parse(url.substring(0, trimIndex))
+
+    const extPart = extMatch[1]
+    const ratioPart = ratioMatch != null ? ratioMatch[1] : ''
     urlObject.query = urlObject.query || {}
     urlObject.query.access_token = token
-    urlObject.pathname = `/styles/v1${urlObject.path}/sprite${extMatch[1]}`
+    urlObject.pathname = `/styles/v1${urlObject.path}/sprite${ratioPart}${extPart}`
     urlObject.protocol = 'https'
     urlObject.host = 'api.mapbox.com'
     return URL.format(urlObject)
@@ -118,7 +123,11 @@ const resolveNamefromURL = url => url.split('://')[1].split('/')[0]
  * @param {String} tilePath - path containing mbtiles files
  * @param {String} url - url of a data source in style.json file.
  */
-const resolveMBTilesURL = (tilePath, url) => path.format({ dir: tilePath, name: resolveNamefromURL(url), ext: '.mbtiles' })
+const resolveMBTilesURL = (tilePath, url) => path.format({
+    dir: tilePath,
+    name: resolveNamefromURL(url),
+    ext: '.mbtiles'
+})
 
 /**
  * Given a URL to a local mbtiles file, get the TileJSON for that to load correct tiles.
@@ -254,12 +263,12 @@ const getRemoteAsset = (url, callback) => {
  * @param {number} width - width of output map (default: 1024)
  * @param {number} height - height of output map (default: 1024)
  * @param {Object} - configuration object containing style, zoom, center: [lng, lat],
- * width, height, bounds: [west, south, east, north]
+ * width, height, bounds: [west, south, east, north], ratio
  * @param {String} tilePath - path to directory containing local mbtiles files that are
  * referenced from the style.json as "mbtiles://<tileset>"
  */
 export const render = (style, width = 1024, height = 1024, options) => new Promise((resolve, reject) => {
-    const { bounds = null, token = null } = options
+    const { bounds = null, token = null, ratio = 1 } = options
     let { center = null, zoom = null, tilePath = null } = options
 
     if (!style) {
@@ -357,7 +366,8 @@ export const render = (style, width = 1024, height = 1024, options) => new Promi
                         if (isMBTilesURL(url)) {
                             getLocalTile(tilePath, url, callback)
                         } else if (isMapbox) {
-                            // This seems to be due to a bug in how the mapbox tile JSON is handled within mapbox-gl-native
+                            // This seems to be due to a bug in how the mapbox tile
+                            // JSON is handled within mapbox-gl-native
                             // since it returns fully resolved tiles!
                             getRemoteAsset(normalizeMapboxTileURL(url, token), callback)
                         } else {
@@ -389,7 +399,8 @@ export const render = (style, width = 1024, height = 1024, options) => new Promi
                 console.error('Error while making tile request: %j', err)
                 callback(err)
             }
-        }
+        },
+        ratio
     }
 
     const map = new mbgl.Map(mapOptions)
@@ -413,7 +424,7 @@ export const render = (style, width = 1024, height = 1024, options) => new Promi
 
             // Convert raw image buffer to PNG
             try {
-                return sharp(buffer, { raw: { width, height, channels: 4 } })
+                return sharp(buffer, { raw: { width: width * ratio, height: height * ratio, channels: 4 } })
                     .png()
                     .toBuffer()
                     .then(resolve)

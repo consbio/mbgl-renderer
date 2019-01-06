@@ -35,12 +35,18 @@ var PARAMS = {
     style: { isRequired: true, isString: true },
     width: { isRequired: true, isInt: true },
     height: { isRequired: true, isInt: true },
-    zoom: { isRequired: false, isDecimal: true }
+    zoom: { isRequired: false, isDecimal: true },
+    ratio: { isRequired: false, isDecimal: true },
+    token: { isRequired: false, isString: true }
 };
 
 var renderImage = function renderImage(params, response, next, tilePath) {
     var width = params.width,
-        height = params.height;
+        height = params.height,
+        _params$token = params.token,
+        token = _params$token === undefined ? null : _params$token,
+        _params$ratio = params.ratio,
+        ratio = _params$ratio === undefined ? null : _params$ratio;
     var style = params.style,
         _params$zoom = params.zoom,
         zoom = _params$zoom === undefined ? null : _params$zoom,
@@ -107,7 +113,9 @@ var renderImage = function renderImage(params, response, next, tilePath) {
             zoom: zoom,
             center: center,
             bounds: bounds,
-            tilePath: tilePath
+            tilePath: tilePath,
+            ratio: ratio,
+            token: token
         }).then(function (data, rejected) {
             if (rejected) {
                 console.error('render request rejected', rejected);

@@ -18,6 +18,7 @@ cli.version(version)
     .arguments('<style.json> <img_filename> <width> <height>')
     .option('-c, --center <longitude,latitude>', 'center of map (NO SPACES)', parseListToFloat)
     .option('-z, --zoom <n>', 'Zoom level', parseFloat)
+    .option('-r, --ratio <n>', 'Pixel ratio', parseInt)
     .option('-b, --bounds <west,south,east,north>', 'Bounds (NO SPACES)', parseListToFloat)
     .option('-t, --tiles <mbtiles_path>', 'Directory containing local mbtiles files to render')
     .option('--token <mapbox access token>', 'Mapbox access token (required for using Mapbox styles and sources)')
@@ -27,6 +28,7 @@ const {
     args: [styleFilename, imgFilename, width, height],
     center = null,
     zoom = null,
+    ratio = null,
     bounds = null,
     tiles: tilePath = null,
     token: token = null
@@ -99,6 +101,7 @@ if (tilePath !== null) {
 const renderRequest = (style) => {
     render(style, imgWidth, imgHeight, {
         zoom,
+        ratio,
         center,
         bounds,
         tilePath,

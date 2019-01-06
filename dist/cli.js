@@ -32,7 +32,7 @@ var parseListToFloat = function parseListToFloat(text) {
     return text.split(',').map(Number);
 };
 
-_commander2.default.version(_package.version).description('Export a Mapbox GL map to image.  You must provide either center and zoom, or bounds.').arguments('<style.json> <img_filename> <width> <height>').option('-c, --center <longitude,latitude>', 'center of map (NO SPACES)', parseListToFloat).option('-z, --zoom <n>', 'Zoom level', parseFloat).option('-b, --bounds <west,south,east,north>', 'Bounds (NO SPACES)', parseListToFloat).option('-t, --tiles <mbtiles_path>', 'Directory containing local mbtiles files to render').option('--token <mapbox access token>', 'Mapbox access token (required for using Mapbox styles and sources)').parse(process.argv);
+_commander2.default.version(_package.version).description('Export a Mapbox GL map to image.  You must provide either center and zoom, or bounds.').arguments('<style.json> <img_filename> <width> <height>').option('-c, --center <longitude,latitude>', 'center of map (NO SPACES)', parseListToFloat).option('-z, --zoom <n>', 'Zoom level', parseFloat).option('-r, --ratio <n>', 'Pixel ratio', parseInt).option('-b, --bounds <west,south,east,north>', 'Bounds (NO SPACES)', parseListToFloat).option('-t, --tiles <mbtiles_path>', 'Directory containing local mbtiles files to render').option('--token <mapbox access token>', 'Mapbox access token (required for using Mapbox styles and sources)').parse(process.argv);
 
 var _cli$args = _slicedToArray(_commander2.default.args, 4),
     styleFilename = _cli$args[0],
@@ -43,6 +43,8 @@ var _cli$args = _slicedToArray(_commander2.default.args, 4),
     center = _cli$center === undefined ? null : _cli$center,
     _cli$zoom = _commander2.default.zoom,
     zoom = _cli$zoom === undefined ? null : _cli$zoom,
+    _cli$ratio = _commander2.default.ratio,
+    ratio = _cli$ratio === undefined ? null : _cli$ratio,
     _cli$bounds = _commander2.default.bounds,
     bounds = _cli$bounds === undefined ? null : _cli$bounds,
     _cli$tiles = _commander2.default.tiles,
@@ -119,6 +121,7 @@ if (tilePath !== null) {
 var renderRequest = function renderRequest(style) {
     (0, _render.render)(style, imgWidth, imgHeight, {
         zoom: zoom,
+        ratio: ratio,
         center: center,
         bounds: bounds,
         tilePath: tilePath,
