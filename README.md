@@ -41,8 +41,6 @@ On Mac, you might need to install some dependencies. You might need to do one of
 
 On a server, in addition to build tools, you need to install a GL environment.
 
-We are currently working on defining a Dockerfile for this package to aid in setting it up.
-
 ## Usage
 
 ### NodeJS API:
