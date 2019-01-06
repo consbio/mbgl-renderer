@@ -217,7 +217,13 @@ This uses the `pixelmatch` package to determine if output images match those tha
 
 ## Docker
 
-To build the docker container:
+Pull the latest container from [Docker Hub](https://hub.docker.com/r/consbio/mbgl-renderer):
+
+```
+docker pull consbio/mbgl-renderer:latest
+```
+
+Or build your own docker container:
 
 ```
 docker build -t mbgl-server -f docker/Dockerfile .
