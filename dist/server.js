@@ -170,8 +170,22 @@ server.post({
     return renderImage(req.body, res, next, tilePath);
 });
 
-server.get({ url: '/health' }, function (req, res) {
-    res.end('Ok');
+server.get({ url: '/' }, function (req, res) {
+    var methods = ['GET', 'POST'];
+    var routes = {};
+    methods.forEach(function (method) {
+        server.router.routes[method].forEach(function (_ref) {
+            var url = _ref.spec.url;
+
+            if (!routes[url]) {
+                routes[url] = [];
+            }
+            routes[url].push(method);
+        });
+    });
+    res.send({
+        routes: routes
+    });
 });
 
 if (tilePath !== null) {
