@@ -162,10 +162,21 @@ server.post(
     (req, res, next) => renderImage(req.body, res, next, tilePath)
 )
 
-server.get(
-    { url: '/health' },
-    (req, res) => { res.end("Ok"); }
-)
+server.get({ url: '/' }, (req, res) => {
+    const methods = ['GET', 'POST']
+    const routes = {}
+    methods.forEach((method) => {
+        server.router.routes[method].forEach(({ spec: { url } }) => {
+            if (!routes[url]) {
+                routes[url] = []
+            }
+            routes[url].push(method)
+        })
+    })
+    res.send({
+        routes
+    })
+})
 
 if (tilePath !== null) {
     console.log('Using local mbtiles in: %j', tilePath)
