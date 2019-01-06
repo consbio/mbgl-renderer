@@ -2,9 +2,9 @@
 
 This package helps you create static map images using Mapbox GL. It currently provides:
 
-- a NodeJS API with a `render` function you can call directly with your map properties
-- a command line interface
-- an HTTP interface
+-   a NodeJS API with a `render` function you can call directly with your map properties
+-   a command line interface
+-   an HTTP interface
 
 [Blog post](https://medium.com/@brendan_ward/creating-a-static-map-renderer-using-the-mapbox-gl-native-nodejs-api-23db560b219e) describing the background and goals in a bit more detail.
 
@@ -35,9 +35,9 @@ You need to have your system setup to compile C/C++, and have `cmake` installed.
 
 On Mac, you might need to install some dependencies. You might need to do one of the following:
 
-- setup XCode and its command line tools
-- install `cmake`
-- install the ruby gem `xcpretty` which requires installing a fairly recent version of ruby. You can install `rvm` to help set up a controlled version of ruby, then `gem install xcpretty`
+-   setup XCode and its command line tools
+-   install `cmake`
+-   install the ruby gem `xcpretty` which requires installing a fairly recent version of ruby. You can install `rvm` to help set up a controlled version of ruby, then `gem install xcpretty`
 
 On a server, in addition to build tools, you need to install a GL environment.
 
@@ -239,7 +239,8 @@ docker run --rm -p 8080:80 -v$(pwd)/tests/fixtures:/app/tiles mbgl-server
 
 ## Credits
 
-- Nik Molnar (https://github.com/nikmolnar)
-- Brendan Ward (https://github.com/brendan-ward)
+-   Nik Molnar (https://github.com/nikmolnar)
+-   Brendan Ward (https://github.com/brendan-ward)
+-   Norman Rzepka (https://github.com/normanrz)
 
 This project was made possible based on support from the South Atlantic Landscape Conservation Cooperative (http://www.southatlanticlcc.org/) and the Paulson Institute (http://www.paulsoninstitute.org/).
