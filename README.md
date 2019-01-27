@@ -29,21 +29,24 @@ If you use Mapbox styles or hosted tiles, make sure to include appropriate [attr
 
 `yarn add mbgl-renderer`
 
-This depends on `mapbox-gl-js` which in most cases must be compiled from source.
+Only node versions >=8 are supported.
 
-You need to have your system setup to compile C/C++, and have `cmake` installed.
+This depends on `mapbox-gl-js` which in some cases may need to be compiled from source.
+
+If you need to compile from source, you will need to have your system setup to compile C/C++, and have `cmake` installed.
 
 On Mac, you might need to install some dependencies. You might need to do one of the following:
 
 -   setup XCode and its command line tools
 -   install `cmake`
--   install the ruby gem `xcpretty` which requires installing a fairly recent version of ruby. You can install `rvm` to help set up a controlled version of ruby, then `gem install xcpretty`
 
 On a server, in addition to build tools, you need to install a GL environment.
 
 ## Usage
 
 ### NodeJS API:
+
+The following examples assume that you are using `babel` to provide ES6 features.
 
 ```
 import render from 'mbgl-renderer'
