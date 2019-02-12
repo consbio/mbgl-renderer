@@ -414,13 +414,32 @@ export const render = (style, width = 1024, height = 1024, options) => new Promi
             width
         },
         (err, buffer) => {
-            // if (err) throw err
             if (err) {
-                console.error('Error rendering map: %j', err)
+                console.error('Error rendering map')
+                console.error(err)
                 return reject(err)
             }
 
             map.release() // release map resources to prevent reusing in future render requests
+
+            // Un-premultiply pixel values
+            // Mapbox GL buffer contains premultiplied values, which are not handled correctly by sharp
+            // https://github.com/mapbox/mapbox-gl-native/issues/9124
+            // since we are dealing with 8-bit RGBA values, normalize alpha onto 0-255 scale and divide
+            // it out of RGB values
+            for (let i = 0; i < buffer.length; i += 4) {
+                const alpha = buffer[i + 3]
+                const norm = alpha / 255
+                if (alpha === 0) {
+                    buffer[i] = 0
+                    buffer[i + 1] = 0
+                    buffer[i + 2] = 0
+                } else {
+                    buffer[i] = buffer[i] / norm
+                    buffer[i + 1] = buffer[i + 1] / norm
+                    buffer[i + 2] = buffer[i + 2] / norm
+                }
+            }
 
             // Convert raw image buffer to PNG
             try {
@@ -430,8 +449,9 @@ export const render = (style, width = 1024, height = 1024, options) => new Promi
                     .then(resolve)
                     .catch(reject)
             } catch (pngErr) {
-                console.error('Error encoding PNG: %j', pngErr)
-                return reject(err)
+                console.error('Error encoding PNG')
+                console.error(pngErr)
+                return reject(pngErr)
             }
         }
     )

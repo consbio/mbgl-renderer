@@ -28,6 +28,8 @@ If you use Mapbox styles or hosted tiles, make sure to include appropriate [attr
 ## Installation
 
 `yarn add mbgl-renderer`
+or
+`npm install mbgl-renderer`
 
 Only node versions >=8 are supported.
 
