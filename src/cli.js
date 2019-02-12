@@ -28,7 +28,7 @@ const {
     args: [styleFilename, imgFilename, width, height],
     center = null,
     zoom = null,
-    ratio = null,
+    ratio = 1,
     bounds = null,
     tiles: tilePath = null,
     token: token = null

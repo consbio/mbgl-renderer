@@ -20,7 +20,7 @@ const PARAMS = {
 
 const renderImage = (params, response, next, tilePath) => {
     const {
-        width, height, token = null, ratio = null
+        width, height, token = null, ratio = 1
     } = params
     let {
         style, zoom = null, center = null, bounds = null

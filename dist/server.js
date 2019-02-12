@@ -46,7 +46,7 @@ var renderImage = function renderImage(params, response, next, tilePath) {
         _params$token = params.token,
         token = _params$token === undefined ? null : _params$token,
         _params$ratio = params.ratio,
-        ratio = _params$ratio === undefined ? null : _params$ratio;
+        ratio = _params$ratio === undefined ? 1 : _params$ratio;
     var style = params.style,
         _params$zoom = params.zoom,
         zoom = _params$zoom === undefined ? null : _params$zoom,
