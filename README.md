@@ -1,10 +1,16 @@
 # Static Map Renderer using Mapbox GL
 
-This package helps you create static map images using Mapbox GL. It currently provides:
+Create static map images using Mapbox GL with a command line interface, an HTTP interface, and a NodeJS API.
 
--   a NodeJS API with a `render` function you can call directly with your map properties
--   a command line interface
--   an HTTP interface
+## Features:
+
+-   Render static maps using NodeJS with [mapbox-gl-native](https://github.com/mapbox/mapbox-gl-native)
+-   Supports raster and vector tiles
+-   Compatible with Mapbox tiles (don't forget attribution) and other hosted tile providers
+-   Use locally hosted mbtiles
+-   Add GeoJSON overlays to your maps
+-   Supports high DPI rendering
+-   Also available for use in Docker
 
 [Blog post](https://medium.com/@brendan_ward/creating-a-static-map-renderer-using-the-mapbox-gl-native-nodejs-api-23db560b219e) describing the background and goals in a bit more detail.
 
