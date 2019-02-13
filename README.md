@@ -255,6 +255,10 @@ Mount your local tiles, if you want to use with your docker container:
 docker run --rm -p 8080:80 -v$(pwd)/tests/fixtures:/app/tiles mbgl-server
 ```
 
+## Headless servers
+
+In order to use this package on a headless server, you need to use `xvfb`. See `docker/Dockerfile` and `docker/entrypoint.sh` for the basic configuration.
+
 ## Changes
 
 Prior to `0.3.1`, there was a significant bug in rendering layers with transparency (#25).
