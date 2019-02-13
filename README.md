@@ -33,6 +33,9 @@ or
 
 Only node versions >=8 are supported.
 
+WARNING: note that Node 10 may have issues, and crash. See: https://github.com/mapbox/mapbox-gl-native/issues/12252
+Until that issue is closed, we recommend using Node 8.
+
 This depends on `mapbox-gl-js` which in some cases may need to be compiled from source.
 
 If you need to compile from source, you will need to have your system setup to compile C/C++, and have `cmake` installed.
@@ -249,7 +252,11 @@ docker run --rm -p 8080:80 -v$(pwd)/tests/fixtures:/app/tiles mbgl-server
 ## Changes
 
 Prior to `0.3.1`, there was a significant bug in rendering layers with transparency (#25).
-As of `0.4.0`, rendering now uses floating point zoom levels when `bounds` are provided as inputs.
+
+### 0.4.0
+
+-   rendering now uses floating point zoom levels when `bounds` are provided as inputs
+-   downgraded supported version of Node to 8, due to occasional segfaults: https://github.com/mapbox/mapbox-gl-native/issues/12252
 
 ## Credits
 
