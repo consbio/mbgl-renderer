@@ -377,7 +377,7 @@ var render = exports.render = function render(style) {
 
         // calculate zoom and center from bounds and image dimensions
         if (bounds !== null && (zoom === null || center === null)) {
-            var viewport = _geoViewport2.default.viewport(bounds, [width, height]);
+            var viewport = _geoViewport2.default.viewport(bounds, [width, height], undefined, undefined, undefined, true);
             zoom = Math.max(viewport.zoom - 1, 0);
             /* eslint-disable prefer-destructuring */
             center = viewport.center;

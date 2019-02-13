@@ -42,10 +42,13 @@ test('creates image using bounds', () => render(style, 512, 256, {
     bounds: [-80.23, 32.678, -79.73, 32.891]
 }).then((data) => {
     // feed it back through sharp to verify that we got an image
-    sharp(data).metadata((err, { format, width, height }) => {
-        expect(format).toBe('png')
-        expect(width).toBe(512)
-        expect(height).toBe(256)
+    const expectedPath = path.join(__dirname, './fixtures/expected-bounds.png')
+    // to write out known good image:
+    // fs.writeFileSync(expectedPath, data)
+
+    sharp(expectedPath).toBuffer((_, expected) => {
+        const diffPixels = pixelmatch(data, expected, null, 512, 256)
+        expect(diffPixels).toBe(0)
     })
 }))
 

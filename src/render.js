@@ -304,7 +304,7 @@ export const render = (style, width = 1024, height = 1024, options) => new Promi
 
     // calculate zoom and center from bounds and image dimensions
     if (bounds !== null && (zoom === null || center === null)) {
-        const viewport = geoViewport.viewport(bounds, [width, height])
+        const viewport = geoViewport.viewport(bounds, [width, height], undefined, undefined, undefined, true)
         zoom = Math.max(viewport.zoom - 1, 0)
         /* eslint-disable prefer-destructuring */
         center = viewport.center

@@ -80,7 +80,7 @@ render(style, width, height, { bounds })
     }))
 ```
 
-You can also supply a pixel ratio for High DPI screens:
+You can also supply a pixel ratio for High DPI screens, typically > 1 (max of 31 has been tested):
 
 ```
 const width = 512
@@ -245,6 +245,11 @@ Mount your local tiles, if you want to use with your docker container:
 ```
 docker run --rm -p 8080:80 -v$(pwd)/tests/fixtures:/app/tiles mbgl-server
 ```
+
+## Changes
+
+Prior to `0.3.1`, there was a significant bug in rendering layers with transparency (#25).
+As of `0.4.0`, rendering now uses floating point zoom levels when `bounds` are provided as inputs.
 
 ## Credits
 
