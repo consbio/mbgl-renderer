@@ -209,6 +209,12 @@ http://localhost:8080/render?height=1024&width=1024&center=-80,-20&zoom=3&style=
 
 If your style JSON points to local tilesets, you must have started the server up using those local tilesets.
 
+To test the server from the command line, for example with the excellent tool [`httpie`](https://httpie.org/) with the style file `tests/fixtures/example-style-mbtiles-source.json`:
+
+```
+http :8080/render width=400 height=400 zoom=0 center=0,0 style:=@tests/fixtures/example-style.json > /tmp/test.png
+```
+
 ##### POST requests:
 
 You can do a POST request with all of the above parameters in the body of the request, and the style can be passed directly as JSON instead of URL encoded.
@@ -231,28 +237,30 @@ This uses the `pixelmatch` package to determine if output images match those tha
 
 ## Docker
 
-Pull the latest container from [Docker Hub](https://hub.docker.com/r/consbio/mbgl-renderer):
+Pull the latest image from [Docker Hub](https://hub.docker.com/r/consbio/mbgl-renderer):
 
 ```
 docker pull consbio/mbgl-renderer:latest
 ```
 
-Or build your own docker container:
+To run `mbgl-server` in the docker container on port 8080:
 
 ```
-docker build -t mbgl-server -f docker/Dockerfile .
+docker run --rm -p 8080:80 consbio/mbgl-renderer
 ```
 
-To run the docker container on port 8080:
+Mount your local tiles directory to `/app/tiles` in the container to use these in the server or CLI:
 
 ```
-docker run --rm -p 8080:80 mbgl-server
+docker run --rm -p 8080:80 -v $(pwd)tests/fixtures:/app/tiles consbio/mbgl-renderer
 ```
 
-Mount your local tiles, if you want to use with your docker container:
+### Build your own image:
+
+Build your own docker container with name `<image_name>`:
 
 ```
-docker run --rm -p 8080:80 -v$(pwd)/tests/fixtures:/app/tiles mbgl-server
+docker build -t <image_name> -f docker/Dockerfile .
 ```
 
 ## Headless servers

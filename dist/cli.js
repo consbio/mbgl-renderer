@@ -1,171 +1,169 @@
 #!/usr/bin/env node
-'use strict';
+"use strict";
 
-var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
+var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
 
-var _fs = require('fs');
+var _toConsumableArray2 = _interopRequireDefault(require("@babel/runtime/helpers/toConsumableArray"));
 
-var _fs2 = _interopRequireDefault(_fs);
+var _slicedToArray2 = _interopRequireDefault(require("@babel/runtime/helpers/slicedToArray"));
 
-var _commander = require('commander');
+var _fs = _interopRequireDefault(require("fs"));
 
-var _commander2 = _interopRequireDefault(_commander);
+var _commander = _interopRequireDefault(require("commander"));
 
-var _request = require('request');
+var _request = _interopRequireDefault(require("request"));
 
-var _request2 = _interopRequireDefault(_request);
+var _package = require("../package.json");
 
-var _package = require('../package.json');
-
-var _render = require('./render');
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
+var _render = require("./render");
 
 var raiseError = function raiseError(msg) {
-    console.error('ERROR:', msg);
-    process.exit(1);
+  console.error('ERROR:', msg);
+  process.exit(1);
 };
 
 var parseListToFloat = function parseListToFloat(text) {
-    return text.split(',').map(Number);
+  return text.split(',').map(Number);
 };
 
-_commander2.default.version(_package.version).description('Export a Mapbox GL map to image.  You must provide either center and zoom, or bounds.').arguments('<style.json> <img_filename> <width> <height>').option('-c, --center <longitude,latitude>', 'center of map (NO SPACES)', parseListToFloat).option('-z, --zoom <n>', 'Zoom level', parseFloat).option('-r, --ratio <n>', 'Pixel ratio', parseInt).option('-b, --bounds <west,south,east,north>', 'Bounds (NO SPACES)', parseListToFloat).option('-t, --tiles <mbtiles_path>', 'Directory containing local mbtiles files to render').option('--token <mapbox access token>', 'Mapbox access token (required for using Mapbox styles and sources)').parse(process.argv);
+_commander["default"].version(_package.version).description('Export a Mapbox GL map to image.  You must provide either center and zoom, or bounds.').arguments('<style.json> <img_filename> <width> <height>').option('-c, --center <longitude,latitude>', 'center of map (NO SPACES)', parseListToFloat).option('-z, --zoom <n>', 'Zoom level', parseFloat).option('-r, --ratio <n>', 'Pixel ratio', parseInt).option('-b, --bounds <west,south,east,north>', 'Bounds (NO SPACES)', parseListToFloat).option('-t, --tiles <mbtiles_path>', 'Directory containing local mbtiles files to render').option('--token <mapbox access token>', 'Mapbox access token (required for using Mapbox styles and sources)').parse(process.argv);
 
-var _cli$args = _slicedToArray(_commander2.default.args, 4),
+var _cli$args = (0, _slicedToArray2["default"])(_commander["default"].args, 4),
     styleFilename = _cli$args[0],
     imgFilename = _cli$args[1],
     width = _cli$args[2],
     height = _cli$args[3],
-    _cli$center = _commander2.default.center,
-    center = _cli$center === undefined ? null : _cli$center,
-    _cli$zoom = _commander2.default.zoom,
-    zoom = _cli$zoom === undefined ? null : _cli$zoom,
-    _cli$ratio = _commander2.default.ratio,
-    ratio = _cli$ratio === undefined ? 1 : _cli$ratio,
-    _cli$bounds = _commander2.default.bounds,
-    bounds = _cli$bounds === undefined ? null : _cli$bounds,
-    _cli$tiles = _commander2.default.tiles,
-    tilePath = _cli$tiles === undefined ? null : _cli$tiles,
-    _cli$token = _commander2.default.token,
-    token = _cli$token === undefined ? null : _cli$token;
-
-// verify that all arguments are present
+    _cli$center = _commander["default"].center,
+    center = _cli$center === void 0 ? null : _cli$center,
+    _cli$zoom = _commander["default"].zoom,
+    zoom = _cli$zoom === void 0 ? null : _cli$zoom,
+    _cli$ratio = _commander["default"].ratio,
+    ratio = _cli$ratio === void 0 ? 1 : _cli$ratio,
+    _cli$bounds = _commander["default"].bounds,
+    bounds = _cli$bounds === void 0 ? null : _cli$bounds,
+    _cli$tiles = _commander["default"].tiles,
+    tilePath = _cli$tiles === void 0 ? null : _cli$tiles,
+    _cli$token = _commander["default"].token,
+    token = _cli$token === void 0 ? null : _cli$token; // verify that all arguments are present
 
 
 if (!styleFilename) {
-    raiseError('style is a required parameter');
+  raiseError('style is a required parameter');
 }
+
 if (!imgFilename) {
-    raiseError('output image filename is a required parameter');
+  raiseError('output image filename is a required parameter');
 }
+
 if (!width) {
-    raiseError('width is a required parameter');
+  raiseError('width is a required parameter');
 }
+
 if (!height) {
-    raiseError('height is a required parameter');
+  raiseError('height is a required parameter');
 }
 
 var imgWidth = parseInt(width, 10);
 var imgHeight = parseInt(height, 10);
-
 var isMapboxStyle = (0, _render.isMapboxStyleURL)(styleFilename);
 
-if (!(isMapboxStyle || _fs2.default.existsSync(styleFilename))) {
-    raiseError('Style JSON file does not exist: ' + styleFilename);
+if (!(isMapboxStyle || _fs["default"].existsSync(styleFilename))) {
+  raiseError("Style JSON file does not exist: ".concat(styleFilename));
 }
 
 if (imgWidth <= 0 || imgHeight <= 0) {
-    raiseError('Width and height must be greater than 0, they are width:' + imgWidth + ' height:' + imgHeight);
+  raiseError("Width and height must be greater than 0, they are width:".concat(imgWidth, " height:").concat(imgHeight));
 }
 
 if (center !== null) {
-    if (center.length !== 2) {
-        raiseError('Center must be longitude,latitude.  Invalid value found: ' + [].concat(_toConsumableArray(center)));
-    }
+  if (center.length !== 2) {
+    raiseError("Center must be longitude,latitude.  Invalid value found: ".concat((0, _toConsumableArray2["default"])(center)));
+  }
 
-    if (Math.abs(center[0]) > 180) {
-        raiseError('Center longitude is outside world bounds (-180 to 180 deg): ' + center[0]);
-    }
+  if (Math.abs(center[0]) > 180) {
+    raiseError("Center longitude is outside world bounds (-180 to 180 deg): ".concat(center[0]));
+  }
 
-    if (Math.abs(center[1]) > 90) {
-        raiseError('Center latitude is outside world bounds (-90 to 90 deg): ' + center[1]);
-    }
+  if (Math.abs(center[1]) > 90) {
+    raiseError("Center latitude is outside world bounds (-90 to 90 deg): ".concat(center[1]));
+  }
 }
 
 if (zoom !== null && (zoom < 0 || zoom > 22)) {
-    raiseError('Zoom level is outside supported range (0-22): ' + zoom);
+  raiseError("Zoom level is outside supported range (0-22): ".concat(zoom));
 }
 
 if (bounds !== null) {
-    if (bounds.length !== 4) {
-        raiseError('Bounds must be west,south,east,north.  Invalid value found: ' + [].concat(_toConsumableArray(bounds)));
-    }
+  if (bounds.length !== 4) {
+    raiseError("Bounds must be west,south,east,north.  Invalid value found: ".concat((0, _toConsumableArray2["default"])(bounds)));
+  }
 }
 
 if (tilePath !== null) {
-    if (!_fs2.default.existsSync(tilePath)) {
-        raiseError('Path to mbtiles files does not exist: ' + tilePath);
-    }
+  if (!_fs["default"].existsSync(tilePath)) {
+    raiseError("Path to mbtiles files does not exist: ".concat(tilePath));
+  }
 }
 
 console.log('\n\n-------- Export Mapbox GL Map --------');
 console.log('style: %j', styleFilename);
-console.log('output image: ' + imgFilename + ' (' + width + 'w x ' + height + 'h)');
+console.log("output image: ".concat(imgFilename, " (").concat(width, "w x ").concat(height, "h)"));
+
 if (tilePath !== null) {
-    console.log('using local mbtiles in: ' + tilePath);
+  console.log("using local mbtiles in: ".concat(tilePath));
 }
 
 var renderRequest = function renderRequest(style) {
-    (0, _render.render)(style, imgWidth, imgHeight, {
-        zoom: zoom,
-        ratio: ratio,
-        center: center,
-        bounds: bounds,
-        tilePath: tilePath,
-        token: token
-    }).then(function (data) {
-        _fs2.default.writeFileSync(imgFilename, data);
-        console.log('Done!');
-        console.log('\n');
-    }).catch(function (err) {
-        console.error(err);
-    });
+  (0, _render.render)(style, imgWidth, imgHeight, {
+    zoom: zoom,
+    ratio: ratio,
+    center: center,
+    bounds: bounds,
+    tilePath: tilePath,
+    token: token
+  }).then(function (data) {
+    _fs["default"].writeFileSync(imgFilename, data);
+
+    console.log('Done!');
+    console.log('\n');
+  })["catch"](function (err) {
+    console.error(err);
+  });
 };
 
 if (isMapboxStyle) {
-    if (!token) {
-        raiseError('mapbox access token is required');
+  if (!token) {
+    raiseError('mapbox access token is required');
+  } // load the style then call the render function
+
+
+  var styleURL = (0, _render.normalizeMapboxStyleURL)(styleFilename, token);
+  console.log("requesting mapbox style:".concat(styleFilename, "\nfrom: ").concat(styleURL));
+  (0, _request["default"])(styleURL, function (err, res, body) {
+    if (err) {
+      return raiseError(err);
     }
 
-    // load the style then call the render function
-    var styleURL = (0, _render.normalizeMapboxStyleURL)(styleFilename, token);
-    console.log('requesting mapbox style:' + styleFilename + '\nfrom: ' + styleURL);
-    (0, _request2.default)(styleURL, function (err, res, body) {
-        if (err) {
-            return raiseError(err);
+    switch (res.statusCode) {
+      case 200:
+        {
+          return renderRequest(JSON.parse(body));
         }
 
-        switch (res.statusCode) {
-            case 200:
-                {
-                    return renderRequest(JSON.parse(body));
-                }
-            case 401:
-                {
-                    return raiseError('Mapbox token is not authorized for this style');
-                }
-            default:
-                {
-                    return raiseError('Unexpected response for mapbox style request: ' + styleURL + '\n' + res.statusCode);
-                }
+      case 401:
+        {
+          return raiseError('Mapbox token is not authorized for this style');
         }
-    });
+
+      default:
+        {
+          return raiseError("Unexpected response for mapbox style request: ".concat(styleURL, "\n").concat(res.statusCode));
+        }
+    }
+  });
 } else {
-    // read styleJSON
-    _fs2.default.readFile(styleFilename, function (err, data) {
-        renderRequest(JSON.parse(data));
-    });
+  // read styleJSON
+  _fs["default"].readFile(styleFilename, function (err, data) {
+    renderRequest(JSON.parse(data));
+  });
 }
