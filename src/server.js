@@ -20,10 +20,10 @@ const PARAMS = {
 
 const renderImage = (params, response, next, tilePath) => {
     const {
-        width, height, token = null, ratio = 1
+        width, height, token = null
     } = params
     let {
-        style, zoom = null, center = null, bounds = null
+        style, zoom = null, center = null, bounds = null, ratio = 1
     } = params
 
     if (typeof style === 'string') {
@@ -68,6 +68,12 @@ const renderImage = (params, response, next, tilePath) => {
         zoom = parseFloat(zoom)
         if (zoom < 0 || zoom > 22) {
             return next(new restifyErrors.BadRequestError(`Zoom level is outside supported range (0-22): ${zoom}`))
+        }
+    }
+    if (ratio !== null) {
+        ratio = parseInt(ratio)
+        if (!ratio || ratio < 1) {
+            return next(new restifyErrors.BadRequestError(`Ratio is outside supported range (>=1): ${ratio}`))
         }
     }
     if (bounds !== null) {

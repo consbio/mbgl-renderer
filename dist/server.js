@@ -44,16 +44,16 @@ var renderImage = function renderImage(params, response, next, tilePath) {
     var width = params.width,
         height = params.height,
         _params$token = params.token,
-        token = _params$token === undefined ? null : _params$token,
-        _params$ratio = params.ratio,
-        ratio = _params$ratio === undefined ? 1 : _params$ratio;
+        token = _params$token === undefined ? null : _params$token;
     var style = params.style,
         _params$zoom = params.zoom,
         zoom = _params$zoom === undefined ? null : _params$zoom,
         _params$center = params.center,
         center = _params$center === undefined ? null : _params$center,
         _params$bounds = params.bounds,
-        bounds = _params$bounds === undefined ? null : _params$bounds;
+        bounds = _params$bounds === undefined ? null : _params$bounds,
+        _params$ratio = params.ratio,
+        ratio = _params$ratio === undefined ? 1 : _params$ratio;
 
 
     if (typeof style === 'string') {
@@ -86,6 +86,12 @@ var renderImage = function renderImage(params, response, next, tilePath) {
         zoom = parseFloat(zoom);
         if (zoom < 0 || zoom > 22) {
             return next(new _restifyErrors2.default.BadRequestError('Zoom level is outside supported range (0-22): ' + zoom));
+        }
+    }
+    if (ratio !== null) {
+        ratio = parseInt(ratio);
+        if (!ratio || ratio < 1) {
+            return next(new _restifyErrors2.default.BadRequestError('Ratio is outside supported range (>=1): ' + ratio));
         }
     }
     if (bounds !== null) {
