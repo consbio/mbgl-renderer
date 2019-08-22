@@ -11,3 +11,18 @@ cache:
         - "node_modules"
 services:
     - xvfb
+
+env:
+    - CXX=g++-6
+
+addons:
+    apt:
+        sources:
+            - ubuntu-toolchain-r-test
+        packages:
+            - g++-6
+            - mesa-utils
+            - libgl1-mesa-dri
+            - libglapi-mesa
+            - libosmesa6
+            - libxi-dev
