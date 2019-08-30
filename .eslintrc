@@ -1,5 +1,6 @@
 {
-    "extends": ["airbnb-base"],
+    "extends": ["airbnb-base", "prettier"],
+    "plugins": ["prettier"],
     "env": {
         "es6": true,
         "node": true,
@@ -32,7 +33,6 @@
                 "allowSingleLine": true
             }
         ],
-        "comma-dangle": ["error", "never"],
         "default-case": "off",
         "function-paren-newline": ["error", "consistent"],
         "import/no-extraneous-dependencies": 0,

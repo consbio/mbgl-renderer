@@ -39,8 +39,7 @@ or
 
 Only node versions >=8 are supported.
 
-WARNING: note that Node 10 may have issues, and crash. See: https://github.com/mapbox/mapbox-gl-native/issues/12252
-Until that issue is closed, we recommend using Node 8.
+Node 10 appears fully supported by the latest version of Mapbox GL. Originally, there were several issues when running on Node 10, causing segmentation faults and other errors. If you experience issues, we recommend using Node 8.
 
 This depends on `mapbox-gl-js` which in some cases may need to be compiled from source.
 
@@ -269,12 +268,17 @@ In order to use this package on a headless server, you need to use `xvfb`. See `
 
 ## Changes
 
-Prior to `0.3.1`, there was a significant bug in rendering layers with transparency (#25).
+### O.5.0 (in development)
+
+-   upgraded Docker to NodeJS 10
+-   reduced size of Docker image and simplified Xvfb management
 
 ### 0.4.0
 
 -   rendering now uses floating point zoom levels when `bounds` are provided as inputs
 -   downgraded supported version of Node to 8, due to occasional segfaults: https://github.com/mapbox/mapbox-gl-native/issues/12252
+
+Prior to `0.3.1`, there was a significant bug in rendering layers with transparency (#25).
 
 ## Credits
 

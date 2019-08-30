@@ -1,37 +1,22 @@
-#!/bin/bash
+#!/bin/sh
 
-_term() {
-  echo "Caught signal, stopping gracefully"
-  kill -TERM "$child" 2>/dev/null
-}
+# Start Xvfb
+echo "Starting Xvfb"
+Xvfb ${DISPLAY} -screen 0 "1024x768x24" -ac +extension GLX +render -noreset  -nolisten tcp  &
+Xvfb_pid="$!"
+echo "Waiting for Xvfb (PID: $Xvfb_pid) to be ready..."
+while ! xdpyinfo -display ${DISPLAY} > /dev/null 2>&1; do
+    sleep 0.1
+done
+echo "Xvfb is running"
 
-trap _term SIGTERM
-trap _term SIGINT
-
-xvfbMaxStartWaitTime=5
-displayNumber=99
-screenNumber=0
-
-# Delete files if they were not cleaned by last run
-rm -rf /tmp/.X11-unix /tmp/.X${displayNumber}-lock ~/xvfb.pid
-
-echo "Starting Xvfb on display ${displayNumber}"
-start-stop-daemon --start --pidfile ~/xvfb.pid --make-pidfile --background --exec /usr/bin/Xvfb -- :${displayNumber} -screen ${screenNumber} 1024x768x24 -ac +extension GLX +render -noreset
-
-# Wait to be able to connect to the port. This will exit if it cannot in 5 seconds.
-timeout ${xvfbMaxStartWaitTime} bash -c "while ! xdpyinfo -display :${displayNumber} 2>/dev/null >/dev/null; do sleep 0.5; done"
-if [ $? -ne 0 ]; then
-  echo "Could not connect to display ${displayNumber} in ${xvfbMaxStartWaitTime} seconds time."
-  exit 1
-fi
-
-export DISPLAY=:${displayNumber}.${screenNumber}
-
+echo "Starting mbgl-renderer server"
 node dist/server.js -p 80 -t ./tiles &
+echo "Hit Ctrl-C to exit"
 
-child=$!
-wait "$child"
+trap "echo 'Stopping'; kill -s TERM $Xvfb_pid" INT TERM
 
-# Stop xvfb when exiting
-start-stop-daemon --stop --retry 5 --pidfile ~/xvfb.pid
-rm ~/xvfb.pid
+# Wait for process to end.
+while kill -0 $Xvfb_pid > /dev/null 2>&1; do
+    wait
+done
