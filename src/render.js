@@ -268,7 +268,7 @@ const getRemoteAsset = (url, callback) => {
  * referenced from the style.json as "mbtiles://<tileset>"
  */
 export const render = (style, width = 1024, height = 1024, options) => new Promise((resolve, reject) => {
-    const { bounds = null, token = null, ratio = 1 } = options
+    const { bounds = null, bearing = 0, pitch = 0, token = null, ratio = 1 } = options
     let { center = null, zoom = null, tilePath = null } = options
 
     if (!style) {
@@ -294,6 +294,14 @@ export const render = (style, width = 1024, height = 1024, options) => new Promi
 
     if (zoom !== null && (zoom < 0 || zoom > 22)) {
         throw new Error(`Zoom level is outside supported range (0-22): ${zoom}`)
+    }
+
+    if (bearing !== null && (bearing < 0 || bearing > 360)) {
+        throw new Error(`bearing is outside supported range (0-360): ${bearing}`)
+    }
+
+    if (pitch !== null && (pitch < 0 || pitch > 60)) {
+        throw new Error(`pitch is outside supported range (0-60): ${pitch}`)
     }
 
     if (bounds !== null) {
@@ -411,7 +419,9 @@ export const render = (style, width = 1024, height = 1024, options) => new Promi
             zoom,
             center,
             height,
-            width
+            width,
+            bearing,
+            pitch,
         },
         (err, buffer) => {
             if (err) {
