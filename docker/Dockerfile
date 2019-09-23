@@ -1,6 +1,4 @@
 FROM alpine:latest
-# FROM node:10-slim
-# FROM node:10-alpine
 
 WORKDIR /app
 COPY package*.json /app/
@@ -21,13 +19,14 @@ RUN apk --no-cache add  \
   # libs for raw mapbox build??
   grep \
   git \
-  # binutils \
   glu \
   libxrandr-dev \
   libxinerama-dev \
   libxcursor-dev \
   mesa-dev \
   mesa-gbm \
+  # not sure
+  libxi-dev \
   # libs
   cairo-dev \
   mesa-gles \
@@ -35,6 +34,7 @@ RUN apk --no-cache add  \
   mesa-dri-swrast \
   llvm5-libs \
   protobuf-dev \
+  libxxf86vm \
   xvfb \ 
   xdpyinfo \
   python2
