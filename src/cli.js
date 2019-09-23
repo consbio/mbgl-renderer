@@ -6,7 +6,7 @@ import webRequest from 'request'
 import { version } from '../package.json'
 import { render, isMapboxStyleURL, normalizeMapboxStyleURL } from './render'
 
-const raiseError = (msg) => {
+const raiseError = msg => {
     console.error('ERROR:', msg)
     process.exit(1)
 }
@@ -14,14 +14,32 @@ const raiseError = (msg) => {
 const parseListToFloat = text => text.split(',').map(Number)
 
 cli.version(version)
-    .description('Export a Mapbox GL map to image.  You must provide either center and zoom, or bounds.')
+    .description(
+        'Export a Mapbox GL map to image.  You must provide either center and zoom, or bounds.'
+    )
     .arguments('<style.json> <img_filename> <width> <height>')
-    .option('-c, --center <longitude,latitude>', 'center of map (NO SPACES)', parseListToFloat)
+    .option(
+        '-c, --center <longitude,latitude>',
+        'center of map (NO SPACES)',
+        parseListToFloat
+    )
     .option('-z, --zoom <n>', 'Zoom level', parseFloat)
     .option('-r, --ratio <n>', 'Pixel ratio', parseInt)
-    .option('-b, --bounds <west,south,east,north>', 'Bounds (NO SPACES)', parseListToFloat)
-    .option('-t, --tiles <mbtiles_path>', 'Directory containing local mbtiles files to render')
-    .option('--token <mapbox access token>', 'Mapbox access token (required for using Mapbox styles and sources)')
+    .option(
+        '-b, --bounds <west,south,east,north>',
+        'Bounds (NO SPACES)',
+        parseListToFloat
+    )
+    .option('--bearing <degrees>', 'Bearing (0-360)', parseFloat)
+    .option('--pitch <degrees>', 'Pitch (0-60)', parseFloat)
+    .option(
+        '-t, --tiles <mbtiles_path>',
+        'Directory containing local mbtiles files to render'
+    )
+    .option(
+        '--token <mapbox access token>',
+        'Mapbox access token (required for using Mapbox styles and sources)'
+    )
     .parse(process.argv)
 
 const {
@@ -30,8 +48,10 @@ const {
     zoom = null,
     ratio = 1,
     bounds = null,
+    bearing = null,
+    pitch = null,
     tiles: tilePath = null,
-    token: token = null
+    token: token = null,
 } = cli
 
 // verify that all arguments are present
@@ -58,20 +78,34 @@ if (!(isMapboxStyle || fs.existsSync(styleFilename))) {
 }
 
 if (imgWidth <= 0 || imgHeight <= 0) {
-    raiseError(`Width and height must be greater than 0, they are width:${imgWidth} height:${imgHeight}`)
+    raiseError(
+        `Width and height must be greater than 0, they are width:${imgWidth} height:${imgHeight}`
+    )
 }
 
 if (center !== null) {
     if (center.length !== 2) {
-        raiseError(`Center must be longitude,latitude.  Invalid value found: ${[...center]}`)
+        raiseError(
+            `Center must be longitude,latitude.  Invalid value found: ${[
+                ...center,
+            ]}`
+        )
     }
 
     if (Math.abs(center[0]) > 180) {
-        raiseError(`Center longitude is outside world bounds (-180 to 180 deg): ${center[0]}`)
+        raiseError(
+            `Center longitude is outside world bounds (-180 to 180 deg): ${
+                center[0]
+            }`
+        )
     }
 
     if (Math.abs(center[1]) > 90) {
-        raiseError(`Center latitude is outside world bounds (-90 to 90 deg): ${center[1]}`)
+        raiseError(
+            `Center latitude is outside world bounds (-90 to 90 deg): ${
+                center[1]
+            }`
+        )
     }
 }
 
@@ -81,7 +115,23 @@ if (zoom !== null && (zoom < 0 || zoom > 22)) {
 
 if (bounds !== null) {
     if (bounds.length !== 4) {
-        raiseError(`Bounds must be west,south,east,north.  Invalid value found: ${[...bounds]}`)
+        raiseError(
+            `Bounds must be west,south,east,north.  Invalid value found: ${[
+                ...bounds,
+            ]}`
+        )
+    }
+}
+
+if (bearing !== null) {
+    if (bearing < 0 || bearing > 360) {
+        raiseError(`Bearing is outside supported range (0-360): ${bearing}`)
+    }
+}
+
+if (pitch !== null) {
+    if (pitch < 0 || pitch > 60) {
+        raiseError(`Pitch is outside supported range (0-60): ${pitch}`)
     }
 }
 
@@ -98,21 +148,23 @@ if (tilePath !== null) {
     console.log(`using local mbtiles in: ${tilePath}`)
 }
 
-const renderRequest = (style) => {
+const renderRequest = style => {
     render(style, imgWidth, imgHeight, {
         zoom,
         ratio,
         center,
         bounds,
+        bearing,
+        pitch,
         tilePath,
-        token
+        token,
     })
-        .then((data) => {
+        .then(data => {
             fs.writeFileSync(imgFilename, data)
             console.log('Done!')
             console.log('\n')
         })
-        .catch((err) => {
+        .catch(err => {
             console.error(err)
         })
 }
@@ -135,10 +187,14 @@ if (isMapboxStyle) {
                 return renderRequest(JSON.parse(body))
             }
             case 401: {
-                return raiseError('Mapbox token is not authorized for this style')
+                return raiseError(
+                    'Mapbox token is not authorized for this style'
+                )
             }
             default: {
-                return raiseError(`Unexpected response for mapbox style request: ${styleURL}\n${res.statusCode}`)
+                return raiseError(
+                    `Unexpected response for mapbox style request: ${styleURL}\n${res.statusCode}`
+                )
             }
         }
     })

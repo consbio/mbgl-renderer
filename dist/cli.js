@@ -26,7 +26,7 @@ var parseListToFloat = function parseListToFloat(text) {
   return text.split(',').map(Number);
 };
 
-_commander["default"].version(_package.version).description('Export a Mapbox GL map to image.  You must provide either center and zoom, or bounds.').arguments('<style.json> <img_filename> <width> <height>').option('-c, --center <longitude,latitude>', 'center of map (NO SPACES)', parseListToFloat).option('-z, --zoom <n>', 'Zoom level', parseFloat).option('-r, --ratio <n>', 'Pixel ratio', parseInt).option('-b, --bounds <west,south,east,north>', 'Bounds (NO SPACES)', parseListToFloat).option('-t, --tiles <mbtiles_path>', 'Directory containing local mbtiles files to render').option('--token <mapbox access token>', 'Mapbox access token (required for using Mapbox styles and sources)').parse(process.argv);
+_commander["default"].version(_package.version).description('Export a Mapbox GL map to image.  You must provide either center and zoom, or bounds.').arguments('<style.json> <img_filename> <width> <height>').option('-c, --center <longitude,latitude>', 'center of map (NO SPACES)', parseListToFloat).option('-z, --zoom <n>', 'Zoom level', parseFloat).option('-r, --ratio <n>', 'Pixel ratio', parseInt).option('-b, --bounds <west,south,east,north>', 'Bounds (NO SPACES)', parseListToFloat).option('--bearing <degrees>', 'Bearing (0-360)', parseFloat).option('--pitch <degrees>', 'Pitch (0-60)', parseFloat).option('-t, --tiles <mbtiles_path>', 'Directory containing local mbtiles files to render').option('--token <mapbox access token>', 'Mapbox access token (required for using Mapbox styles and sources)').parse(process.argv);
 
 var _cli$args = (0, _slicedToArray2["default"])(_commander["default"].args, 4),
     styleFilename = _cli$args[0],
@@ -41,6 +41,10 @@ var _cli$args = (0, _slicedToArray2["default"])(_commander["default"].args, 4),
     ratio = _cli$ratio === void 0 ? 1 : _cli$ratio,
     _cli$bounds = _commander["default"].bounds,
     bounds = _cli$bounds === void 0 ? null : _cli$bounds,
+    _cli$bearing = _commander["default"].bearing,
+    bearing = _cli$bearing === void 0 ? null : _cli$bearing,
+    _cli$pitch = _commander["default"].pitch,
+    pitch = _cli$pitch === void 0 ? null : _cli$pitch,
     _cli$tiles = _commander["default"].tiles,
     tilePath = _cli$tiles === void 0 ? null : _cli$tiles,
     _cli$token = _commander["default"].token,
@@ -99,6 +103,18 @@ if (bounds !== null) {
   }
 }
 
+if (bearing !== null) {
+  if (bearing < 0 || bearing > 360) {
+    raiseError("Bearing is outside supported range (0-360): ".concat(bearing));
+  }
+}
+
+if (pitch !== null) {
+  if (pitch < 0 || pitch > 60) {
+    raiseError("Pitch is outside supported range (0-60): ".concat(pitch));
+  }
+}
+
 if (tilePath !== null) {
   if (!_fs["default"].existsSync(tilePath)) {
     raiseError("Path to mbtiles files does not exist: ".concat(tilePath));
@@ -119,6 +135,8 @@ var renderRequest = function renderRequest(style) {
     ratio: ratio,
     center: center,
     bounds: bounds,
+    bearing: bearing,
+    pitch: pitch,
     tilePath: tilePath,
     token: token
   }).then(function (data) {

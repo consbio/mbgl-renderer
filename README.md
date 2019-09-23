@@ -103,6 +103,23 @@ render(style, width, height, { zoom, center, ratio })
     }))
 ```
 
+You can also provide an alternative bearing (0-360) or pitch (0-60):
+
+```
+const width = 512
+const height = 256
+const center = [-79.86, 32.68]
+const zoom = 10
+const bearing = 90
+const pitch = 30
+
+render(style, width, height, { zoom, center, bearing, pitch })
+    .then((data) => {
+        fs.writeFileSync('test.png', data)
+    }))
+
+```
+
 If your style includes a Mapbox hosted source (e.g., `"url": "mapbox://mapbox.mapbox-streets-v7"`),
 you need to pass in your Mapbox access token as well:
 
@@ -127,6 +144,8 @@ render(style, width, height, { bounds, token: '<your access token>' })
     -z, --zoom <n>                        Zoom level
     -r, --ratio <n>                       Pixel ratio
     -b, --bounds <west,south,east,north>  Bounds (NO SPACES)
+    --bearing <degrees>                   Bearing in degrees (0-360)
+    --pitch <degrees>                     Pitch in degrees (0-60)
     -t, --tiles <mbtiles_path>            Directory containing local mbtiles files to render
     --token <mapbox access token>         Mapbox access token (required for using Mapbox styles and sources)
     -h, --help                            output usage information
@@ -198,7 +217,7 @@ In your client of choice, you can make either HTTP GET or POST requests.
 `ratio` is an integer value
 `center` if provided must be a `longitude,latitude` with floating point values (NO spaces or brackets)
 `bounds` if provided must be `west,south,east,north` with floating point values (NO spaces or brackets)
-`token` if provided must a string
+`bearing is a floating point value (0-360)`pitch`is a floating point value (0-60)`token` if provided must a string
 
 Your style JSON needs to be URL encoded:
 
@@ -224,12 +243,26 @@ POST may be necessary where your style JSON file exceeds the maximum number of c
 
 Use `yarn watch` to start up a filewatcher to recompile ES6 files in `src/` to ES5 files that are executable in Node in `dist/`. These are compiled using `babel`.
 
+## Testing
+
 Tests are run using `jest`. Right now, our coverage is not great, and tests only exercise the core functionality of the render function.
+
+Tests require a valid Mapbox API token. Set this in `.env.test` file in the root of the repository:
+
+```
+MAPBOX_API_TOKEN=<your token>
+```
 
 To run tests:
 
 ```
 yarn test
+```
+
+or
+
+```
+npm test
 ```
 
 This uses the `pixelmatch` package to determine if output images match those that are expected. This may fail when rendered on different machines for reasons we have not completely sorted out, so don't necessarily be alarmed that tests are failing for you - check the outputs.
@@ -272,6 +305,7 @@ In order to use this package on a headless server, you need to use `xvfb`. See `
 
 -   upgraded Docker to NodeJS 10
 -   reduced size of Docker image and simplified Xvfb management
+-   added support for `pitch` and `bearing` options during rendering (#31)
 
 ### 0.4.0
 

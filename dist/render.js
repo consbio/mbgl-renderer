@@ -342,6 +342,10 @@ var render = function render(style) {
   return new Promise(function (resolve, reject) {
     var _options$bounds = options.bounds,
         bounds = _options$bounds === void 0 ? null : _options$bounds,
+        _options$bearing = options.bearing,
+        bearing = _options$bearing === void 0 ? 0 : _options$bearing,
+        _options$pitch = options.pitch,
+        pitch = _options$pitch === void 0 ? 0 : _options$pitch,
         _options$token = options.token,
         token = _options$token === void 0 ? null : _options$token,
         _options$ratio = options.ratio,
@@ -377,6 +381,14 @@ var render = function render(style) {
 
     if (zoom !== null && (zoom < 0 || zoom > 22)) {
       throw new Error("Zoom level is outside supported range (0-22): ".concat(zoom));
+    }
+
+    if (bearing !== null && (bearing < 0 || bearing > 360)) {
+      throw new Error("bearing is outside supported range (0-360): ".concat(bearing));
+    }
+
+    if (pitch !== null && (pitch < 0 || pitch > 60)) {
+      throw new Error("pitch is outside supported range (0-60): ".concat(pitch));
     }
 
     if (bounds !== null) {
@@ -509,7 +521,9 @@ var render = function render(style) {
       zoom: zoom,
       center: center,
       height: height,
-      width: width
+      width: width,
+      bearing: bearing,
+      pitch: pitch
     }, function (err, buffer) {
       if (err) {
         console.error('Error rendering map');

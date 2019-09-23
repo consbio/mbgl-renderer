@@ -42,6 +42,14 @@ var PARAMS = {
     isRequired: false,
     isDecimal: true
   },
+  bearing: {
+    isRequired: false,
+    isDecimal: true
+  },
+  pitch: {
+    isRequired: false,
+    isDecimal: true
+  },
   token: {
     isRequired: false,
     isString: true
@@ -52,7 +60,11 @@ var renderImage = function renderImage(params, response, next, tilePath) {
   var width = params.width,
       height = params.height,
       _params$token = params.token,
-      token = _params$token === void 0 ? null : _params$token;
+      token = _params$token === void 0 ? null : _params$token,
+      _params$bearing = params.bearing,
+      bearing = _params$bearing === void 0 ? null : _params$bearing,
+      _params$pitch = params.pitch,
+      pitch = _params$pitch === void 0 ? null : _params$pitch;
   var style = params.style,
       _params$zoom = params.zoom,
       zoom = _params$zoom === void 0 ? null : _params$zoom,
@@ -101,7 +113,7 @@ var renderImage = function renderImage(params, response, next, tilePath) {
   }
 
   if (ratio !== null) {
-    ratio = parseInt(ratio);
+    ratio = parseInt(ratio, 10);
 
     if (!ratio || ratio < 1) {
       return next(new _restifyErrors["default"].BadRequestError("Ratio is outside supported range (>=1): ".concat(ratio)));
@@ -126,6 +138,18 @@ var renderImage = function renderImage(params, response, next, tilePath) {
     });
   }
 
+  if (bearing !== null) {
+    if (bearing < 0 || bearing > 360) {
+      return next(new _restifyErrors["default"].BadRequestError("Bearing is outside supported range (0-360): ".concat(bearing)));
+    }
+  }
+
+  if (pitch !== null) {
+    if (pitch < 0 || pitch > 60) {
+      return next(new _restifyErrors["default"].BadRequestError("Pitch is outside supported range (0-60): ".concat(pitch)));
+    }
+  }
+
   if (!(center && zoom !== null || bounds)) {
     return next(new _restifyErrors["default"].BadRequestError('Either center and zoom OR bounds must be provided'));
   }
@@ -137,6 +161,8 @@ var renderImage = function renderImage(params, response, next, tilePath) {
       bounds: bounds,
       tilePath: tilePath,
       ratio: ratio,
+      bearing: bearing,
+      pitch: pitch,
       token: token
     }).then(function (data, rejected) {
       if (rejected) {

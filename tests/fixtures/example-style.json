@@ -3,9 +3,7 @@
     "sources": {
         "basemap": {
             "type": "raster",
-            "tiles": [
-                "https://api.mapbox.com/v4/mapbox.light/{z}/{x}/{y}.png?access_token=pk.eyJ1IjoiYmN3YXJkIiwiYSI6InJ5NzUxQzAifQ.CVyzbyOpnStfYUQ_6r8AgQ"
-            ],
+            "tiles": ["http://a.tile.stamen.com/toner/{z}/{x}/{y}.png"],
             "tileSize": 256
         },
         "geojson": {
