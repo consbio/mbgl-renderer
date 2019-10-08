@@ -102,6 +102,14 @@ if (bounds !== null) {
     raiseError("Bounds must be west,south,east,north.  Invalid value found: ".concat((0, _toConsumableArray2["default"])(bounds)));
   }
 
+  bounds.forEach(function (b) {
+    if (Number.isNaN(b)) {
+      raiseError("Bounds must be west,south,east,north.  Invalid value found: ".concat((0, _toConsumableArray2["default"])(bounds)));
+    }
+
+    return null;
+  });
+
   var _bounds = (0, _slicedToArray2["default"])(bounds, 4),
       west = _bounds[0],
       south = _bounds[1],

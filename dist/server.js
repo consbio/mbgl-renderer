@@ -3,7 +3,16 @@
 
 var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
 
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports["default"] = exports.server = void 0;
+
+var _slicedToArray2 = _interopRequireDefault(require("@babel/runtime/helpers/slicedToArray"));
+
 var _toConsumableArray2 = _interopRequireDefault(require("@babel/runtime/helpers/toConsumableArray"));
+
+var _fs = _interopRequireDefault(require("fs"));
 
 var _restify = _interopRequireDefault(require("restify"));
 
@@ -15,10 +24,15 @@ var _commander = _interopRequireDefault(require("commander"));
 
 var _package = require("../package.json");
 
-var _render = _interopRequireDefault(require("./render"));
+var _render = require("./render");
 
 var parseListToFloat = function parseListToFloat(text) {
   return text.split(',').map(Number);
+};
+
+var raiseError = function raiseError(msg) {
+  console.error('ERROR:', msg);
+  process.exit(1);
 };
 
 var PARAMS = {
@@ -136,6 +150,21 @@ var renderImage = function renderImage(params, response, next, tilePath) {
 
       return null;
     });
+
+    var _bounds = bounds,
+        _bounds2 = (0, _slicedToArray2["default"])(_bounds, 4),
+        west = _bounds2[0],
+        south = _bounds2[1],
+        east = _bounds2[2],
+        north = _bounds2[3];
+
+    if (west === east) {
+      return next(new _restifyErrors["default"].BadRequestError("Bounds west and east coordinate are the same value"));
+    }
+
+    if (south === north) {
+      return next(new _restifyErrors["default"].BadRequestError("Bounds south and north coordinate are the same value"));
+    }
   }
 
   if (bearing !== null) {
@@ -155,7 +184,7 @@ var renderImage = function renderImage(params, response, next, tilePath) {
   }
 
   try {
-    (0, _render["default"])(style, parseInt(width, 10), parseInt(height, 10), {
+    (0, _render.render)(style, parseInt(width, 10), parseInt(height, 10), {
       zoom: zoom,
       center: center,
       bounds: bounds,
@@ -203,6 +232,7 @@ var server = _restify["default"].createServer({
   ignoreTrailingSlash: true
 });
 
+exports.server = server;
 server.use(_restify["default"].plugins.queryParser());
 server.use(_restify["default"].plugins.bodyParser());
 server.use(_nodeRestifyValidation["default"].validationPlugin({
@@ -248,9 +278,17 @@ server.get({
 });
 
 if (tilePath !== null) {
+  if (!_fs["default"].existsSync(tilePath)) {
+    raiseError("Path to mbtiles files does not exist: ".concat(tilePath));
+  }
+
   console.log('Using local mbtiles in: %j', tilePath);
 }
 
 server.listen(port, function () {
   console.log('Mapbox GL static rendering server started and listening at %s', server.url);
 });
+var _default = {
+  server: server
+};
+exports["default"] = _default;

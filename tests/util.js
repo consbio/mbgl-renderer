@@ -1,4 +1,7 @@
+import path from 'path'
+import { exec } from 'child_process'
 import sharp from 'sharp'
+
 import pixelmatch from 'pixelmatch'
 
 /**
@@ -25,4 +28,36 @@ export async function imageDiff(pngData, expectedPath) {
     return pixelmatch(rawData, expected, null, width, height)
 }
 
-export default { imageDiff }
+/**
+ * Create a test endpoint for the CLI at the passed in path.
+ *
+ * @param {String} cliPath - path to CLI to test (BUILT version)
+ */
+export function cliEndpoint(cliPath) {
+    /**
+     * Test the CLI (built version) with the passed in arguments.
+     * Derived from from: https://medium.com/@ole.ersoy/unit-testing-commander-scripts-with-jest-bc32465709d6
+     *
+     *
+     * @param {String} args - arguments to pass to CLI command
+     * @param {String} cwd  - current working directory
+     */
+    return function cli(args, cwd) {
+        return new Promise(resolve => {
+            exec(
+                `node ${path.resolve(cliPath)} ${args.join(' ')}`,
+                { cwd },
+                (error, stdout, stderr) => {
+                    resolve({
+                        code: error && error.code ? error.code : 0,
+                        error,
+                        stdout,
+                        stderr,
+                    })
+                }
+            )
+        })
+    }
+}
+
+export default { imageDiff, cliEndpoint }

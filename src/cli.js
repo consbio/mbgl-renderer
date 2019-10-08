@@ -121,6 +121,18 @@ if (bounds !== null) {
             ]}`
         )
     }
+
+    bounds.forEach(b => {
+        if (Number.isNaN(b)) {
+            raiseError(
+                `Bounds must be west,south,east,north.  Invalid value found: ${[
+                    ...bounds,
+                ]}`
+            )
+        }
+        return null
+    })
+
     const [west, south, east, north] = bounds
     if (west === east) {
         raiseError(`Bounds west and east coordinate are the same value`)

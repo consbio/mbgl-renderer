@@ -1,13 +1,19 @@
 #!/usr/bin/env node
+import fs from 'fs'
 import restify from 'restify'
 import restifyValidation from 'node-restify-validation'
 import restifyErrors from 'restify-errors'
 import cli from 'commander'
 
 import { version } from '../package.json'
-import render from './render'
+import { render } from './render'
 
 const parseListToFloat = text => text.split(',').map(Number)
+
+const raiseError = msg => {
+    console.error('ERROR:', msg)
+    process.exit(1)
+}
 
 const PARAMS = {
     style: { isRequired: true, isString: true },
@@ -119,6 +125,22 @@ const renderImage = (params, response, next, tilePath) => {
             }
             return null
         })
+
+        const [west, south, east, north] = bounds
+        if (west === east) {
+            return next(
+                new restifyErrors.BadRequestError(
+                    `Bounds west and east coordinate are the same value`
+                )
+            )
+        }
+        if (south === north) {
+            return next(
+                new restifyErrors.BadRequestError(
+                    `Bounds south and north coordinate are the same value`
+                )
+            )
+        }
     }
 
     if (bearing !== null) {
@@ -208,7 +230,7 @@ cli.version(version)
 
 const { port = 8000, tiles: tilePath = null } = cli
 
-const server = restify.createServer({
+export const server = restify.createServer({
     ignoreTrailingSlash: true,
 })
 server.use(restify.plugins.queryParser())
@@ -258,6 +280,10 @@ server.get({ url: '/' }, (req, res) => {
 })
 
 if (tilePath !== null) {
+    if (!fs.existsSync(tilePath)) {
+        raiseError(`Path to mbtiles files does not exist: ${tilePath}`)
+    }
+
     console.log('Using local mbtiles in: %j', tilePath)
 }
 
@@ -267,3 +293,5 @@ server.listen(port, () => {
         server.url
     )
 })
+
+export default { server }

@@ -301,7 +301,7 @@ In order to use this package on a headless server, you need to use `xvfb`. See `
 
 ## Changes
 
-### O.5.0 (in development)
+### O.5.0
 
 -   upgraded Docker to NodeJS 10
 -   reduced size of Docker image and simplified Xvfb management

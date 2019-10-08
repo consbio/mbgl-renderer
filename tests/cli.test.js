@@ -6,7 +6,7 @@ import dotenv from 'dotenv-flow'
 import sharp from 'sharp'
 import { createTempDir } from 'jest-fixtures'
 
-import { imageDiff } from './util'
+import { imageDiff, cliEndpoint } from './util'
 
 import { version } from '../package.json'
 
@@ -20,23 +20,7 @@ if (!MAPBOX_API_TOKEN) {
     )
 }
 
-// from: https://medium.com/@ole.ersoy/unit-testing-commander-scripts-with-jest-bc32465709d6
-function cli(args, cwd) {
-    return new Promise(resolve => {
-        exec(
-            `node ${path.resolve('./dist/cli')} ${args.join(' ')}`,
-            { cwd },
-            (error, stdout, stderr) => {
-                resolve({
-                    code: error && error.code ? error.code : 0,
-                    error,
-                    stdout,
-                    stderr,
-                })
-            }
-        )
-    })
-}
+const cli = cliEndpoint('./dist/cli')
 
 test('returns correct version', async () => {
     const { stdout } = await cli(['-V'], '.')
