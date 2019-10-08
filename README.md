@@ -41,20 +41,16 @@ If you use Mapbox styles or hosted tiles, make sure to include appropriate [attr
 or
 `npm install mbgl-renderer`
 
-Only node versions >=8 are supported.
+### Supported versions of NodeJS:
+
+-   8
+-   10
 
 Node 10 appears fully supported by the latest version of Mapbox GL. Originally, there were several issues when running on Node 10, causing segmentation faults and other errors. If you experience issues, we recommend using Node 8.
 
-This depends on `mapbox-gl-js` which in some cases may need to be compiled from source.
+Only NodeJS versions with `@mapbox/mapbox-gl-native` binaries built by Mapbox are supported via `npm install` / `yarn add` routes, otherwise you need to build `@mapbox/mapbox-gl-native` from source yourself. See [build instructions](https://github.com/mapbox/mapbox-gl-native/blob/master/platform/node/DEVELOPING.md) for more information.
 
-If you need to compile from source, you will need to have your system setup to compile C/C++, and have `cmake` installed.
-
-On Mac, you might need to install some dependencies. You might need to do one of the following:
-
--   setup XCode and its command line tools
--   install `cmake`
-
-On a server, in addition to build tools, you need to install a GL environment.
+On a server, in addition to build tools, you need to install a GL environment. See the `Dockerfile` and `entrypoint.sh` for an example setup.
 
 ## Usage
 
@@ -137,7 +133,7 @@ render(style, width, height, { bounds, token: '<your access token>' })
 ### Command line interface:
 
 ```
-  Usage: mbgl-render [options] <style.json> <img_filename> <width> <height>
+  Usage: mbgl-render <style.json> <img_filename> <width> <height> [options]
 
   Export a Mapbox GL map to image.  You must provide either center and zoom, or bounds.
 

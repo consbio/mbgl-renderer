@@ -14,6 +14,8 @@ const raiseError = msg => {
 const parseListToFloat = text => text.split(',').map(Number)
 
 cli.version(version)
+    .name('mbgl-render')
+    .usage('<style.json> <img_filename> <width> <height> [options]')
     .description(
         'Export a Mapbox GL map to image.  You must provide either center and zoom, or bounds.'
     )
