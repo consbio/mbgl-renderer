@@ -208,7 +208,9 @@ cli.version(version)
 
 const { port = 8000, tiles: tilePath = null } = cli
 
-const server = restify.createServer()
+const server = restify.createServer({
+    ignoreTrailingSlash: true,
+})
 server.use(restify.plugins.queryParser())
 server.use(restify.plugins.bodyParser())
 server.use(

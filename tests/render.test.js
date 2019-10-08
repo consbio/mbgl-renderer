@@ -2,13 +2,13 @@ import fs from 'fs'
 import dotenv from 'dotenv-flow'
 import path from 'path'
 import sharp from 'sharp'
-import pixelmatch from 'pixelmatch'
 import { render } from '../src/render'
 import mbtilesSourceStyle from './fixtures/example-style-mbtiles-source.json'
 import mbtilesSourceVectorStyle from './fixtures/example-style-mbtiles-source-vector.json'
 import mbtilesTilesStyle from './fixtures/example-style-mbtiles-tiles.json'
 import mbtilesTilesVectorStyle from './fixtures/example-style-mbtiles-tiles-vector.json'
 import mapboxSourceStyle from './fixtures/example-style-mapbox-source.json'
+import { imageDiff } from './util'
 
 // Load MAPBOX_API_TOKEN from .env.test
 dotenv.config()
@@ -18,30 +18,6 @@ if (!MAPBOX_API_TOKEN) {
     throw new Error(
         'MAPBOX_API_TOKEN environment variable must be set to valid Mapbox API token to run tests'
     )
-}
-
-/**
- * Uses `pixelmatch` to calculate the number of pixels that are different between
- * the PNG data produced by `render` and the data in the expected PNG file.
- *
- * @param {Buffer} pngData - buffer of PNG data produced by render function
- * @param {String} expectedPath - path to PNG file of expected data from test suite
- *
- * Returns {Number} - count of pixels that are different between the 2 images.
- */
-async function imageDiff(pngData, expectedPath) {
-    const pngImage = await sharp(pngData)
-    const { width, height } = await pngImage.metadata()
-
-    // Convert the pixels to raw byte buffer
-    const rawData = await pngImage.raw().toBuffer()
-
-    // read the expected data and convert to raw byte buffer
-    const expected = await sharp(expectedPath)
-        .raw()
-        .toBuffer()
-
-    return pixelmatch(rawData, expected, null, width, height)
 }
 
 test('creates image with correct format and dimensions', async () => {

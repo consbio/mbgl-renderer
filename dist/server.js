@@ -199,7 +199,9 @@ var _cli$port = _commander["default"].port,
     _cli$tiles = _commander["default"].tiles,
     tilePath = _cli$tiles === void 0 ? null : _cli$tiles;
 
-var server = _restify["default"].createServer();
+var server = _restify["default"].createServer({
+  ignoreTrailingSlash: true
+});
 
 server.use(_restify["default"].plugins.queryParser());
 server.use(_restify["default"].plugins.bodyParser());
