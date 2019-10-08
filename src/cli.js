@@ -121,6 +121,13 @@ if (bounds !== null) {
             ]}`
         )
     }
+    const [west, south, east, north] = bounds
+    if (west === east) {
+        raiseError(`Bounds west and east coordinate are the same value`)
+    }
+    if (south === north) {
+        raiseError(`Bounds south and north coordinate are the same value`)
+    }
 }
 
 if (bearing !== null) {

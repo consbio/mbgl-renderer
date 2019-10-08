@@ -101,6 +101,20 @@ if (bounds !== null) {
   if (bounds.length !== 4) {
     raiseError("Bounds must be west,south,east,north.  Invalid value found: ".concat((0, _toConsumableArray2["default"])(bounds)));
   }
+
+  var _bounds = (0, _slicedToArray2["default"])(bounds, 4),
+      west = _bounds[0],
+      south = _bounds[1],
+      east = _bounds[2],
+      north = _bounds[3];
+
+  if (west === east) {
+    raiseError("Bounds west and east coordinate are the same value");
+  }
+
+  if (south === north) {
+    raiseError("Bounds south and north coordinate are the same value");
+  }
 }
 
 if (bearing !== null) {
