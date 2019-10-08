@@ -8,7 +8,7 @@
         "build": "babel ./src -d ./dist",
         "start": "babel-node ./src/server.js",
         "watch": "babel --watch ./src -d ./dist",
-        "test": "jest",
+        "test": "jest --coverage",
         "prepublish": "babel ./src -d ./dist"
     },
     "bin": {

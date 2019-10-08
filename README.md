@@ -1,5 +1,9 @@
 # Static Map Renderer using Mapbox GL
 
+[![Build Status](https://travis-ci.org/consbio/mbgl-renderer.svg?branch=master)](https://travis-ci.org/consbio/mbgl-renderer)
+
+[![Coverage Status](https://coveralls.io/repos/github/consbio/mbgl-renderer/badge.svg?branch=master)](https://coveralls.io/github/consbio/mbgl-renderer?branch=master)
+
 Create static map images using Mapbox GL with a command line interface, an HTTP interface, and a NodeJS API.
 
 ## Features:

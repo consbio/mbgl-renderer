@@ -25,3 +25,12 @@ addons:
             - libllvm3.9
             - libprotobuf-dev
             - libxxf86vm-dev
+
+install:
+    - npm install coveralls --skip-lock
+
+script:
+    - npm run test
+
+after_script:
+    - cat ./tests/coverage/lcov.info | coveralls
