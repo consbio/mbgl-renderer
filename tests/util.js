@@ -60,4 +60,16 @@ export function cliEndpoint(cliPath) {
     }
 }
 
-export default { imageDiff, cliEndpoint }
+/**
+ * Return `test.skip` to skip a test if the `condition` is `true`, otherwise
+ * return `test` to test it normally.
+ * @param {Boolean} condition - if `true`, tests will be skipped
+ */
+export const skipIf = condition => {
+    if (condition) {
+        return test.skip
+    }
+    return test
+}
+
+export default { imageDiff, cliEndpoint, skipIf }
