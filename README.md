@@ -1,4 +1,4 @@
-# Static Map Renderer using Mapbox GL
+# Not Just Another Static Map Renderer using Mapbox GL
 
 [![Build Status](https://travis-ci.org/consbio/mbgl-renderer.svg?branch=master)](https://travis-ci.org/consbio/mbgl-renderer)
 
