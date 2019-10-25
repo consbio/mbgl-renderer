@@ -1,6 +1,9 @@
 dist: xenial
 language: node_js
 
+env:
+    - MAPBOX_API_TOKEN=pk.eyJ1IjoiYmN3YXJkIiwiYSI6ImNrMjVrYWpnbjA2dDAzY3F5NmJpeDBzczcifQ.XnzzlO2ke7qbAjvY--m9Pw
+
 node_js:
     - '8'
     - '10'
