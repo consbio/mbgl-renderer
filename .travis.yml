@@ -3,6 +3,7 @@ language: node_js
 
 env:
     global:
+        - CXX=g++-6
         - MAPBOX_API_TOKEN=pk.eyJ1IjoiYmN3YXJkIiwiYSI6ImNrMjVrYWpnbjA2dDAzY3F5NmJpeDBzczcifQ.XnzzlO2ke7qbAjvY--m9Pw
 
 node_js:
@@ -14,9 +15,6 @@ cache:
         - 'node_modules'
 services:
     - xvfb
-
-env:
-    - CXX=g++-6
 
 addons:
     apt:
