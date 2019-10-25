@@ -1,12 +1,11 @@
 import fs from 'fs'
 import path from 'path'
-import { exec } from 'child_process'
 
 import dotenv from 'dotenv-flow'
 import sharp from 'sharp'
 import { createTempDir } from 'jest-fixtures'
 
-import { imageDiff, cliEndpoint } from './util'
+import { imageDiff, cliEndpoint, skipIf } from './util'
 
 import { version } from '../package.json'
 
@@ -15,8 +14,8 @@ dotenv.config()
 const { MAPBOX_API_TOKEN } = process.env
 
 if (!MAPBOX_API_TOKEN) {
-    throw new Error(
-        'MAPBOX_API_TOKEN environment variable must be set to valid Mapbox API token to run tests'
+    console.warn(
+        'MAPBOX_API_TOKEN environment variable is missing; tests that require this token will be skipped'
     )
 }
 
@@ -379,37 +378,6 @@ test('resolves local mbtiles from vector tiles', async () => {
     expect(diffPixels).toBeLessThan(25)
 })
 
-test('resolves from mapbox source', async () => {
-    const tmpDir = await createTempDir()
-    const filePath = path.join(tmpDir, 'test.png')
-
-    await cli(
-        [
-            path.join(__dirname, './fixtures/example-style-mapbox-source.json'),
-            filePath,
-            '512',
-            '512',
-            '-z',
-            0,
-            '-c',
-            '0,0',
-            '-t',
-            path.join(__dirname, './fixtures/'),
-            '--token',
-            MAPBOX_API_TOKEN,
-        ],
-        '.'
-    )
-
-    const expectedPath = path.join(
-        __dirname,
-        './fixtures/expected-mapbox-source.png'
-    )
-
-    const diffPixels = await imageDiff(filePath, expectedPath)
-    expect(diffPixels).toBeLessThan(25)
-})
-
 test('fails on missing mapbox token', async () => {
     const tmpDir = await createTempDir()
     const filePath = path.join(tmpDir, 'test.png')
@@ -456,39 +424,6 @@ test('fails on invalid mapbox token', async () => {
     )
 
     expect(stderr).toContain('Error: Error with request')
-})
-
-test('resolves from mapbox source with ratio', async () => {
-    const tmpDir = await createTempDir()
-    const filePath = path.join(tmpDir, 'test.png')
-
-    await cli(
-        [
-            path.join(__dirname, './fixtures/example-style-mapbox-source.json'),
-            filePath,
-            '512',
-            '512',
-            '-z',
-            0,
-            '-c',
-            '0,0',
-            '--ratio',
-            2,
-            '-t',
-            path.join(__dirname, './fixtures/'),
-            '--token',
-            MAPBOX_API_TOKEN,
-        ],
-        '.'
-    )
-
-    const expectedPath = path.join(
-        __dirname,
-        './fixtures/expected-mapbox-source@2x.png'
-    )
-
-    const diffPixels = await imageDiff(filePath, expectedPath)
-    expect(diffPixels).toBeLessThan(25)
 })
 
 test('renders with nonzero pitch', async () => {
@@ -604,4 +539,75 @@ test('fails with invalid bearing', async () => {
     expect(result.stderr).toContain(
         'ERROR: Bearing is outside supported range (0-360): 361'
     )
+})
+
+/** Tests that require a valid Mapbox token
+ *
+ * These will be skipped if MAPBOX_API_TOKEN is missing
+ * and will fail if the token is not valid for a request
+ * from the test machine.
+ */
+
+const testMapbox = skipIf(!MAPBOX_API_TOKEN)
+
+testMapbox('resolves from mapbox source', async () => {
+    const tmpDir = await createTempDir()
+    const filePath = path.join(tmpDir, 'test.png')
+
+    await cli(
+        [
+            path.join(__dirname, './fixtures/example-style-mapbox-source.json'),
+            filePath,
+            '512',
+            '512',
+            '-z',
+            0,
+            '-c',
+            '0,0',
+            '-t',
+            path.join(__dirname, './fixtures/'),
+            '--token',
+            MAPBOX_API_TOKEN,
+        ],
+        '.'
+    )
+
+    const expectedPath = path.join(
+        __dirname,
+        './fixtures/expected-mapbox-source.png'
+    )
+
+    const diffPixels = await imageDiff(filePath, expectedPath)
+    expect(diffPixels).toBeLessThan(25)
+})
+
+testMapbox('resolves from mapbox source with ratio', async () => {
+    const tmpDir = await createTempDir()
+    const filePath = path.join(tmpDir, 'test.png')
+
+    await cli(
+        [
+            path.join(__dirname, './fixtures/example-style-mapbox-source.json'),
+            filePath,
+            '512',
+            '512',
+            '-z',
+            0,
+            '-c',
+            '0,0',
+            '--ratio',
+            2,
+            '--token',
+            MAPBOX_API_TOKEN,
+        ],
+        '.'
+    )
+
+    const expectedPath = path.join(
+        __dirname,
+        './fixtures/expected-mapbox-source@2x.png'
+    )
+
+    const diffPixels = await imageDiff(filePath, expectedPath)
+    expect(diffPixels).toBeLessThan(25)
 })

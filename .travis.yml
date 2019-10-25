@@ -2,7 +2,8 @@ dist: xenial
 language: node_js
 
 env:
-    - MAPBOX_API_TOKEN=pk.eyJ1IjoiYmN3YXJkIiwiYSI6ImNrMjVrYWpnbjA2dDAzY3F5NmJpeDBzczcifQ.XnzzlO2ke7qbAjvY--m9Pw
+    global:
+        - CXX=g++-6
 
 node_js:
     - '8'
@@ -13,9 +14,6 @@ cache:
         - 'node_modules'
 services:
     - xvfb
-
-env:
-    - CXX=g++-6
 
 addons:
     apt:
