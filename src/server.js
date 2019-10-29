@@ -1,9 +1,13 @@
 #!/usr/bin/env node
 import fs from 'fs'
+import path from 'path'
 import restify from 'restify'
 import restifyValidation from 'node-restify-validation'
 import restifyErrors from 'restify-errors'
 import cli from 'commander'
+import bbox from '@turf/bbox'
+import togeojson from '@mapbox/togeojson'
+import {DOMParser} from 'xmldom'
 
 import { version } from '../package.json'
 import { render } from './render'
@@ -15,6 +19,8 @@ const raiseError = msg => {
     process.exit(1)
 }
 
+const filenameToGeoJsonSource = {}
+
 const PARAMS = {
     style: { isRequired: true, isString: true },
     width: { isRequired: true, isInt: true },
@@ -24,10 +30,12 @@ const PARAMS = {
     bearing: { isRequired: false, isDecimal: true },
     pitch: { isRequired: false, isDecimal: true },
     token: { isRequired: false, isString: true },
+    overlayFiles: {isRequired: false, isString: true},
+    fit: {isRequired: false, isBoolean: true},
 }
 
-const renderImage = (params, response, next, tilePath) => {
-    const { width, height, token = null, bearing = null, pitch = null } = params
+const renderImage = (params, response, next, tilePath, overlayPath) => {
+    const { width, height, token = null, bearing = null, pitch = null, overlayFiles = null, fit = false } = params
     let { style, zoom = null, center = null, bounds = null, ratio = 1 } = params
 
     if (typeof style === 'string') {
@@ -41,6 +49,35 @@ const renderImage = (params, response, next, tilePath) => {
                     'Error parsing JSON style'
                 )
             )
+        }
+    }
+
+    if (typeof overlayFiles === 'string') {
+
+        let geojsonList = []        
+        if (overlayFiles == "*") {
+            for (const value of Object.values(filenameToGeoJsonSource)) {
+                geojsonList = geojsonList.concat(value)
+            }
+        } else {
+            for (const overlayFile of overlayFiles.split(",")) {
+                if (overlayFile in filenameToGeoJsonSource) {
+                    geojsonList = geojsonList.concat(filenameToGeoJsonSource[overlayFile])
+                }
+            }
+        }
+        const featureList = { 
+            "type": "FeatureCollection",
+            "features": geojsonList
+        }
+        style.sources["geojson-line"] = {
+            "type": "geojson",
+            "data": featureList
+        }
+
+        const bboxed = bbox(featureList)
+        if (fit) {
+            bounds = bboxed
         }
     }
 
@@ -181,6 +218,7 @@ const renderImage = (params, response, next, tilePath) => {
             bearing,
             pitch,
             token,
+            fit
         })
             .then((data, rejected) => {
                 if (rejected) {
@@ -226,9 +264,11 @@ cli.version(version)
         '-t, --tiles <mbtiles_path>',
         'Directory containing local mbtiles files to render'
     )
+    .option('-o, --overlay <overlay_files_path>',
+        'Directory containing GPX/geojson files to render in overlay')
     .parse(process.argv)
 
-const { port = 8000, tiles: tilePath = null } = cli
+const { port = 8000, tiles: tilePath = null, overlay: overlayPath = null } = cli
 
 export const server = restify.createServer({
     ignoreTrailingSlash: true,
@@ -250,7 +290,7 @@ server.get(
             queries: PARAMS,
         },
     },
-    (req, res, next) => renderImage(req.query, res, next, tilePath)
+    (req, res, next) => renderImage(req.query, res, next, tilePath, overlayPath)
 )
 
 server.post(
@@ -260,7 +300,7 @@ server.post(
             content: PARAMS,
         },
     },
-    (req, res, next) => renderImage(req.body, res, next, tilePath)
+    (req, res, next) => renderImage(req.body, res, next, tilePath, overlayPath)
 )
 
 server.get({ url: '/' }, (req, res) => {
@@ -285,6 +325,61 @@ if (tilePath !== null) {
     }
 
     console.log('Using local mbtiles in: %j', tilePath)
+}
+
+function openGeojson(filepath) {
+    let geojson = null
+    try {
+        // read styleJSON
+        const data = fs.readFileSync(filepath, "utf8")
+        geojson = JSON.parse(data)
+    } catch (jsonErr) {
+        console.error('Error parsing Geojson in request: %j', jsonErr)
+    }
+    return geojson
+}
+
+function openGPX(filepath) {
+    let geojson = null
+    try {
+        // read styleJSON
+        const data = fs.readFileSync(filepath, "utf8")
+        const gpx = new DOMParser().parseFromString(data)
+        geojson = togeojson.gpx(gpx)
+    } catch (jsonErr) {
+        console.log(jsonErr)
+        console.error('Error parsing GPX in request: %j', jsonErr)
+    }
+    return geojson
+
+}
+
+
+if (overlayPath !== null) {
+    if (!fs.existsSync(overlayPath)) {
+        raiseError(`Path to overlay files (GPX/geojson) does not exist: ${overlayPath}`)
+    } else {
+        fs.readdir(overlayPath, (err, files) => {
+            files
+                .filter(file => file.endsWith(".gpx") | file.endsWith(".geojson"))
+                .forEach(file => {
+                    const currentFilepath = path.join(overlayPath, file)
+                    console.debug("Loaded file:", file)
+                    let geojson = null
+                    if (file.endsWith(".geojson")) {
+                        geojson = openGeojson(currentFilepath)
+                    } else {
+                        geojson = openGPX(currentFilepath)
+                    }
+                    if (geojson != null) {
+                        filenameToGeoJsonSource[file] = geojson.features
+                    }
+                })
+
+        })
+    }
+
+    console.log('Using local overlays (GPX/geojson) in: %j', overlayPath)
 }
 
 server.listen(port, () => {

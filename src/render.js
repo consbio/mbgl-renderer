@@ -269,7 +269,7 @@ const getRemoteAsset = (url, callback) => {
  */
 export const render = (style, width = 1024, height = 1024, options) => new Promise((resolve, reject) => {
     const { bounds = null, bearing = 0, pitch = 0, token = null, ratio = 1 } = options
-    let { center = null, zoom = null, tilePath = null } = options
+    let { center = null, zoom = null, tilePath = null, fit = false } = options
 
     if (!style) {
         throw new Error('style is a required parameter')
@@ -316,6 +316,12 @@ export const render = (style, width = 1024, height = 1024, options) => new Promi
         zoom = Math.max(viewport.zoom - 1, 0)
         /* eslint-disable prefer-destructuring */
         center = viewport.center
+
+        if (fit) {
+            // Hack to add padding around bounding box fitted to overlay
+            zoom -=0.05
+        }
+
     }
 
     // validate that all local mbtiles referenced in style are

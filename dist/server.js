@@ -14,6 +14,8 @@ var _toConsumableArray2 = _interopRequireDefault(require("@babel/runtime/helpers
 
 var _fs = _interopRequireDefault(require("fs"));
 
+var _path = _interopRequireDefault(require("path"));
+
 var _restify = _interopRequireDefault(require("restify"));
 
 var _nodeRestifyValidation = _interopRequireDefault(require("node-restify-validation"));
@@ -21,6 +23,12 @@ var _nodeRestifyValidation = _interopRequireDefault(require("node-restify-valida
 var _restifyErrors = _interopRequireDefault(require("restify-errors"));
 
 var _commander = _interopRequireDefault(require("commander"));
+
+var _bbox = _interopRequireDefault(require("@turf/bbox"));
+
+var _togeojson = _interopRequireDefault(require("@mapbox/togeojson"));
+
+var _xmldom = require("xmldom");
 
 var _package = require("../package.json");
 
@@ -35,6 +43,7 @@ var raiseError = function raiseError(msg) {
   process.exit(1);
 };
 
+var filenameToGeoJsonSource = {};
 var PARAMS = {
   style: {
     isRequired: true,
@@ -67,10 +76,18 @@ var PARAMS = {
   token: {
     isRequired: false,
     isString: true
+  },
+  overlayFiles: {
+    isRequired: false,
+    isString: true
+  },
+  fit: {
+    isRequired: false,
+    isBoolean: true
   }
 };
 
-var renderImage = function renderImage(params, response, next, tilePath) {
+var renderImage = function renderImage(params, response, next, tilePath, overlayPath) {
   var width = params.width,
       height = params.height,
       _params$token = params.token,
@@ -78,7 +95,11 @@ var renderImage = function renderImage(params, response, next, tilePath) {
       _params$bearing = params.bearing,
       bearing = _params$bearing === void 0 ? null : _params$bearing,
       _params$pitch = params.pitch,
-      pitch = _params$pitch === void 0 ? null : _params$pitch;
+      pitch = _params$pitch === void 0 ? null : _params$pitch,
+      _params$overlayFiles = params.overlayFiles,
+      overlayFiles = _params$overlayFiles === void 0 ? null : _params$overlayFiles,
+      _params$fit = params.fit,
+      fit = _params$fit === void 0 ? false : _params$fit;
   var style = params.style,
       _params$zoom = params.zoom,
       zoom = _params$zoom === void 0 ? null : _params$zoom,
@@ -97,6 +118,58 @@ var renderImage = function renderImage(params, response, next, tilePath) {
       return next(new _restifyErrors["default"].BadRequestError({
         cause: jsonErr
       }, 'Error parsing JSON style'));
+    }
+  }
+
+  if (typeof overlayFiles === 'string') {
+    var geojsonList = [];
+
+    if (overlayFiles == "*") {
+      for (var _i = 0, _Object$values = Object.values(filenameToGeoJsonSource); _i < _Object$values.length; _i++) {
+        var value = _Object$values[_i];
+        geojsonList = geojsonList.concat(value);
+      }
+    } else {
+      var _iteratorNormalCompletion = true;
+      var _didIteratorError = false;
+      var _iteratorError = undefined;
+
+      try {
+        for (var _iterator = overlayFiles.split(",")[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+          var overlayFile = _step.value;
+
+          if (overlayFile in filenameToGeoJsonSource) {
+            geojsonList = geojsonList.concat(filenameToGeoJsonSource[overlayFile]);
+          }
+        }
+      } catch (err) {
+        _didIteratorError = true;
+        _iteratorError = err;
+      } finally {
+        try {
+          if (!_iteratorNormalCompletion && _iterator["return"] != null) {
+            _iterator["return"]();
+          }
+        } finally {
+          if (_didIteratorError) {
+            throw _iteratorError;
+          }
+        }
+      }
+    }
+
+    var featureList = {
+      "type": "FeatureCollection",
+      "features": geojsonList
+    };
+    style.sources["geojson-line"] = {
+      "type": "geojson",
+      "data": featureList
+    };
+    var bboxed = (0, _bbox["default"])(featureList);
+
+    if (fit) {
+      bounds = bboxed;
     }
   }
 
@@ -192,7 +265,8 @@ var renderImage = function renderImage(params, response, next, tilePath) {
       ratio: ratio,
       bearing: bearing,
       pitch: pitch,
-      token: token
+      token: token,
+      fit: fit
     }).then(function (data, rejected) {
       if (rejected) {
         console.error('render request rejected', rejected);
@@ -221,12 +295,14 @@ var renderImage = function renderImage(params, response, next, tilePath) {
 }; // Provide the CLI
 
 
-_commander["default"].version(_package.version).description('Start a server to render Mapbox GL map requests to images.').option('-p, --port <n>', 'Server port', parseInt).option('-t, --tiles <mbtiles_path>', 'Directory containing local mbtiles files to render').parse(process.argv);
+_commander["default"].version(_package.version).description('Start a server to render Mapbox GL map requests to images.').option('-p, --port <n>', 'Server port', parseInt).option('-t, --tiles <mbtiles_path>', 'Directory containing local mbtiles files to render').option('-o, --overlay <overlay_files_path>', 'Directory containing GPX/geojson files to render in overlay').parse(process.argv);
 
 var _cli$port = _commander["default"].port,
     port = _cli$port === void 0 ? 8000 : _cli$port,
     _cli$tiles = _commander["default"].tiles,
-    tilePath = _cli$tiles === void 0 ? null : _cli$tiles;
+    tilePath = _cli$tiles === void 0 ? null : _cli$tiles,
+    _cli$overlay = _commander["default"].overlay,
+    overlayPath = _cli$overlay === void 0 ? null : _cli$overlay;
 
 var server = _restify["default"].createServer({
   ignoreTrailingSlash: true
@@ -246,7 +322,7 @@ server.get({
     queries: PARAMS
   }
 }, function (req, res, next) {
-  return renderImage(req.query, res, next, tilePath);
+  return renderImage(req.query, res, next, tilePath, overlayPath);
 });
 server.post({
   url: '/render',
@@ -254,7 +330,7 @@ server.post({
     content: PARAMS
   }
 }, function (req, res, next) {
-  return renderImage(req.body, res, next, tilePath);
+  return renderImage(req.body, res, next, tilePath, overlayPath);
 });
 server.get({
   url: '/'
@@ -283,6 +359,67 @@ if (tilePath !== null) {
   }
 
   console.log('Using local mbtiles in: %j', tilePath);
+}
+
+function openGeojson(filepath) {
+  var geojson = null;
+
+  try {
+    // read styleJSON
+    var data = _fs["default"].readFileSync(filepath, "utf8");
+
+    geojson = JSON.parse(data);
+  } catch (jsonErr) {
+    console.error('Error parsing Geojson in request: %j', jsonErr);
+  }
+
+  return geojson;
+}
+
+function openGPX(filepath) {
+  var geojson = null;
+
+  try {
+    // read styleJSON
+    var data = _fs["default"].readFileSync(filepath, "utf8");
+
+    var gpx = new _xmldom.DOMParser().parseFromString(data);
+    geojson = _togeojson["default"].gpx(gpx);
+  } catch (jsonErr) {
+    console.log(jsonErr);
+    console.error('Error parsing GPX in request: %j', jsonErr);
+  }
+
+  return geojson;
+}
+
+if (overlayPath !== null) {
+  if (!_fs["default"].existsSync(overlayPath)) {
+    raiseError("Path to overlay files (GPX/geojson) does not exist: ".concat(overlayPath));
+  } else {
+    _fs["default"].readdir(overlayPath, function (err, files) {
+      files.filter(function (file) {
+        return file.endsWith(".gpx") | file.endsWith(".geojson");
+      }).forEach(function (file) {
+        var currentFilepath = _path["default"].join(overlayPath, file);
+
+        console.debug("Loaded file:", file);
+        var geojson = null;
+
+        if (file.endsWith(".geojson")) {
+          geojson = openGeojson(currentFilepath);
+        } else {
+          geojson = openGPX(currentFilepath);
+        }
+
+        if (geojson != null) {
+          filenameToGeoJsonSource[file] = geojson.features;
+        }
+      });
+    });
+  }
+
+  console.log('Using local overlays (GPX/geojson) in: %j', overlayPath);
 }
 
 server.listen(port, function () {

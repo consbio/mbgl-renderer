@@ -355,7 +355,9 @@ var render = function render(style) {
         _options$zoom = options.zoom,
         zoom = _options$zoom === void 0 ? null : _options$zoom,
         _options$tilePath = options.tilePath,
-        tilePath = _options$tilePath === void 0 ? null : _options$tilePath;
+        tilePath = _options$tilePath === void 0 ? null : _options$tilePath,
+        _options$fit = options.fit,
+        fit = _options$fit === void 0 ? false : _options$fit;
 
     if (!style) {
       throw new Error('style is a required parameter');
@@ -405,6 +407,11 @@ var render = function render(style) {
       /* eslint-disable prefer-destructuring */
 
       center = viewport.center;
+
+      if (fit) {
+        // Hack to add padding around bounding box fitted to overlay
+        zoom -= 0.05;
+      }
     } // validate that all local mbtiles referenced in style are
     // present in tilePath and that tilePath is not null
 
