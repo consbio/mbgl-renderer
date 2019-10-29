@@ -37,7 +37,7 @@ var raiseError = function raiseError(msg) {
 
 var PARAMS = {
   style: {
-    isRequired: true,
+    isRequired: false,
     isString: true
   },
   width: {
@@ -70,7 +70,7 @@ var PARAMS = {
   }
 };
 
-var renderImage = function renderImage(params, response, next, tilePath) {
+var renderImage = function renderImage(params, response, next, tilePath, default_styles) {
   var width = params.width,
       height = params.height,
       _params$token = params.token,
@@ -79,7 +79,8 @@ var renderImage = function renderImage(params, response, next, tilePath) {
       bearing = _params$bearing === void 0 ? null : _params$bearing,
       _params$pitch = params.pitch,
       pitch = _params$pitch === void 0 ? null : _params$pitch;
-  var style = params.style,
+  var _params$style = params.style,
+      style = _params$style === void 0 ? null : _params$style,
       _params$zoom = params.zoom,
       zoom = _params$zoom === void 0 ? null : _params$zoom,
       _params$center = params.center,
@@ -98,6 +99,25 @@ var renderImage = function renderImage(params, response, next, tilePath) {
         cause: jsonErr
       }, 'Error parsing JSON style'));
     }
+  } else if (typeof default_styles === 'string') {
+    try {
+      // read styleJSON
+      var data = _fs["default"].readFileSync(default_styles, "utf8");
+
+      style = JSON.parse(data);
+    } catch (jsonErr) {
+      console.error('Error parsing default JSON style in request: %j', jsonErr);
+      return next(new _restifyErrors["default"].BadRequestError({
+        cause: jsonErr
+      }, 'Error parsing default JSON style'));
+    }
+  }
+
+  if (style === null) {
+    console.error('There is no default style and no given style');
+    return next(new _restifyErrors["default"].BadRequestError({
+      cause: "No given style no default style"
+    }, 'No given style no default style'));
   }
 
   if (center !== null) {
@@ -221,12 +241,14 @@ var renderImage = function renderImage(params, response, next, tilePath) {
 }; // Provide the CLI
 
 
-_commander["default"].version(_package.version).description('Start a server to render Mapbox GL map requests to images.').option('-p, --port <n>', 'Server port', parseInt).option('-t, --tiles <mbtiles_path>', 'Directory containing local mbtiles files to render').parse(process.argv);
+_commander["default"].version(_package.version).description('Start a server to render Mapbox GL map requests to images.').option('-p, --port <n>', 'Server port', parseInt).option('-t, --tiles <mbtiles_path>', 'Directory containing local mbtiles files to render').option('-s, --default_styles <default_style_path>', 'Directory containing local styles files to render').parse(process.argv);
 
 var _cli$port = _commander["default"].port,
     port = _cli$port === void 0 ? 8000 : _cli$port,
     _cli$tiles = _commander["default"].tiles,
-    tilePath = _cli$tiles === void 0 ? null : _cli$tiles;
+    tilePath = _cli$tiles === void 0 ? null : _cli$tiles,
+    _cli$default_styles = _commander["default"].default_styles,
+    def_styles_path = _cli$default_styles === void 0 ? null : _cli$default_styles;
 
 var server = _restify["default"].createServer({
   ignoreTrailingSlash: true
@@ -246,7 +268,7 @@ server.get({
     queries: PARAMS
   }
 }, function (req, res, next) {
-  return renderImage(req.query, res, next, tilePath);
+  return renderImage(req.query, res, next, tilePath, def_styles_path);
 });
 server.post({
   url: '/render',
@@ -254,7 +276,7 @@ server.post({
     content: PARAMS
   }
 }, function (req, res, next) {
-  return renderImage(req.body, res, next, tilePath);
+  return renderImage(req.body, res, next, tilePath, def_styles_path);
 });
 server.get({
   url: '/'
@@ -283,6 +305,10 @@ if (tilePath !== null) {
   }
 
   console.log('Using local mbtiles in: %j', tilePath);
+}
+
+if (def_styles_path !== null) {
+  console.log('Using default styles in : %j', def_styles_path);
 }
 
 server.listen(port, function () {
