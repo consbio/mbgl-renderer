@@ -241,7 +241,7 @@ var renderImage = function renderImage(params, response, next, tilePath, default
 }; // Provide the CLI
 
 
-_commander["default"].version(_package.version).description('Start a server to render Mapbox GL map requests to images.').option('-p, --port <n>', 'Server port', parseInt).option('-t, --tiles <mbtiles_path>', 'Directory containing local mbtiles files to render').option('-s, --default_styles <default_style_path>', 'Directory containing local styles files to render').parse(process.argv);
+_commander["default"].version(_package.version).description('Start a server to render Mapbox GL map requests to images.').option('-p, --port <n>', 'Server port', parseInt).option('-t, --tiles <mbtiles_path>', 'Directory containing local mbtiles files to render').option('-s, --default_styles <default_style_path>', 'Default local style file to render').parse(process.argv);
 
 var _cli$port = _commander["default"].port,
     port = _cli$port === void 0 ? 8000 : _cli$port,
@@ -308,7 +308,7 @@ if (tilePath !== null) {
 }
 
 if (defaultStylesPath !== null) {
-  console.log('Using default styles in : %j', defaultStylesPath);
+  console.log('Using default style from : %j', defaultStylesPath);
 }
 
 server.listen(port, function () {

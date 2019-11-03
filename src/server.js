@@ -240,7 +240,7 @@ cli.version(version)
         '-t, --tiles <mbtiles_path>',
         'Directory containing local mbtiles files to render'
     )
-    .option('-s, --default_styles <default_style_path>', 'Directory containing local styles files to render')
+    .option('-s, --default_styles <default_style_path>', 'Default local style file to render')
     .parse(process.argv)
 
 const { port = 8000, tiles: tilePath = null, default_styles: defaultStylesPath = null } = cli
@@ -303,7 +303,7 @@ if (tilePath !== null) {
 }
 
 if (defaultStylesPath !== null) {
-    console.log('Using default styles in : %j', defaultStylesPath)
+    console.log('Using default style from : %j', defaultStylesPath)
 }
 
 server.listen(port, () => {
