@@ -70,7 +70,7 @@ var PARAMS = {
   }
 };
 
-var renderImage = function renderImage(params, response, next, tilePath, default_styles) {
+var renderImage = function renderImage(params, response, next, tilePath, defaultStyles) {
   var width = params.width,
       height = params.height,
       _params$token = params.token,
@@ -99,10 +99,10 @@ var renderImage = function renderImage(params, response, next, tilePath, default
         cause: jsonErr
       }, 'Error parsing JSON style'));
     }
-  } else if (typeof default_styles === 'string') {
+  } else if (typeof defaultStyles === 'string') {
     try {
       // read styleJSON
-      var data = _fs["default"].readFileSync(default_styles, "utf8");
+      var data = _fs["default"].readFileSync(defaultStyles, "utf8");
 
       style = JSON.parse(data);
     } catch (jsonErr) {
@@ -248,7 +248,7 @@ var _cli$port = _commander["default"].port,
     _cli$tiles = _commander["default"].tiles,
     tilePath = _cli$tiles === void 0 ? null : _cli$tiles,
     _cli$default_styles = _commander["default"].default_styles,
-    def_styles_path = _cli$default_styles === void 0 ? null : _cli$default_styles;
+    defaultStylesPath = _cli$default_styles === void 0 ? null : _cli$default_styles;
 
 var server = _restify["default"].createServer({
   ignoreTrailingSlash: true
@@ -268,7 +268,7 @@ server.get({
     queries: PARAMS
   }
 }, function (req, res, next) {
-  return renderImage(req.query, res, next, tilePath, def_styles_path);
+  return renderImage(req.query, res, next, tilePath, defaultStylesPath);
 });
 server.post({
   url: '/render',
@@ -276,7 +276,7 @@ server.post({
     content: PARAMS
   }
 }, function (req, res, next) {
-  return renderImage(req.body, res, next, tilePath, def_styles_path);
+  return renderImage(req.body, res, next, tilePath, defaultStylesPath);
 });
 server.get({
   url: '/'
@@ -307,8 +307,8 @@ if (tilePath !== null) {
   console.log('Using local mbtiles in: %j', tilePath);
 }
 
-if (def_styles_path !== null) {
-  console.log('Using default styles in : %j', def_styles_path);
+if (defaultStylesPath !== null) {
+  console.log('Using default styles in : %j', defaultStylesPath);
 }
 
 server.listen(port, function () {

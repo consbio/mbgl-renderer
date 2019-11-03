@@ -26,7 +26,7 @@ const PARAMS = {
     token: { isRequired: false, isString: true },
 }
 
-const renderImage = (params, response, next, tilePath, default_styles) => {
+const renderImage = (params, response, next, tilePath, defaultStyles) => {
     const { width, height, token = null, bearing = null, pitch = null } = params
     let { style = null, zoom = null, center = null, bounds = null, ratio = 1 } = params
 
@@ -42,10 +42,10 @@ const renderImage = (params, response, next, tilePath, default_styles) => {
                 )
             )
         }
-    } else if (typeof default_styles === 'string') {
+    } else if (typeof defaultStyles === 'string') {
         try {
             // read styleJSON
-            const data = fs.readFileSync(default_styles, "utf8")
+            const data = fs.readFileSync(defaultStyles, "utf8")
             style = JSON.parse(data)
         } catch (jsonErr) {
             console.error('Error parsing default JSON style in request: %j', jsonErr)
@@ -243,7 +243,7 @@ cli.version(version)
     .option('-s, --default_styles <default_style_path>', 'Directory containing local styles files to render')
     .parse(process.argv)
 
-const { port = 8000, tiles: tilePath = null, default_styles: def_styles_path = null } = cli
+const { port = 8000, tiles: tilePath = null, default_styles: defaultStylesPath = null } = cli
 
 export const server = restify.createServer({
     ignoreTrailingSlash: true,
@@ -265,7 +265,7 @@ server.get(
             queries: PARAMS,
         },
     },
-    (req, res, next) => renderImage(req.query, res, next, tilePath, def_styles_path)
+    (req, res, next) => renderImage(req.query, res, next, tilePath, defaultStylesPath)
 )
 
 server.post(
@@ -275,7 +275,7 @@ server.post(
             content: PARAMS,
         },
     },
-    (req, res, next) => renderImage(req.body, res, next, tilePath, def_styles_path)
+    (req, res, next) => renderImage(req.body, res, next, tilePath, defaultStylesPath)
 )
 
 server.get({ url: '/' }, (req, res) => {
@@ -302,8 +302,8 @@ if (tilePath !== null) {
     console.log('Using local mbtiles in: %j', tilePath)
 }
 
-if (def_styles_path !== null) {
-    console.log('Using default styles in : %j', def_styles_path)
+if (defaultStylesPath !== null) {
+    console.log('Using default styles in : %j', defaultStylesPath)
 }
 
 server.listen(port, () => {
