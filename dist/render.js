@@ -310,6 +310,15 @@ var getRemoteAsset = function getRemoteAsset(url, callback) {
           return callback(null, {});
         }
 
+      case 404:
+        {
+          // Tile not found
+          // this may be valid for some tilesets that have partial coverage
+          // on servers that do not return blank tiles in these areas.
+          console.warn("Missing tile at: ".concat(url));
+          return callback(null, {});
+        }
+
       default:
         {
           // assume error

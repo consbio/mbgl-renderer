@@ -61,7 +61,7 @@ export const normalizeMapboxStyleURL = (url, token) => {
     const urlObject = URL.parse(url)
     urlObject.query = {
         access_token: token,
-        secure: true
+        secure: true,
     }
     urlObject.pathname = `styles/v1${urlObject.path}`
     urlObject.protocol = 'https'
@@ -79,7 +79,10 @@ export const normalizeMapboxStyleURL = (url, token) => {
 export const normalizeMapboxSpriteURL = (url, token) => {
     const extMatch = /(\.png|\.json)$/g.exec(url)
     const ratioMatch = /(@\d+x)\./g.exec(url)
-    const trimIndex = Math.min(ratioMatch != null ? ratioMatch.index : Infinity, extMatch.index)
+    const trimIndex = Math.min(
+        ratioMatch != null ? ratioMatch.index : Infinity,
+        extMatch.index
+    )
     const urlObject = URL.parse(url.substring(0, trimIndex))
 
     const extPart = extMatch[1]
@@ -123,11 +126,12 @@ const resolveNamefromURL = url => url.split('://')[1].split('/')[0]
  * @param {String} tilePath - path containing mbtiles files
  * @param {String} url - url of a data source in style.json file.
  */
-const resolveMBTilesURL = (tilePath, url) => path.format({
-    dir: tilePath,
-    name: resolveNamefromURL(url),
-    ext: '.mbtiles'
-})
+const resolveMBTilesURL = (tilePath, url) =>
+    path.format({
+        dir: tilePath,
+        name: resolveNamefromURL(url),
+        ext: '.mbtiles',
+    })
 
 /**
  * Given a URL to a local mbtiles file, get the TileJSON for that to load correct tiles.
@@ -152,9 +156,7 @@ const getLocalTileJSON = (tilePath, url, callback) => {
                 return null
             }
 
-            const {
-                minzoom, maxzoom, center, bounds, format
-            } = info
+            const { minzoom, maxzoom, center, bounds, format } = info
 
             const ext = format === 'pbf' ? '.pbf' : ''
 
@@ -164,7 +166,7 @@ const getLocalTileJSON = (tilePath, url, callback) => {
                 minzoom,
                 maxzoom,
                 center,
-                bounds
+                bounds,
             }
 
             callback(null, { data: Buffer.from(JSON.stringify(tileJSON)) })
@@ -228,7 +230,7 @@ const getRemoteAsset = (url, callback) => {
         {
             url,
             encoding: null,
-            gzip: true
+            gzip: true,
         },
         (err, res, data) => {
             if (err) {
@@ -243,10 +245,23 @@ const getRemoteAsset = (url, callback) => {
                     // No data for this url
                     return callback(null, {})
                 }
+                case 404: {
+                    // Tile not found
+                    // this may be valid for some tilesets that have partial coverage
+                    // on servers that do not return blank tiles in these areas.
+                    console.warn(`Missing tile at: ${url}`)
+                    return callback(null, {})
+                }
                 default: {
                     // assume error
-                    console.log(`Error with request for: ${url}\nstatus: ${res.statusCode}`)
-                    return callback(new Error(`Error with request for: ${url}\nstatus: ${res.statusCode}`))
+                    console.log(
+                        `Error with request for: ${url}\nstatus: ${res.statusCode}`
+                    )
+                    return callback(
+                        new Error(
+                            `Error with request for: ${url}\nstatus: ${res.statusCode}`
+                        )
+                    )
                 }
             }
         }
@@ -267,204 +282,275 @@ const getRemoteAsset = (url, callback) => {
  * @param {String} tilePath - path to directory containing local mbtiles files that are
  * referenced from the style.json as "mbtiles://<tileset>"
  */
-export const render = (style, width = 1024, height = 1024, options) => new Promise((resolve, reject) => {
-    const { bounds = null, bearing = 0, pitch = 0, token = null, ratio = 1 } = options
-    let { center = null, zoom = null, tilePath = null } = options
+export const render = (style, width = 1024, height = 1024, options) =>
+    new Promise((resolve, reject) => {
+        const {
+            bounds = null,
+            bearing = 0,
+            pitch = 0,
+            token = null,
+            ratio = 1,
+        } = options
+        let { center = null, zoom = null, tilePath = null } = options
 
-    if (!style) {
-        throw new Error('style is a required parameter')
-    }
-    if (!(width && height)) {
-        throw new Error('width and height are required parameters and must be non-zero')
-    }
-
-    if (center !== null) {
-        if (center.length !== 2) {
-            throw new Error(`Center must be longitude,latitude.  Invalid value found: ${[...center]}`)
+        if (!style) {
+            throw new Error('style is a required parameter')
         }
-
-        if (Math.abs(center[0]) > 180) {
-            throw new Error(`Center longitude is outside world bounds (-180 to 180 deg): ${center[0]}`)
-        }
-
-        if (Math.abs(center[1]) > 90) {
-            throw new Error(`Center latitude is outside world bounds (-90 to 90 deg): ${center[1]}`)
-        }
-    }
-
-    if (zoom !== null && (zoom < 0 || zoom > 22)) {
-        throw new Error(`Zoom level is outside supported range (0-22): ${zoom}`)
-    }
-
-    if (bearing !== null && (bearing < 0 || bearing > 360)) {
-        throw new Error(`bearing is outside supported range (0-360): ${bearing}`)
-    }
-
-    if (pitch !== null && (pitch < 0 || pitch > 60)) {
-        throw new Error(`pitch is outside supported range (0-60): ${pitch}`)
-    }
-
-    if (bounds !== null) {
-        if (bounds.length !== 4) {
-            throw new Error(`Bounds must be west,south,east,north.  Invalid value found: ${[...bounds]}`)
-        }
-    }
-
-    // calculate zoom and center from bounds and image dimensions
-    if (bounds !== null && (zoom === null || center === null)) {
-        const viewport = geoViewport.viewport(bounds, [width, height], undefined, undefined, undefined, true)
-        zoom = Math.max(viewport.zoom - 1, 0)
-        /* eslint-disable prefer-destructuring */
-        center = viewport.center
-    }
-
-    // validate that all local mbtiles referenced in style are
-    // present in tilePath and that tilePath is not null
-    if (tilePath) {
-        tilePath = path.normalize(tilePath)
-    }
-
-    const localMbtilesMatches = JSON.stringify(style).match(MBTILES_REGEXP)
-    if (localMbtilesMatches && !tilePath) {
-        throw new Error('Style has local mbtiles file sources, but no tilePath is set')
-    }
-
-    if (localMbtilesMatches) {
-        localMbtilesMatches.forEach((name) => {
-            const mbtileFilename = path.normalize(
-                path.format({ dir: tilePath, name: name.split('://')[1], ext: '.mbtiles' })
+        if (!(width && height)) {
+            throw new Error(
+                'width and height are required parameters and must be non-zero'
             )
-            if (!fs.existsSync(mbtileFilename)) {
+        }
+
+        if (center !== null) {
+            if (center.length !== 2) {
                 throw new Error(
-                    `Mbtiles file ${path.format({
-                        name,
-                        ext: '.mbtiles'
-                    })} in style file is not found in: ${tilePath}`
+                    `Center must be longitude,latitude.  Invalid value found: ${[
+                        ...center,
+                    ]}`
                 )
             }
-        })
-    }
 
-    // Options object for configuring loading of map data sources.
-    // Note: could not find a way to make this work with mapbox vector sources and styles!
-    const mapOptions = {
-        request: (req, callback) => {
-            const { url, kind } = req
-
-            const isMapbox = isMapboxURL(url)
-            if (isMapbox && !token) {
-                throw new Error('ERROR: mapbox access token is required')
+            if (Math.abs(center[0]) > 180) {
+                throw new Error(
+                    `Center longitude is outside world bounds (-180 to 180 deg): ${
+                        center[0]
+                    }`
+                )
             }
 
-            try {
-                switch (kind) {
-                    case 2: {
-                        // source
-                        if (isMBTilesURL(url)) {
-                            getLocalTileJSON(tilePath, url, callback)
-                        } else if (isMapbox) {
-                            getRemoteAsset(normalizeMapboxSourceURL(url, token), callback)
-                        } else {
-                            getRemoteAsset(url, callback)
-                        }
-                        break
-                    }
-                    case 3: {
-                        // tile
-                        if (isMBTilesURL(url)) {
-                            getLocalTile(tilePath, url, callback)
-                        } else if (isMapbox) {
-                            // This seems to be due to a bug in how the mapbox tile
-                            // JSON is handled within mapbox-gl-native
-                            // since it returns fully resolved tiles!
-                            getRemoteAsset(normalizeMapboxTileURL(url, token), callback)
-                        } else {
-                            getRemoteAsset(url, callback)
-                        }
-                        break
-                    }
-                    case 4: {
-                        // glyph
-                        getRemoteAsset(isMapbox ? normalizeMapboxGlyphURL(url, token) : URL.parse(url), callback)
-                        break
-                    }
-                    case 5: {
-                        // sprite image
-                        getRemoteAsset(isMapbox ? normalizeMapboxSpriteURL(url, token) : URL.parse(url), callback)
-                        break
-                    }
-                    case 6: {
-                        // sprite json
-                        getRemoteAsset(isMapbox ? normalizeMapboxSpriteURL(url, token) : URL.parse(url), callback)
-                        break
-                    }
-                    default: {
-                        // NOT HANDLED!
-                        throw new Error(`ERROR: Request kind not handled: ${kind}`)
-                    }
-                }
-            } catch (err) {
-                console.error('Error while making tile request: %j', err)
-                callback(err)
-            }
-        },
-        ratio
-    }
-
-    const map = new mbgl.Map(mapOptions)
-    map.load(style)
-
-    map.render(
-        {
-            zoom,
-            center,
-            height,
-            width,
-            bearing,
-            pitch,
-        },
-        (err, buffer) => {
-            if (err) {
-                console.error('Error rendering map')
-                console.error(err)
-                return reject(err)
-            }
-
-            map.release() // release map resources to prevent reusing in future render requests
-
-            // Un-premultiply pixel values
-            // Mapbox GL buffer contains premultiplied values, which are not handled correctly by sharp
-            // https://github.com/mapbox/mapbox-gl-native/issues/9124
-            // since we are dealing with 8-bit RGBA values, normalize alpha onto 0-255 scale and divide
-            // it out of RGB values
-            for (let i = 0; i < buffer.length; i += 4) {
-                const alpha = buffer[i + 3]
-                const norm = alpha / 255
-                if (alpha === 0) {
-                    buffer[i] = 0
-                    buffer[i + 1] = 0
-                    buffer[i + 2] = 0
-                } else {
-                    buffer[i] = buffer[i] / norm
-                    buffer[i + 1] = buffer[i + 1] / norm
-                    buffer[i + 2] = buffer[i + 2] / norm
-                }
-            }
-
-            // Convert raw image buffer to PNG
-            try {
-                return sharp(buffer, { raw: { width: width * ratio, height: height * ratio, channels: 4 } })
-                    .png()
-                    .toBuffer()
-                    .then(resolve)
-                    .catch(reject)
-            } catch (pngErr) {
-                console.error('Error encoding PNG')
-                console.error(pngErr)
-                return reject(pngErr)
+            if (Math.abs(center[1]) > 90) {
+                throw new Error(
+                    `Center latitude is outside world bounds (-90 to 90 deg): ${
+                        center[1]
+                    }`
+                )
             }
         }
-    )
-})
+
+        if (zoom !== null && (zoom < 0 || zoom > 22)) {
+            throw new Error(
+                `Zoom level is outside supported range (0-22): ${zoom}`
+            )
+        }
+
+        if (bearing !== null && (bearing < 0 || bearing > 360)) {
+            throw new Error(
+                `bearing is outside supported range (0-360): ${bearing}`
+            )
+        }
+
+        if (pitch !== null && (pitch < 0 || pitch > 60)) {
+            throw new Error(`pitch is outside supported range (0-60): ${pitch}`)
+        }
+
+        if (bounds !== null) {
+            if (bounds.length !== 4) {
+                throw new Error(
+                    `Bounds must be west,south,east,north.  Invalid value found: ${[
+                        ...bounds,
+                    ]}`
+                )
+            }
+        }
+
+        // calculate zoom and center from bounds and image dimensions
+        if (bounds !== null && (zoom === null || center === null)) {
+            const viewport = geoViewport.viewport(
+                bounds,
+                [width, height],
+                undefined,
+                undefined,
+                undefined,
+                true
+            )
+            zoom = Math.max(viewport.zoom - 1, 0)
+            /* eslint-disable prefer-destructuring */
+            center = viewport.center
+        }
+
+        // validate that all local mbtiles referenced in style are
+        // present in tilePath and that tilePath is not null
+        if (tilePath) {
+            tilePath = path.normalize(tilePath)
+        }
+
+        const localMbtilesMatches = JSON.stringify(style).match(MBTILES_REGEXP)
+        if (localMbtilesMatches && !tilePath) {
+            throw new Error(
+                'Style has local mbtiles file sources, but no tilePath is set'
+            )
+        }
+
+        if (localMbtilesMatches) {
+            localMbtilesMatches.forEach(name => {
+                const mbtileFilename = path.normalize(
+                    path.format({
+                        dir: tilePath,
+                        name: name.split('://')[1],
+                        ext: '.mbtiles',
+                    })
+                )
+                if (!fs.existsSync(mbtileFilename)) {
+                    throw new Error(
+                        `Mbtiles file ${path.format({
+                            name,
+                            ext: '.mbtiles',
+                        })} in style file is not found in: ${tilePath}`
+                    )
+                }
+            })
+        }
+
+        // Options object for configuring loading of map data sources.
+        // Note: could not find a way to make this work with mapbox vector sources and styles!
+        const mapOptions = {
+            request: (req, callback) => {
+                const { url, kind } = req
+
+                const isMapbox = isMapboxURL(url)
+                if (isMapbox && !token) {
+                    throw new Error('ERROR: mapbox access token is required')
+                }
+
+                try {
+                    switch (kind) {
+                        case 2: {
+                            // source
+                            if (isMBTilesURL(url)) {
+                                getLocalTileJSON(tilePath, url, callback)
+                            } else if (isMapbox) {
+                                getRemoteAsset(
+                                    normalizeMapboxSourceURL(url, token),
+                                    callback
+                                )
+                            } else {
+                                getRemoteAsset(url, callback)
+                            }
+                            break
+                        }
+                        case 3: {
+                            // tile
+                            if (isMBTilesURL(url)) {
+                                getLocalTile(tilePath, url, callback)
+                            } else if (isMapbox) {
+                                // This seems to be due to a bug in how the mapbox tile
+                                // JSON is handled within mapbox-gl-native
+                                // since it returns fully resolved tiles!
+                                getRemoteAsset(
+                                    normalizeMapboxTileURL(url, token),
+                                    callback
+                                )
+                            } else {
+                                getRemoteAsset(url, callback)
+                            }
+                            break
+                        }
+                        case 4: {
+                            // glyph
+                            getRemoteAsset(
+                                isMapbox
+                                    ? normalizeMapboxGlyphURL(url, token)
+                                    : URL.parse(url),
+                                callback
+                            )
+                            break
+                        }
+                        case 5: {
+                            // sprite image
+                            getRemoteAsset(
+                                isMapbox
+                                    ? normalizeMapboxSpriteURL(url, token)
+                                    : URL.parse(url),
+                                callback
+                            )
+                            break
+                        }
+                        case 6: {
+                            // sprite json
+                            getRemoteAsset(
+                                isMapbox
+                                    ? normalizeMapboxSpriteURL(url, token)
+                                    : URL.parse(url),
+                                callback
+                            )
+                            break
+                        }
+                        default: {
+                            // NOT HANDLED!
+                            throw new Error(
+                                `ERROR: Request kind not handled: ${kind}`
+                            )
+                        }
+                    }
+                } catch (err) {
+                    console.error('Error while making tile request: %j', err)
+                    callback(err)
+                }
+            },
+            ratio,
+        }
+
+        const map = new mbgl.Map(mapOptions)
+        map.load(style)
+
+        map.render(
+            {
+                zoom,
+                center,
+                height,
+                width,
+                bearing,
+                pitch,
+            },
+            (err, buffer) => {
+                if (err) {
+                    console.error('Error rendering map')
+                    console.error(err)
+                    return reject(err)
+                }
+
+                map.release() // release map resources to prevent reusing in future render requests
+
+                // Un-premultiply pixel values
+                // Mapbox GL buffer contains premultiplied values, which are not handled correctly by sharp
+                // https://github.com/mapbox/mapbox-gl-native/issues/9124
+                // since we are dealing with 8-bit RGBA values, normalize alpha onto 0-255 scale and divide
+                // it out of RGB values
+                for (let i = 0; i < buffer.length; i += 4) {
+                    const alpha = buffer[i + 3]
+                    const norm = alpha / 255
+                    if (alpha === 0) {
+                        buffer[i] = 0
+                        buffer[i + 1] = 0
+                        buffer[i + 2] = 0
+                    } else {
+                        buffer[i] = buffer[i] / norm
+                        buffer[i + 1] = buffer[i + 1] / norm
+                        buffer[i + 2] = buffer[i + 2] / norm
+                    }
+                }
+
+                // Convert raw image buffer to PNG
+                try {
+                    return sharp(buffer, {
+                        raw: {
+                            width: width * ratio,
+                            height: height * ratio,
+                            channels: 4,
+                        },
+                    })
+                        .png()
+                        .toBuffer()
+                        .then(resolve)
+                        .catch(reject)
+                } catch (pngErr) {
+                    console.error('Error encoding PNG')
+                    console.error(pngErr)
+                    return reject(pngErr)
+                }
+            }
+        )
+    })
 
 export default render

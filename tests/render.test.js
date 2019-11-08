@@ -8,6 +8,7 @@ import mbtilesSourceVectorStyle from './fixtures/example-style-mbtiles-source-ve
 import mbtilesTilesStyle from './fixtures/example-style-mbtiles-tiles.json'
 import mbtilesTilesVectorStyle from './fixtures/example-style-mbtiles-tiles-vector.json'
 import mapboxSourceStyle from './fixtures/example-style-mapbox-source.json'
+import badSourceStyle from './fixtures/example-style-bad-source.json'
 import { imageDiff, skipIf } from './util'
 
 // Load MAPBOX_API_TOKEN from .env.test
@@ -18,9 +19,6 @@ if (!MAPBOX_API_TOKEN) {
     console.warn(
         'MAPBOX_API_TOKEN environment variable is missing; tests that require this token will be skipped'
     )
-    //     throw new Error(
-    //         'MAPBOX_API_TOKEN environment variable must be set to valid Mapbox API token to run tests'
-    //     )
 }
 
 test('creates image with correct format and dimensions', async () => {
@@ -54,7 +52,7 @@ test('creates image using bounds', async () => {
 
     const expectedPath = path.join(__dirname, './fixtures/expected-bounds.png')
     // to write out known good image:
-    fs.writeFileSync(expectedPath, data)
+    // fs.writeFileSync(expectedPath, data)
 
     const diffPixels = await imageDiff(data, expectedPath)
     expect(diffPixels).toBeLessThan(25)
@@ -214,6 +212,25 @@ testMapbox('resolves from mapbox source with ratio', async () => {
     const expectedPath = path.join(
         __dirname,
         './fixtures/expected-mapbox-source@2x.png'
+    )
+    // to write out known good image:
+    // fs.writeFileSync(expectedPath, data)
+
+    const diffPixels = await imageDiff(data, expectedPath)
+    expect(diffPixels).toBeLessThan(25)
+})
+
+test('gracefully handles missing tiles', async () => {
+    const data = await render(badSourceStyle, 100, 100, {
+        zoom: null,
+        center: null,
+        bounds: [-79.98, 32.64, -79.84, 32.79],
+        tilePath: path.join(__dirname, './fixtures/'),
+    })
+
+    const expectedPath = path.join(
+        __dirname,
+        './fixtures/expected-bad-source.png'
     )
     // to write out known good image:
     // fs.writeFileSync(expectedPath, data)
