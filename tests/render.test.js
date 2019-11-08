@@ -39,7 +39,7 @@ test('creates image with correct format and dimensions', async () => {
     // fs.writeFileSync(expectedPath, data)
 
     const diffPixels = await imageDiff(data, expectedPath)
-    expect(diffPixels).toBeLessThan(25)
+    expect(diffPixels).toBeLessThan(100)
 })
 
 test('creates image using bounds', async () => {
@@ -55,7 +55,7 @@ test('creates image using bounds', async () => {
     // fs.writeFileSync(expectedPath, data)
 
     const diffPixels = await imageDiff(data, expectedPath)
-    expect(diffPixels).toBeLessThan(25)
+    expect(diffPixels).toBeLessThan(100)
 })
 
 test('resolves local mbtiles from raster source', async () => {
@@ -73,7 +73,7 @@ test('resolves local mbtiles from raster source', async () => {
     // fs.writeFileSync(expectedPath, data)
 
     const diffPixels = await imageDiff(data, expectedPath)
-    expect(diffPixels).toBeLessThan(25)
+    expect(diffPixels).toBeLessThan(100)
 })
 
 test('resolves local mbtiles from vector source', async () => {
@@ -91,7 +91,7 @@ test('resolves local mbtiles from vector source', async () => {
     // fs.writeFileSync(expectedPath, data)
 
     const diffPixels = await imageDiff(data, expectedPath)
-    expect(diffPixels).toBeLessThan(25)
+    expect(diffPixels).toBeLessThan(100)
 })
 
 test('resolves local mbtiles from tiles', async () => {
@@ -108,7 +108,7 @@ test('resolves local mbtiles from tiles', async () => {
     // fs.writeFileSync(expectedPath, data)
 
     const diffPixels = await imageDiff(data, expectedPath)
-    expect(diffPixels).toBeLessThan(25)
+    expect(diffPixels).toBeLessThan(100)
 })
 
 test('resolves local mbtiles from vector tiles', async () => {
@@ -126,7 +126,7 @@ test('resolves local mbtiles from vector tiles', async () => {
     // fs.writeFileSync(expectedPath, data)
 
     const diffPixels = await imageDiff(data, expectedPath)
-    expect(diffPixels).toBeLessThan(25)
+    expect(diffPixels).toBeLessThan(100)
 })
 
 test('renders with nonzero pitch', async () => {
@@ -142,7 +142,7 @@ test('renders with nonzero pitch', async () => {
     // fs.writeFileSync(expectedPath, data)
 
     const diffPixels = await imageDiff(data, expectedPath)
-    expect(diffPixels).toBeLessThan(25)
+    expect(diffPixels).toBeLessThan(100)
 })
 
 test('renders with nonzero bearing', async () => {
@@ -161,7 +161,7 @@ test('renders with nonzero bearing', async () => {
     // fs.writeFileSync(expectedPath, data)
 
     const diffPixels = await imageDiff(data, expectedPath)
-    expect(diffPixels).toBeLessThan(25)
+    expect(diffPixels).toBeLessThan(100)
 })
 
 test('fails on invalid mapbox token', async () => {
@@ -198,7 +198,7 @@ testMapbox('resolves from mapbox source', async () => {
     // fs.writeFileSync(expectedPath, data)
 
     const diffPixels = await imageDiff(data, expectedPath)
-    expect(diffPixels).toBeLessThan(25)
+    expect(diffPixels).toBeLessThan(100)
 })
 
 testMapbox('resolves from mapbox source with ratio', async () => {
@@ -217,7 +217,7 @@ testMapbox('resolves from mapbox source with ratio', async () => {
     // fs.writeFileSync(expectedPath, data)
 
     const diffPixels = await imageDiff(data, expectedPath)
-    expect(diffPixels).toBeLessThan(25)
+    expect(diffPixels).toBeLessThan(100)
 })
 
 test('gracefully handles missing tiles', async () => {
@@ -236,5 +236,5 @@ test('gracefully handles missing tiles', async () => {
     // fs.writeFileSync(expectedPath, data)
 
     const diffPixels = await imageDiff(data, expectedPath)
-    expect(diffPixels).toBeLessThan(25)
+    expect(diffPixels).toBeLessThan(100)
 })

@@ -90,7 +90,7 @@ test('creates correct image', async () => {
     const expectedPath = path.join(__dirname, './fixtures/expected.png')
 
     const diffPixels = await imageDiff(filePath, expectedPath)
-    expect(diffPixels).toBeLessThan(25)
+    expect(diffPixels).toBeLessThan(100)
 })
 
 test('fails with invalid tile path', async () => {
@@ -223,7 +223,7 @@ test('creates image using bounds', async () => {
     const expectedPath = path.join(__dirname, './fixtures/expected-bounds.png')
 
     const diffPixels = await imageDiff(filePath, expectedPath)
-    expect(diffPixels).toBeLessThan(25)
+    expect(diffPixels).toBeLessThan(100)
 })
 
 test('fails with invalid bounds', async () => {
@@ -282,7 +282,7 @@ test('resolves local mbtiles from raster source', async () => {
     )
 
     const diffPixels = await imageDiff(filePath, expectedPath)
-    expect(diffPixels).toBeLessThan(25)
+    expect(diffPixels).toBeLessThan(100)
 })
 
 test('resolves local mbtiles from vector source', async () => {
@@ -314,7 +314,7 @@ test('resolves local mbtiles from vector source', async () => {
     )
 
     const diffPixels = await imageDiff(filePath, expectedPath)
-    expect(diffPixels).toBeLessThan(25)
+    expect(diffPixels).toBeLessThan(100)
 })
 
 test('resolves local mbtiles from tiles', async () => {
@@ -343,7 +343,7 @@ test('resolves local mbtiles from tiles', async () => {
     )
 
     const diffPixels = await imageDiff(filePath, expectedPath)
-    expect(diffPixels).toBeLessThan(25)
+    expect(diffPixels).toBeLessThan(100)
 })
 
 test('resolves local mbtiles from vector tiles', async () => {
@@ -375,7 +375,7 @@ test('resolves local mbtiles from vector tiles', async () => {
     )
 
     const diffPixels = await imageDiff(filePath, expectedPath)
-    expect(diffPixels).toBeLessThan(25)
+    expect(diffPixels).toBeLessThan(100)
 })
 
 test('fails on missing mapbox token', async () => {
@@ -451,7 +451,7 @@ test('renders with nonzero pitch', async () => {
     const expectedPath = path.join(__dirname, './fixtures/expected-pitch60.png')
 
     const diffPixels = await imageDiff(filePath, expectedPath)
-    expect(diffPixels).toBeLessThan(25)
+    expect(diffPixels).toBeLessThan(100)
 })
 
 test('fails with invalid pitch', async () => {
@@ -510,7 +510,7 @@ test('renders with nonzero bearing', async () => {
     )
 
     const diffPixels = await imageDiff(filePath, expectedPath)
-    expect(diffPixels).toBeLessThan(25)
+    expect(diffPixels).toBeLessThan(100)
 })
 
 test('fails with invalid bearing', async () => {
@@ -578,7 +578,7 @@ testMapbox('resolves from mapbox source', async () => {
     )
 
     const diffPixels = await imageDiff(filePath, expectedPath)
-    expect(diffPixels).toBeLessThan(25)
+    expect(diffPixels).toBeLessThan(100)
 })
 
 testMapbox('resolves from mapbox source with ratio', async () => {
@@ -609,5 +609,5 @@ testMapbox('resolves from mapbox source with ratio', async () => {
     )
 
     const diffPixels = await imageDiff(filePath, expectedPath)
-    expect(diffPixels).toBeLessThan(25)
+    expect(diffPixels).toBeLessThan(100)
 })
