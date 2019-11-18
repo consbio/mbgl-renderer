@@ -1,0 +1,17 @@
+{
+    "version": 8,
+    "sources": {
+        "basemap": {
+            "type": "raster",
+            "url": "mbtiles://does-not-exist",
+            "tileSize": 256
+        }
+    },
+    "layers": [
+        {
+            "id": "basemap",
+            "type": "raster",
+            "source": "basemap"
+        }
+    ]
+}

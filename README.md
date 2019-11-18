@@ -301,6 +301,10 @@ In order to use this package on a headless server, you need to use `xvfb`. See `
 
 ## Changes
 
+### 0.6.1
+
+-   Docker: fix missing `/app/tiles` directory if user does not bind in a tiles directory (resolves #40)
+
 ### 0.6.0
 
 -   upgraded `mapbox-gl-native` to 5.0.0 (#35). NOTE: [fallback to source builds of `mapbox-gl-native` are no longer supported](https://github.com/mapbox/mapbox-gl-native/blob/master/platform/node/CHANGELOG.md#500).

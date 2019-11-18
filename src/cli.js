@@ -53,7 +53,7 @@ const {
     bearing = null,
     pitch = null,
     tiles: tilePath = null,
-    token: token = null,
+    token = null,
 } = cli
 
 // verify that all arguments are present
@@ -96,17 +96,13 @@ if (center !== null) {
 
     if (Math.abs(center[0]) > 180) {
         raiseError(
-            `Center longitude is outside world bounds (-180 to 180 deg): ${
-                center[0]
-            }`
+            `Center longitude is outside world bounds (-180 to 180 deg): ${center[0]}`
         )
     }
 
     if (Math.abs(center[1]) > 90) {
         raiseError(
-            `Center latitude is outside world bounds (-90 to 90 deg): ${
-                center[1]
-            }`
+            `Center latitude is outside world bounds (-90 to 90 deg): ${center[1]}`
         )
     }
 }

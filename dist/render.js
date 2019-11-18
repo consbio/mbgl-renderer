@@ -440,7 +440,7 @@ var render = function render(style) {
           throw new Error("Mbtiles file ".concat(_path["default"].format({
             name: name,
             ext: '.mbtiles'
-          }), " in style file is not found in: ").concat(tilePath));
+          }), " in style file is not found in: ").concat(_path["default"].resolve(tilePath)));
         }
       });
     } // Options object for configuring loading of map data sources.

@@ -313,17 +313,13 @@ export const render = (style, width = 1024, height = 1024, options) =>
 
             if (Math.abs(center[0]) > 180) {
                 throw new Error(
-                    `Center longitude is outside world bounds (-180 to 180 deg): ${
-                        center[0]
-                    }`
+                    `Center longitude is outside world bounds (-180 to 180 deg): ${center[0]}`
                 )
             }
 
             if (Math.abs(center[1]) > 90) {
                 throw new Error(
-                    `Center latitude is outside world bounds (-90 to 90 deg): ${
-                        center[1]
-                    }`
+                    `Center latitude is outside world bounds (-90 to 90 deg): ${center[1]}`
                 )
             }
         }
@@ -396,7 +392,9 @@ export const render = (style, width = 1024, height = 1024, options) =>
                         `Mbtiles file ${path.format({
                             name,
                             ext: '.mbtiles',
-                        })} in style file is not found in: ${tilePath}`
+                        })} in style file is not found in: ${path.resolve(
+                            tilePath
+                        )}`
                     )
                 }
             })

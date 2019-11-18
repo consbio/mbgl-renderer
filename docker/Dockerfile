@@ -2,6 +2,11 @@
 FROM node:10-slim
 
 WORKDIR /app
+
+# create local directory for tiles to prevent startup errors
+# if this is not defined via a bind point to host
+RUN mkdir /app/tiles
+
 COPY package*.json /app/
 
 RUN apt-get update && \
@@ -38,5 +43,5 @@ COPY ./dist/* /app/dist/
 COPY ./docker/entrypoint.sh /root
 RUN chmod +x /root/entrypoint.sh
 ENTRYPOINT [ "/root/entrypoint.sh" ]
-HEALTHCHECK CMD curl --fail http://localhost:80/ || exit 1
+HEALTHCHECK CMD curl --fail http://localhost:80/render || exit 1
 

@@ -9,6 +9,7 @@ import mbtilesTilesStyle from './fixtures/example-style-mbtiles-tiles.json'
 import mbtilesTilesVectorStyle from './fixtures/example-style-mbtiles-tiles-vector.json'
 import mapboxSourceStyle from './fixtures/example-style-mapbox-source.json'
 import badSourceStyle from './fixtures/example-style-bad-source.json'
+import mbtilesMissingSourceStyle from './fixtures/example-style-mbtiles-missing-source.json'
 import { imageDiff, skipIf } from './util'
 
 // Load MAPBOX_API_TOKEN from .env.test
@@ -74,6 +75,25 @@ test('resolves local mbtiles from raster source', async () => {
 
     const diffPixels = await imageDiff(data, expectedPath)
     expect(diffPixels).toBeLessThan(100)
+})
+
+test('fails when local mbtiles path is missing', async () => {
+    await expect(
+        render(mbtilesSourceStyle, 10, 10, {
+            zoom: 0,
+            center: [0, 0],
+        })
+    ).rejects.toThrowError(/no tilePath is set/)
+})
+
+test('fails when local mbtiles source file is missing', async () => {
+    await expect(
+        render(mbtilesMissingSourceStyle, 10, 10, {
+            zoom: 0,
+            center: [0, 0],
+            tilePath: path.join(__dirname, './fixtures/'),
+        })
+    ).rejects.toThrowError(/mbtiles in style file is not found/)
 })
 
 test('resolves local mbtiles from vector source', async () => {

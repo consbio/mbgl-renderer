@@ -62,9 +62,7 @@ const renderImage = (params, response, next, tilePath) => {
         if (Number.isNaN(center[0]) || Math.abs(center[0]) > 180) {
             return next(
                 new restifyErrors.BadRequestError(
-                    `Center longitude is outside world bounds (-180 to 180 deg): ${
-                        center[0]
-                    }`
+                    `Center longitude is outside world bounds (-180 to 180 deg): ${center[0]}`
                 )
             )
         }
@@ -72,9 +70,7 @@ const renderImage = (params, response, next, tilePath) => {
         if (Number.isNaN(center[1]) || Math.abs(center[1]) > 90) {
             return next(
                 new restifyErrors.BadRequestError(
-                    `Center latitude is outside world bounds (-90 to 90 deg): ${
-                        center[1]
-                    }`
+                    `Center latitude is outside world bounds (-90 to 90 deg): ${center[1]}`
                 )
             )
         }
