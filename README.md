@@ -301,6 +301,10 @@ In order to use this package on a headless server, you need to use `xvfb`. See `
 
 ## Changes
 
+### 0.6.2
+
+-   Fix bad handling of root path (#43)
+
 ### 0.6.1
 
 -   Docker: fix missing `/app/tiles` directory if user does not bind in a tiles directory (resolves #40)

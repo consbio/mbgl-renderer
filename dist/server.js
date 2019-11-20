@@ -240,6 +240,10 @@ server.use(_nodeRestifyValidation["default"].validationPlugin({
   forbidUndefinedVariables: false,
   errorHandler: _restifyErrors["default"].BadRequestError
 }));
+/**
+ * /render (GET): renders an image based on request query parameters.
+ */
+
 server.get({
   url: '/render',
   validation: {
@@ -248,6 +252,10 @@ server.get({
 }, function (req, res, next) {
   return renderImage(req.query, res, next, tilePath);
 });
+/**
+ * /render (POST): renders an image based on request body.
+ */
+
 server.post({
   url: '/render',
   validation: {
@@ -256,21 +264,24 @@ server.post({
 }, function (req, res, next) {
   return renderImage(req.body, res, next, tilePath);
 });
+/**
+ * List all available endpoints.
+ */
+
 server.get({
   url: '/'
 }, function (req, res) {
-  var methods = ['GET', 'POST'];
   var routes = {};
-  methods.forEach(function (method) {
-    server.router.routes[method].forEach(function (_ref) {
-      var url = _ref.spec.url;
+  Object.values(server.router.getRoutes()).forEach(function (_ref) {
+    var _ref$spec = _ref.spec,
+        url = _ref$spec.url,
+        method = _ref$spec.method;
 
-      if (!routes[url]) {
-        routes[url] = [];
-      }
+    if (!routes[url]) {
+      routes[url] = [];
+    }
 
-      routes[url].push(method);
-    });
+    routes[url].push(method);
   });
   res.send({
     routes: routes

@@ -239,6 +239,9 @@ server.use(
     })
 )
 
+/**
+ * /render (GET): renders an image based on request query parameters.
+ */
 server.get(
     {
         url: '/render',
@@ -249,6 +252,9 @@ server.get(
     (req, res, next) => renderImage(req.query, res, next, tilePath)
 )
 
+/**
+ * /render (POST): renders an image based on request body.
+ */
 server.post(
     {
         url: '/render',
@@ -259,17 +265,20 @@ server.post(
     (req, res, next) => renderImage(req.body, res, next, tilePath)
 )
 
+/**
+ * List all available endpoints.
+ */
 server.get({ url: '/' }, (req, res) => {
-    const methods = ['GET', 'POST']
     const routes = {}
-    methods.forEach(method => {
-        server.router.routes[method].forEach(({ spec: { url } }) => {
+    Object.values(server.router.getRoutes()).forEach(
+        ({ spec: { url, method } }) => {
             if (!routes[url]) {
                 routes[url] = []
             }
             routes[url].push(method)
-        })
-    })
+        }
+    )
+
     res.send({
         routes,
     })
