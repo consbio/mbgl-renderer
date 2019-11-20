@@ -329,8 +329,36 @@ Prior to `0.3.1`, there was a significant bug in rendering layers with transpare
 
 ## Credits
 
--   Nik Molnar (https://github.com/nikmolnar)
--   Brendan Ward (https://github.com/brendan-ward)
--   Norman Rzepka (https://github.com/normanrz)
-
 This project was made possible based on support from the South Atlantic Landscape Conservation Cooperative (http://www.southatlanticlcc.org/) and the Paulson Institute (http://www.paulsoninstitute.org/).
+
+## Contributors ✨
+
+Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/docs/en/emoji-key)):
+
+<!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
+<!-- prettier-ignore-start -->
+<!-- markdownlint-disable -->
+<table>
+  <tr>
+    <td align="center"><a href="https://astutespruce.com"><img src="https://avatars2.githubusercontent.com/u/3375604?v=4" width="100px;" alt="Brendan Ward"/><br /><sub><b>Brendan Ward</b></sub></a><br /><a href="https://github.com/consbio/mbgl-renderer/commits?author=brendan-ward" title="Code">💻</a> <a href="https://github.com/consbio/mbgl-renderer/commits?author=brendan-ward" title="Documentation">📖</a> <a href="https://github.com/consbio/mbgl-renderer/issues?q=author%3Abrendan-ward" title="Bug reports">🐛</a> <a href="#blog-brendan-ward" title="Blogposts">📝</a> <a href="https://github.com/consbio/mbgl-renderer/pulls?q=is%3Apr+reviewed-by%3Abrendan-ward" title="Reviewed Pull Requests">👀</a> <a href="#ideas-brendan-ward" title="Ideas, Planning, & Feedback">🤔</a></td>
+    <td align="center"><a href="https://github.com/nikmolnar"><img src="https://avatars1.githubusercontent.com/u/2422416?v=4" width="100px;" alt="Nik Molnar"/><br /><sub><b>Nik Molnar</b></sub></a><br /><a href="https://github.com/consbio/mbgl-renderer/commits?author=nikmolnar" title="Code">💻</a> <a href="https://github.com/consbio/mbgl-renderer/issues?q=author%3Anikmolnar" title="Bug reports">🐛</a> <a href="#ideas-nikmolnar" title="Ideas, Planning, & Feedback">🤔</a></td>
+    <td align="center"><a href="https://github.com/ka7eh"><img src="https://avatars1.githubusercontent.com/u/4112646?v=4" width="100px;" alt="Kaveh"/><br /><sub><b>Kaveh</b></sub></a><br /><a href="https://github.com/consbio/mbgl-renderer/issues?q=author%3Aka7eh" title="Bug reports">🐛</a> <a href="#ideas-ka7eh" title="Ideas, Planning, & Feedback">🤔</a></td>
+    <td align="center"><a href="https://github.com/bertrandmd"><img src="https://avatars0.githubusercontent.com/u/9257198?v=4" width="100px;" alt="bertrandmd"/><br /><sub><b>bertrandmd</b></sub></a><br /><a href="https://github.com/consbio/mbgl-renderer/commits?author=bertrandmd" title="Code">💻</a></td>
+    <td align="center"><a href="https://github.com/korpd"><img src="https://avatars1.githubusercontent.com/u/44464673?v=4" width="100px;" alt="Daniel Korp"/><br /><sub><b>Daniel Korp</b></sub></a><br /><a href="https://github.com/consbio/mbgl-renderer/commits?author=korpd" title="Code">💻</a></td>
+    <td align="center"><a href="https://github.com/kjkurtz"><img src="https://avatars2.githubusercontent.com/u/6036168?v=4" width="100px;" alt="Kyle Kurtz"/><br /><sub><b>Kyle Kurtz</b></sub></a><br /><a href="https://github.com/consbio/mbgl-renderer/commits?author=kjkurtz" title="Code">💻</a></td>
+    <td align="center"><a href="http://normanrz.com/"><img src="https://avatars1.githubusercontent.com/u/335438?v=4" width="100px;" alt="Norman Rzepka"/><br /><sub><b>Norman Rzepka</b></sub></a><br /><a href="https://github.com/consbio/mbgl-renderer/commits?author=normanrz" title="Code">💻</a></td>
+  </tr>
+  <tr>
+    <td align="center"><a href="https://github.com/submarcos"><img src="https://avatars3.githubusercontent.com/u/7448208?v=4" width="100px;" alt="J-E Castagnede"/><br /><sub><b>J-E Castagnede</b></sub></a><br /><a href="https://github.com/consbio/mbgl-renderer/issues?q=author%3Asubmarcos" title="Bug reports">🐛</a></td>
+    <td align="center"><a href="http://itsallinthega.me/"><img src="https://avatars3.githubusercontent.com/u/83251?v=4" width="100px;" alt="Jez Nicholson"/><br /><sub><b>Jez Nicholson</b></sub></a><br /><a href="https://github.com/consbio/mbgl-renderer/issues?q=author%3Ajnicho02" title="Bug reports">🐛</a> <a href="#ideas-jnicho02" title="Ideas, Planning, & Feedback">🤔</a></td>
+    <td align="center"><a href="https://github.com/bob-gray"><img src="https://avatars0.githubusercontent.com/u/814812?v=4" width="100px;" alt="Bob Gray"/><br /><sub><b>Bob Gray</b></sub></a><br /><a href="https://github.com/consbio/mbgl-renderer/issues?q=author%3Abob-gray" title="Bug reports">🐛</a></td>
+    <td align="center"><a href="https://github.com/abraztsov"><img src="https://avatars3.githubusercontent.com/u/19175580?v=4" width="100px;" alt="Nikita Abraztsov"/><br /><sub><b>Nikita Abraztsov</b></sub></a><br /><a href="https://github.com/consbio/mbgl-renderer/issues?q=author%3Aabraztsov" title="Bug reports">🐛</a></td>
+    <td align="center"><a href="https://github.com/LePetitTim"><img src="https://avatars1.githubusercontent.com/u/26329336?v=4" width="100px;" alt="Timothée Monty"/><br /><sub><b>Timothée Monty</b></sub></a><br /><a href="https://github.com/consbio/mbgl-renderer/issues?q=author%3ALePetitTim" title="Bug reports">🐛</a></td>
+  </tr>
+</table>
+
+<!-- markdownlint-enable -->
+<!-- prettier-ignore-end -->
+<!-- ALL-CONTRIBUTORS-LIST:END -->
+
+This project follows the [all-contributors](https://github.com/all-contributors/all-contributors) specification. Contributions of any kind welcome!
