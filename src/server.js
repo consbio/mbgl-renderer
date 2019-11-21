@@ -16,7 +16,7 @@ const raiseError = msg => {
 }
 
 const PARAMS = {
-    style: { isRequired: true, isString: true },
+    style: { isRequired: false, isString: true },
     width: { isRequired: true, isInt: true },
     height: { isRequired: true, isInt: true },
     zoom: { isRequired: false, isDecimal: true },
@@ -26,9 +26,9 @@ const PARAMS = {
     token: { isRequired: false, isString: true },
 }
 
-const renderImage = (params, response, next, tilePath) => {
+const renderImage = (params, response, next, tilePath, defaultStyles) => {
     const { width, height, token = null, bearing = null, pitch = null } = params
-    let { style, zoom = null, center = null, bounds = null, ratio = 1 } = params
+    let { style = null, zoom = null, center = null, bounds = null, ratio = 1 } = params
 
     if (typeof style === 'string') {
         try {
@@ -42,6 +42,20 @@ const renderImage = (params, response, next, tilePath) => {
                 )
             )
         }
+    } else if (typeof defaultStyles === 'string') {
+        try {
+            // read styleJSON
+            const data = fs.readFileSync(defaultStyles, "utf8")
+            style = JSON.parse(data)
+        } catch (jsonErr) {
+            console.error('Error parsing default JSON style in request: %j', jsonErr)
+            return next(new restifyErrors.BadRequestError({ cause: jsonErr }, 'Error parsing default JSON style'))
+        }
+    }
+    
+    if (style === null) {
+        console.error('There is no default style and no given style')
+        return next(new restifyErrors.BadRequestError({ cause: "No given style no default style" }, 'No given style no default style'))
     }
 
     if (center !== null) {
@@ -222,9 +236,10 @@ cli.version(version)
         '-t, --tiles <mbtiles_path>',
         'Directory containing local mbtiles files to render'
     )
+    .option('-s, --default_styles <default_style_path>', 'Default local style file to render')
     .parse(process.argv)
 
-const { port = 8000, tiles: tilePath = null } = cli
+const { port = 8000, tiles: tilePath = null, default_styles: defaultStylesPath = null } = cli
 
 export const server = restify.createServer({
     ignoreTrailingSlash: true,
@@ -249,7 +264,7 @@ server.get(
             queries: PARAMS,
         },
     },
-    (req, res, next) => renderImage(req.query, res, next, tilePath)
+    (req, res, next) => renderImage(req.query, res, next, tilePath, defaultStylesPath)
 )
 
 /**
@@ -262,7 +277,7 @@ server.post(
             content: PARAMS,
         },
     },
-    (req, res, next) => renderImage(req.body, res, next, tilePath)
+    (req, res, next) => renderImage(req.body, res, next, tilePath, defaultStylesPath)
 )
 
 /**
@@ -290,6 +305,10 @@ if (tilePath !== null) {
     }
 
     console.log('Using local mbtiles in: %j', tilePath)
+}
+
+if (defaultStylesPath !== null) {
+    console.log('Using default style from : %j', defaultStylesPath)
 }
 
 server.listen(port, () => {
