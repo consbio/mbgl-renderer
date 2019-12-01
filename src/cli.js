@@ -32,6 +32,11 @@ cli.version(version)
         'Bounds (NO SPACES)',
         parseListToFloat
     )
+    .option(
+        '--padding <padding>',
+        'Number of pixels to add to the inside of each edge of the image.\nCan only be used with bounds option.',
+        parseInt
+    )
     .option('--bearing <degrees>', 'Bearing (0-360)', parseFloat)
     .option('--pitch <degrees>', 'Pitch (0-60)', parseFloat)
     .option(
@@ -50,6 +55,7 @@ const {
     zoom = null,
     ratio = 1,
     bounds = null,
+    padding = 0,
     bearing = null,
     pitch = null,
     tiles: tilePath = null,
@@ -133,10 +139,20 @@ if (bounds !== null) {
 
     const [west, south, east, north] = bounds
     if (west === east) {
-        raiseError(`Bounds west and east coordinate are the same value`)
+        raiseError('Bounds west and east coordinate are the same value')
     }
     if (south === north) {
-        raiseError(`Bounds south and north coordinate are the same value`)
+        raiseError('Bounds south and north coordinate are the same value')
+    }
+
+    if (padding) {
+        // padding must not be greater than width / 2 and height / 2
+        if (Math.abs(padding) >= width / 2) {
+            raiseError('Padding must be less than width / 2')
+        }
+        if (Math.abs(padding) >= height / 2) {
+            raiseError('Padding must be less than height / 2')
+        }
     }
 }
 
@@ -171,6 +187,7 @@ const renderRequest = style => {
         ratio,
         center,
         bounds,
+        padding,
         bearing,
         pitch,
         tilePath,

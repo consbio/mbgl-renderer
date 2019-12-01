@@ -253,6 +253,114 @@ test('fails with invalid bounds', async () => {
     )
 })
 
+test('creates image using padding', async () => {
+    const tmpDir = await createTempDir()
+
+    // 0 px padding
+    let filePath = path.join(tmpDir, 'test0px.png')
+    await cli(
+        [
+            path.join(__dirname, './fixtures/example-style-geojson.json'),
+            filePath,
+            '100',
+            '100',
+            '-b',
+            '-125,37.5,-115,42.5',
+            '--padding',
+            '0',
+        ],
+        '.'
+    )
+
+    let expectedPath = path.join(
+        __dirname,
+        './fixtures/expected-no-padding.png'
+    )
+
+    let diffPixels = await imageDiff(filePath, expectedPath)
+    expect(diffPixels).toBeLessThan(100)
+
+    // 25 px padding
+    filePath = path.join(tmpDir, 'test25px.png')
+    await cli(
+        [
+            path.join(__dirname, './fixtures/example-style-geojson.json'),
+            filePath,
+            '100',
+            '100',
+            '-b',
+            '-125,37.5,-115,42.5',
+            '--padding',
+            '25',
+        ],
+        '.'
+    )
+
+    expectedPath = path.join(__dirname, './fixtures/expected-padding25px.png')
+
+    diffPixels = await imageDiff(filePath, expectedPath)
+    expect(diffPixels).toBeLessThan(100)
+
+    // -25 px padding
+    filePath = path.join(tmpDir, 'test-25px.png')
+    await cli(
+        [
+            path.join(__dirname, './fixtures/example-style-geojson.json'),
+            filePath,
+            '100',
+            '100',
+            '-b',
+            '-125,37.5,-115,42.5',
+            '--padding',
+            '-25',
+        ],
+        '.'
+    )
+
+    expectedPath = path.join(__dirname, './fixtures/expected-padding-25px.png')
+
+    diffPixels = await imageDiff(filePath, expectedPath)
+    expect(diffPixels).toBeLessThan(100)
+})
+
+test('fails with invalid padding', async () => {
+    // padding will fail if values are too big for image dimensions
+    const tmpDir = await createTempDir()
+    const filePath = path.join(tmpDir, 'test.png')
+
+    const params = [
+        path.join(__dirname, './fixtures/example-style-geojson.json'),
+        filePath,
+    ]
+
+    const boundsOption = ['-b', '-125,37.5,-115,42.5']
+
+    let result = await cli(
+        [...params, '100', '200', ...boundsOption, '--padding', '50'],
+        '.'
+    )
+    expect(result.stderr).toContain('Padding must be less than width / 2')
+
+    result = await cli(
+        [...params, '200', '100', ...boundsOption, '--padding', '50'],
+        '.'
+    )
+    expect(result.stderr).toContain('Padding must be less than height / 2')
+
+    // negative padding values should fail if too big
+    result = await cli(
+        [...params, '100', '200', ...boundsOption, '--padding', '-50'],
+        '.'
+    )
+    expect(result.stderr).toContain('Padding must be less than width / 2')
+
+    result = await cli(
+        [...params, '200', '100', ...boundsOption, '--padding', '-50'],
+        '.'
+    )
+    expect(result.stderr).toContain('Padding must be less than height / 2')
+})
+
 test('resolves local mbtiles from raster source', async () => {
     const tmpDir = await createTempDir()
     const filePath = path.join(tmpDir, 'test.png')

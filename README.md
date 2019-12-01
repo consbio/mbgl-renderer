@@ -88,6 +88,28 @@ render(style, width, height, { bounds })
     }))
 ```
 
+If you provide `bounds` you can also provide `padding` to add
+that many pixels to each side of the rendered image. These pixels
+are padded to the inside of the image, meaning that the resulting
+image matches the `width` and `height` you provide, but is zoomed
+out to allow padding around the edges.
+
+```
+const width = 512
+const height = 256
+const bounds = [-80.23, 32.678, -79.73, 32.891]
+const padding = 25
+
+render(style, width, height, { bounds, padding })
+    .then((data) => {
+        fs.writeFileSync('test.png', data)
+    }))
+```
+
+`padding` must be integers and not be greater than 1/2 of `width`
+or `height`, whichever is smaller. You can provide a negative
+padding to over-zoom the image.
+
 You can also supply a pixel ratio for High DPI screens, typically > 1 (max of 31 has been tested):
 
 ```
@@ -144,6 +166,7 @@ render(style, width, height, { bounds, token: '<your access token>' })
     -z, --zoom <n>                        Zoom level
     -r, --ratio <n>                       Pixel ratio
     -b, --bounds <west,south,east,north>  Bounds (NO SPACES)
+    --padding <padding>                   Number of pixels to add to the inside of each edge of the image.  Can only be used with bounds option.
     --bearing <degrees>                   Bearing in degrees (0-360)
     --pitch <degrees>                     Pitch in degrees (0-60)
     -t, --tiles <mbtiles_path>            Directory containing local mbtiles files to render
@@ -161,6 +184,12 @@ To render an image using bounds (NO spaces or brackets):
 
 ```
 mbgl-render tests/fixtures/example-style.json test.png 512 256 -b -80.23,32.678,-79.73,32.891
+```
+
+To render an image using bounds and padding:
+
+```
+mbgl-render tests/fixtures/example-style.json test.png 512 256 -b -80.23,32.678,-79.73,32.891 --padding 25
 ```
 
 To use local mbtiles tilesets:
@@ -217,6 +246,7 @@ In your client of choice, you can make either HTTP GET or POST requests.
 `ratio` is an integer value
 `center` if provided must be a `longitude,latitude` with floating point values (NO spaces or brackets)
 `bounds` if provided must be `west,south,east,north` with floating point values (NO spaces or brackets)
+`padding` if provided must be an integer value that is less than 1/2 of width or height, whichever is smaller. Can only be used with bounds.
 `bearing is a floating point value (0-360)`pitch`is a floating point value (0-60)`token` if provided must a string
 
 Your style JSON needs to be URL encoded:
@@ -241,7 +271,7 @@ POST may be necessary where your style JSON file exceeds the maximum number of c
 
 ## Development
 
-Use `yarn watch` to start up a filewatcher to recompile ES6 files in `src/` to ES5 files that are executable in Node in `dist/`. These are compiled using `babel`.
+Use `yarn watch` to start up a file watcher to recompile ES6 files in `src/` to ES5 files that are executable in Node in `dist/`. These are compiled using `babel`.
 
 ## Testing
 
@@ -301,6 +331,10 @@ In order to use this package on a headless server, you need to use `xvfb`. See `
 
 ## Changes
 
+### 0.7.0 (in progress)
+
+-   Added support for padding image bounds
+
 ### 0.6.2
 
 -   Fix bad handling of root path (#43)
@@ -359,6 +393,7 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
 
 <!-- markdownlint-enable -->
 <!-- prettier-ignore-end -->
+
 <!-- ALL-CONTRIBUTORS-LIST:END -->
 
 This project follows the [all-contributors](https://github.com/all-contributors/all-contributors) specification. Contributions of any kind welcome!

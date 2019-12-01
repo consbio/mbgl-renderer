@@ -48,6 +48,10 @@ var PARAMS = {
     isRequired: true,
     isInt: true
   },
+  padding: {
+    isRequired: false,
+    isInt: true
+  },
   zoom: {
     isRequired: false,
     isDecimal: true
@@ -75,6 +79,8 @@ var renderImage = function renderImage(params, response, next, tilePath) {
       height = params.height,
       _params$token = params.token,
       token = _params$token === void 0 ? null : _params$token,
+      _params$padding = params.padding,
+      padding = _params$padding === void 0 ? 0 : _params$padding,
       _params$bearing = params.bearing,
       bearing = _params$bearing === void 0 ? null : _params$bearing,
       _params$pitch = params.pitch,
@@ -165,6 +171,17 @@ var renderImage = function renderImage(params, response, next, tilePath) {
     if (south === north) {
       return next(new _restifyErrors["default"].BadRequestError("Bounds south and north coordinate are the same value"));
     }
+
+    if (padding) {
+      // padding must not be greater than width / 2 and height / 2
+      if (Math.abs(padding) >= width / 2) {
+        return next(new _restifyErrors["default"].BadRequestError('Padding must be less than width / 2'));
+      }
+
+      if (Math.abs(padding) >= height / 2) {
+        return next(new _restifyErrors["default"].BadRequestError('Padding must be less than height / 2'));
+      }
+    }
   }
 
   if (bearing !== null) {
@@ -188,6 +205,7 @@ var renderImage = function renderImage(params, response, next, tilePath) {
       zoom: zoom,
       center: center,
       bounds: bounds,
+      padding: padding,
       tilePath: tilePath,
       ratio: ratio,
       bearing: bearing,

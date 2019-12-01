@@ -26,7 +26,7 @@ var parseListToFloat = function parseListToFloat(text) {
   return text.split(',').map(Number);
 };
 
-_commander["default"].version(_package.version).name('mbgl-render').usage('<style.json> <img_filename> <width> <height> [options]').description('Export a Mapbox GL map to image.  You must provide either center and zoom, or bounds.').arguments('<style.json> <img_filename> <width> <height>').option('-c, --center <longitude,latitude>', 'center of map (NO SPACES)', parseListToFloat).option('-z, --zoom <n>', 'Zoom level', parseFloat).option('-r, --ratio <n>', 'Pixel ratio', parseInt).option('-b, --bounds <west,south,east,north>', 'Bounds (NO SPACES)', parseListToFloat).option('--bearing <degrees>', 'Bearing (0-360)', parseFloat).option('--pitch <degrees>', 'Pitch (0-60)', parseFloat).option('-t, --tiles <mbtiles_path>', 'Directory containing local mbtiles files to render').option('--token <mapbox access token>', 'Mapbox access token (required for using Mapbox styles and sources)').parse(process.argv);
+_commander["default"].version(_package.version).name('mbgl-render').usage('<style.json> <img_filename> <width> <height> [options]').description('Export a Mapbox GL map to image.  You must provide either center and zoom, or bounds.').arguments('<style.json> <img_filename> <width> <height>').option('-c, --center <longitude,latitude>', 'center of map (NO SPACES)', parseListToFloat).option('-z, --zoom <n>', 'Zoom level', parseFloat).option('-r, --ratio <n>', 'Pixel ratio', parseInt).option('-b, --bounds <west,south,east,north>', 'Bounds (NO SPACES)', parseListToFloat).option('--padding <padding>', 'Number of pixels to add to the inside of each edge of the image.\nCan only be used with bounds option.', parseInt).option('--bearing <degrees>', 'Bearing (0-360)', parseFloat).option('--pitch <degrees>', 'Pitch (0-60)', parseFloat).option('-t, --tiles <mbtiles_path>', 'Directory containing local mbtiles files to render').option('--token <mapbox access token>', 'Mapbox access token (required for using Mapbox styles and sources)').parse(process.argv);
 
 var _cli$args = (0, _slicedToArray2["default"])(_commander["default"].args, 4),
     styleFilename = _cli$args[0],
@@ -41,6 +41,8 @@ var _cli$args = (0, _slicedToArray2["default"])(_commander["default"].args, 4),
     ratio = _cli$ratio === void 0 ? 1 : _cli$ratio,
     _cli$bounds = _commander["default"].bounds,
     bounds = _cli$bounds === void 0 ? null : _cli$bounds,
+    _cli$padding = _commander["default"].padding,
+    padding = _cli$padding === void 0 ? 0 : _cli$padding,
     _cli$bearing = _commander["default"].bearing,
     bearing = _cli$bearing === void 0 ? null : _cli$bearing,
     _cli$pitch = _commander["default"].pitch,
@@ -117,11 +119,22 @@ if (bounds !== null) {
       north = _bounds[3];
 
   if (west === east) {
-    raiseError("Bounds west and east coordinate are the same value");
+    raiseError('Bounds west and east coordinate are the same value');
   }
 
   if (south === north) {
-    raiseError("Bounds south and north coordinate are the same value");
+    raiseError('Bounds south and north coordinate are the same value');
+  }
+
+  if (padding) {
+    // padding must not be greater than width / 2 and height / 2
+    if (Math.abs(padding) >= width / 2) {
+      raiseError('Padding must be less than width / 2');
+    }
+
+    if (Math.abs(padding) >= height / 2) {
+      raiseError('Padding must be less than height / 2');
+    }
   }
 }
 
@@ -157,6 +170,7 @@ var renderRequest = function renderRequest(style) {
     ratio: ratio,
     center: center,
     bounds: bounds,
+    padding: padding,
     bearing: bearing,
     pitch: pitch,
     tilePath: tilePath,

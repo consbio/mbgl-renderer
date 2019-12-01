@@ -19,6 +19,7 @@ const PARAMS = {
     style: { isRequired: true, isString: true },
     width: { isRequired: true, isInt: true },
     height: { isRequired: true, isInt: true },
+    padding: { isRequired: false, isInt: true },
     zoom: { isRequired: false, isDecimal: true },
     ratio: { isRequired: false, isDecimal: true },
     bearing: { isRequired: false, isDecimal: true },
@@ -27,7 +28,14 @@ const PARAMS = {
 }
 
 const renderImage = (params, response, next, tilePath) => {
-    const { width, height, token = null, bearing = null, pitch = null } = params
+    const {
+        width,
+        height,
+        token = null,
+        padding = 0,
+        bearing = null,
+        pitch = null,
+    } = params
     let { style, zoom = null, center = null, bounds = null, ratio = 1 } = params
 
     if (typeof style === 'string') {
@@ -137,6 +145,24 @@ const renderImage = (params, response, next, tilePath) => {
                 )
             )
         }
+
+        if (padding) {
+            // padding must not be greater than width / 2 and height / 2
+            if (Math.abs(padding) >= width / 2) {
+                return next(
+                    new restifyErrors.BadRequestError(
+                        'Padding must be less than width / 2'
+                    )
+                )
+            }
+            if (Math.abs(padding) >= height / 2) {
+                return next(
+                    new restifyErrors.BadRequestError(
+                        'Padding must be less than height / 2'
+                    )
+                )
+            }
+        }
     }
 
     if (bearing !== null) {
@@ -172,6 +198,7 @@ const renderImage = (params, response, next, tilePath) => {
             zoom,
             center,
             bounds,
+            padding,
             tilePath,
             ratio,
             bearing,

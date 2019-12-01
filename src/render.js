@@ -278,7 +278,7 @@ const getRemoteAsset = (url, callback) => {
  * @param {number} width - width of output map (default: 1024)
  * @param {number} height - height of output map (default: 1024)
  * @param {Object} - configuration object containing style, zoom, center: [lng, lat],
- * width, height, bounds: [west, south, east, north], ratio
+ * width, height, bounds: [west, south, east, north], ratio, padding
  * @param {String} tilePath - path to directory containing local mbtiles files that are
  * referenced from the style.json as "mbtiles://<tileset>"
  */
@@ -290,6 +290,7 @@ export const render = (style, width = 1024, height = 1024, options) =>
             pitch = 0,
             token = null,
             ratio = 1,
+            padding = 0,
         } = options
         let { center = null, zoom = null, tilePath = null } = options
 
@@ -348,13 +349,25 @@ export const render = (style, width = 1024, height = 1024, options) =>
                     ]}`
                 )
             }
+
+            if (padding) {
+                // padding must not be greater than width / 2 and height / 2
+                if (Math.abs(padding) >= width / 2) {
+                    throw new Error('Padding must be less than width / 2')
+                }
+                if (Math.abs(padding) >= height / 2) {
+                    throw new Error('Padding must be less than height / 2')
+                }
+            }
         }
 
         // calculate zoom and center from bounds and image dimensions
         if (bounds !== null && (zoom === null || center === null)) {
             const viewport = geoViewport.viewport(
                 bounds,
-                [width, height],
+                // add padding to width and height to effectively
+                // zoom out the target zoom level.
+                [width - 2 * padding, height - 2 * padding],
                 undefined,
                 undefined,
                 undefined,

@@ -10,6 +10,7 @@ import mbtilesTilesVectorStyle from './fixtures/example-style-mbtiles-tiles-vect
 import mapboxSourceStyle from './fixtures/example-style-mapbox-source.json'
 import badSourceStyle from './fixtures/example-style-bad-source.json'
 import mbtilesMissingSourceStyle from './fixtures/example-style-mbtiles-missing-source.json'
+import geojsonSourceStyle from './fixtures/example-style-geojson.json'
 import { imageDiff, skipIf } from './util'
 
 // Load MAPBOX_API_TOKEN from .env.test
@@ -57,6 +58,97 @@ test('creates image using bounds', async () => {
 
     const diffPixels = await imageDiff(data, expectedPath)
     expect(diffPixels).toBeLessThan(100)
+})
+
+test('creates image using padding', async () => {
+    // No padding
+    let data = await render(geojsonSourceStyle, 100, 100, {
+        zoom: null,
+        center: null,
+        bounds: [-125, 37.5, -115, 42.5],
+        padding: 0,
+        tilePath: path.join(__dirname, './fixtures/'),
+    })
+
+    let expectedPath = path.join(
+        __dirname,
+        './fixtures/expected-no-padding.png'
+    )
+    // to write out known good image:
+    // fs.writeFileSync(expectedPath, data)
+
+    let diffPixels = await imageDiff(data, expectedPath)
+    expect(diffPixels).toBeLessThan(100)
+
+    data = await render(geojsonSourceStyle, 100, 100, {
+        zoom: null,
+        center: null,
+        bounds: [-125, 37.5, -115, 42.5],
+        padding: 25,
+        tilePath: path.join(__dirname, './fixtures/'),
+    })
+
+    expectedPath = path.join(__dirname, './fixtures/expected-padding25px.png')
+    // to write out known good image:
+    fs.writeFileSync(expectedPath, data)
+
+    diffPixels = await imageDiff(data, expectedPath)
+    expect(diffPixels).toBeLessThan(100)
+
+    data = await render(geojsonSourceStyle, 100, 100, {
+        zoom: null,
+        center: null,
+        bounds: [-125, 37.5, -115, 42.5],
+        padding: -25,
+        tilePath: path.join(__dirname, './fixtures/'),
+    })
+
+    expectedPath = path.join(__dirname, './fixtures/expected-padding-25px.png')
+    // to write out known good image:
+    fs.writeFileSync(expectedPath, data)
+
+    diffPixels = await imageDiff(data, expectedPath)
+    expect(diffPixels).toBeLessThan(100)
+})
+
+test('fails with invalid padding', async () => {
+    // Padding must be less than width / 2 and height / 2
+    await expect(
+        render(geojsonSourceStyle, 100, 200, {
+            zoom: null,
+            center: null,
+            bounds: [-125, 37.5, -115, 42.5],
+            padding: 50,
+        })
+    ).rejects.toThrowError(/Padding must be less than width \/ 2/)
+
+    await expect(
+        render(geojsonSourceStyle, 200, 100, {
+            zoom: null,
+            center: null,
+            bounds: [-125, 37.5, -115, 42.5],
+            padding: 50,
+        })
+    ).rejects.toThrowError(/Padding must be less than height \/ 2/)
+
+    // should fail if padding is negative by too much amount as well
+    await expect(
+        render(geojsonSourceStyle, 100, 200, {
+            zoom: null,
+            center: null,
+            bounds: [-125, 37.5, -115, 42.5],
+            padding: -50,
+        })
+    ).rejects.toThrowError(/Padding must be less than width \/ 2/)
+
+    await expect(
+        render(geojsonSourceStyle, 200, 100, {
+            zoom: null,
+            center: null,
+            bounds: [-125, 37.5, -115, 42.5],
+            padding: -50,
+        })
+    ).rejects.toThrowError(/Padding must be less than height \/ 2/)
 })
 
 test('resolves local mbtiles from raster source', async () => {

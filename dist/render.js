@@ -338,7 +338,7 @@ var getRemoteAsset = function getRemoteAsset(url, callback) {
  * @param {number} width - width of output map (default: 1024)
  * @param {number} height - height of output map (default: 1024)
  * @param {Object} - configuration object containing style, zoom, center: [lng, lat],
- * width, height, bounds: [west, south, east, north], ratio
+ * width, height, bounds: [west, south, east, north], ratio, padding
  * @param {String} tilePath - path to directory containing local mbtiles files that are
  * referenced from the style.json as "mbtiles://<tileset>"
  */
@@ -358,7 +358,9 @@ var render = function render(style) {
         _options$token = options.token,
         token = _options$token === void 0 ? null : _options$token,
         _options$ratio = options.ratio,
-        ratio = _options$ratio === void 0 ? 1 : _options$ratio;
+        ratio = _options$ratio === void 0 ? 1 : _options$ratio,
+        _options$padding = options.padding,
+        padding = _options$padding === void 0 ? 0 : _options$padding;
     var _options$center = options.center,
         center = _options$center === void 0 ? null : _options$center,
         _options$zoom = options.zoom,
@@ -404,11 +406,24 @@ var render = function render(style) {
       if (bounds.length !== 4) {
         throw new Error("Bounds must be west,south,east,north.  Invalid value found: ".concat((0, _toConsumableArray2["default"])(bounds)));
       }
+
+      if (padding) {
+        // padding must not be greater than width / 2 and height / 2
+        if (Math.abs(padding) >= width / 2) {
+          throw new Error('Padding must be less than width / 2');
+        }
+
+        if (Math.abs(padding) >= height / 2) {
+          throw new Error('Padding must be less than height / 2');
+        }
+      }
     } // calculate zoom and center from bounds and image dimensions
 
 
     if (bounds !== null && (zoom === null || center === null)) {
-      var viewport = _geoViewport["default"].viewport(bounds, [width, height], undefined, undefined, undefined, true);
+      var viewport = _geoViewport["default"].viewport(bounds, // add padding to width and height to effectively
+      // zoom out the target zoom level.
+      [width - 2 * padding, height - 2 * padding], undefined, undefined, undefined, true);
 
       zoom = Math.max(viewport.zoom - 1, 0);
       /* eslint-disable prefer-destructuring */
