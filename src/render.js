@@ -198,7 +198,7 @@ const getLocalTile = (tilePath, url, callback) => {
 
         mbtiles.getTile(z, x, y, (tileErr, data) => {
             if (tileErr) {
-                // console.log(`error fetching tile: z:${z} x:${x} y:${y} from ${mbtilesFile}\n${tileErr}`)
+                // console.error(`error fetching tile: z:${z} x:${x} y:${y} from ${mbtilesFile}\n${tileErr}`)
                 callback(null, {})
                 return null
             }
@@ -220,12 +220,14 @@ const getLocalTile = (tilePath, url, callback) => {
 }
 
 /**
- * Fetch a remotely hosted asset: tile, sprite, etc
+ * Fetch a remotely hosted tile.
+ * Empty or missing tiles return null data to the callback function, which
+ * result in those tiles not rendering but no errors being raised.
  *
- * @param {String} url - URL of the asset
+ * @param {String} url - URL of the tile
  * @param {function} callback - callback to call with (err, {data})
  */
-const getRemoteAsset = (url, callback) => {
+const getRemoteTile = (url, callback) => {
     webRequest(
         {
             url,
@@ -254,7 +256,47 @@ const getRemoteAsset = (url, callback) => {
                 }
                 default: {
                     // assume error
-                    console.log(
+                    console.error(
+                        `Error with request for: ${url}\nstatus: ${res.statusCode}`
+                    )
+                    return callback(
+                        new Error(
+                            `Error with request for: ${url}\nstatus: ${res.statusCode}`
+                        )
+                    )
+                }
+            }
+        }
+    )
+}
+
+/**
+ * Fetch a remotely hosted asset: glyph, sprite, etc
+ * Anything other than a HTTP 200 response results in an exception.
+ *
+ *
+ * @param {String} url - URL of the asset
+ * @param {function} callback - callback to call with (err, {data})
+ */
+const getRemoteAsset = (url, callback) => {
+    webRequest(
+        {
+            url,
+            encoding: null,
+            gzip: true,
+        },
+        (err, res, data) => {
+            if (err) {
+                return callback(err)
+            }
+
+            switch (res.statusCode) {
+                case 200: {
+                    return callback(null, { data })
+                }
+                default: {
+                    // assume error
+                    console.error(
                         `Error with request for: ${url}\nstatus: ${res.statusCode}`
                     )
                     return callback(
@@ -448,12 +490,12 @@ export const render = (style, width = 1024, height = 1024, options) =>
                                 // This seems to be due to a bug in how the mapbox tile
                                 // JSON is handled within mapbox-gl-native
                                 // since it returns fully resolved tiles!
-                                getRemoteAsset(
+                                getRemoteTile(
                                     normalizeMapboxTileURL(url, token),
                                     callback
                                 )
                             } else {
-                                getRemoteAsset(url, callback)
+                                getRemoteTile(url, callback)
                             }
                             break
                         }

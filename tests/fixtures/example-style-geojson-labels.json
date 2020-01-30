@@ -1,0 +1,45 @@
+{
+    "version": 8,
+    "glyphs": "mapbox://fonts/openmaptiles/{fontstack}/{range}.pbf",
+    "sources": {
+        "geojson": {
+            "type": "geojson",
+            "data": {
+                "type": "Feature",
+                "properties": {
+                    "label": "A very good label"
+                },
+                "geometry": {
+                    "type": "Point",
+                    "coordinates": [-119.81689453125, 39.52099229357195]
+                }
+            }
+        }
+    },
+    "layers": [
+        {
+            "id": "point",
+            "type": "circle",
+            "source": "geojson",
+            "paint": {
+                "circle-color": "#FF0000",
+                "circle-radius": 6
+            }
+        },
+        {
+            "id": "labels",
+            "type": "symbol",
+            "source": "geojson",
+            "layout": {
+                "text-field": ["get", "label"],
+                "text-font": ["Open Sans Regular"]
+            },
+            "paint": {
+                "text-color": "#000000",
+                "text-halo-color": "#FFFFFF",
+                "text-halo-width": 2,
+                "text-halo-blur": 2
+            }
+        }
+    ]
+}

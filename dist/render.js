@@ -255,7 +255,7 @@ var getLocalTile = function getLocalTile(tilePath, url, callback) {
 
     mbtiles.getTile(z, x, y, function (tileErr, data) {
       if (tileErr) {
-        // console.log(`error fetching tile: z:${z} x:${x} y:${y} from ${mbtilesFile}\n${tileErr}`)
+        // console.error(`error fetching tile: z:${z} x:${x} y:${y} from ${mbtilesFile}\n${tileErr}`)
         callback(null, {});
         return null;
       }
@@ -279,14 +279,16 @@ var getLocalTile = function getLocalTile(tilePath, url, callback) {
   });
 };
 /**
- * Fetch a remotely hosted asset: tile, sprite, etc
+ * Fetch a remotely hosted tile.
+ * Empty or missing tiles return null data to the callback function, which
+ * result in those tiles not rendering but no errors being raised.
  *
- * @param {String} url - URL of the asset
+ * @param {String} url - URL of the tile
  * @param {function} callback - callback to call with (err, {data})
  */
 
 
-var getRemoteAsset = function getRemoteAsset(url, callback) {
+var getRemoteTile = function getRemoteTile(url, callback) {
   (0, _request["default"])({
     url: url,
     encoding: null,
@@ -322,7 +324,44 @@ var getRemoteAsset = function getRemoteAsset(url, callback) {
       default:
         {
           // assume error
-          console.log("Error with request for: ".concat(url, "\nstatus: ").concat(res.statusCode));
+          console.error("Error with request for: ".concat(url, "\nstatus: ").concat(res.statusCode));
+          return callback(new Error("Error with request for: ".concat(url, "\nstatus: ").concat(res.statusCode)));
+        }
+    }
+  });
+};
+/**
+ * Fetch a remotely hosted asset: glyph, sprite, etc
+ * Anything other than a HTTP 200 response results in an exception.
+ *
+ *
+ * @param {String} url - URL of the asset
+ * @param {function} callback - callback to call with (err, {data})
+ */
+
+
+var getRemoteAsset = function getRemoteAsset(url, callback) {
+  (0, _request["default"])({
+    url: url,
+    encoding: null,
+    gzip: true
+  }, function (err, res, data) {
+    if (err) {
+      return callback(err);
+    }
+
+    switch (res.statusCode) {
+      case 200:
+        {
+          return callback(null, {
+            data: data
+          });
+        }
+
+      default:
+        {
+          // assume error
+          console.error("Error with request for: ".concat(url, "\nstatus: ").concat(res.statusCode));
           return callback(new Error("Error with request for: ".concat(url, "\nstatus: ").concat(res.statusCode)));
         }
     }
@@ -497,9 +536,9 @@ var render = function render(style) {
                   // This seems to be due to a bug in how the mapbox tile
                   // JSON is handled within mapbox-gl-native
                   // since it returns fully resolved tiles!
-                  getRemoteAsset(normalizeMapboxTileURL(url, token), callback);
+                  getRemoteTile(normalizeMapboxTileURL(url, token), callback);
                 } else {
-                  getRemoteAsset(url, callback);
+                  getRemoteTile(url, callback);
                 }
 
                 break;

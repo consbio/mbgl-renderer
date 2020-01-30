@@ -37,7 +37,7 @@ If you use Mapbox styles or hosted tiles, make sure to include appropriate [attr
 
 ## Installation
 
-`yarn add mbgl-renderer`
+`npm add mbgl-renderer`
 or
 `npm install mbgl-renderer`
 
@@ -48,11 +48,36 @@ or
 
 Node 10 appears fully supported by the latest version of Mapbox GL. Originally, there were several issues when running on Node 10, causing segmentation faults and other errors. If you experience issues, we recommend using Node 8.
 
-Only NodeJS versions with `@mapbox/mapbox-gl-native` binaries built by Mapbox are supported via `npm install` / `yarn add` routes, otherwise you need to build `@mapbox/mapbox-gl-native` from source yourself. See [build instructions](https://github.com/mapbox/mapbox-gl-native/blob/master/platform/node/DEVELOPING.md) for more information.
+Only NodeJS versions with `@mapbox/mapbox-gl-native` binaries built by Mapbox are supported via `npm install`, otherwise you need to build `@mapbox/mapbox-gl-native` from source yourself. See [build instructions](https://github.com/mapbox/mapbox-gl-native/blob/master/platform/node/DEVELOPING.md) for more information.
 
 On a server, in addition to build tools, you need to install a GL environment. See the `Dockerfile` and `entrypoint.sh` for an example setup.
 
 ## Usage
+
+### Style JSON:
+
+The primary input to every map rendering method below is a Mapbox GL Style JSON file.
+For full reference on this format, please see the [Mapbox documentation](https://docs.mapbox.com/mapbox-gl-js/style-spec/).
+
+### Labels
+
+In order to use text labels, you need to include `glyphs` in your Style JSON (sibling of `sources`)
+
+To use Mapbox hosted glyphs (a Mapbox token is required):
+
+```json
+"glyphs": "mapbox://fonts/mapbox/{fontstack}/{range}.pbf"
+```
+
+You can also use [OpenMapTiles hosted glyphs](https://github.com/openmaptiles/fonts):
+
+```json
+"glyphs": "http://fonts.openmaptiles.org/{fontstack}/{range}.pbf",
+```
+
+In either case, you must make sure that the font you specify is available from that provider.
+See `tests/fixtures/example-style-geojson-label.json` for an example of adding labels based on coordinates specified in
+GeoJSON.
 
 ### NodeJS API:
 
@@ -229,10 +254,10 @@ To start this on port 8080 with local tiles in `tests/fixtures`:
 mbgl-static-server -p 8080 -t tests/fixtures
 ```
 
-You can also start this via `yarn start` but you must use the long parameter names `--port` instead of the short ones.
+You can also start this via `npm start` but you must use the `--` spacer before passing argmuents:
 
 ```
-yarn start --port 8080 --tiles tests/fixtures
+npm start -- --port 8080 --tiles tests/fixtures
 ```
 
 #### Making requests
@@ -271,11 +296,11 @@ POST may be necessary where your style JSON file exceeds the maximum number of c
 
 ## Development
 
-Use `yarn watch` to start up a file watcher to recompile ES6 files in `src/` to ES5 files that are executable in Node in `dist/`. These are compiled using `babel`.
+Use `npm run watch` to start up a file watcher to recompile ES6 files in `src/` to ES5 files that are executable in Node in `dist/`. These are compiled using `babel`.
 
 ## Testing
 
-Tests are run using `jest`. Right now, our coverage is not great, and tests only exercise the core functionality of the render function.
+Tests are run using `jest`. Right now, our coverage is not great and tests only exercise the core functionality of the render function.
 
 Tests require a valid Mapbox API token. Set this in `.env.test` file in the root of the repository:
 
@@ -286,13 +311,7 @@ MAPBOX_API_TOKEN=<your token>
 To run tests:
 
 ```
-yarn test
-```
-
-or
-
-```
-npm test
+npm run test
 ```
 
 This uses the `pixelmatch` package to determine if output images match those that are expected. This may fail when rendered on different machines for reasons we have not completely sorted out, so don't necessarily be alarmed that tests are failing for you - check the outputs.
@@ -334,6 +353,7 @@ In order to use this package on a headless server, you need to use `xvfb`. See `
 ### 0.7.0 (in progress)
 
 -   Added support for padding image bounds
+-   Handle missing remote assets correctly (#49)
 
 ### 0.6.2
 

@@ -11,6 +11,8 @@ import mapboxSourceStyle from './fixtures/example-style-mapbox-source.json'
 import badSourceStyle from './fixtures/example-style-bad-source.json'
 import mbtilesMissingSourceStyle from './fixtures/example-style-mbtiles-missing-source.json'
 import geojsonSourceStyle from './fixtures/example-style-geojson.json'
+import geojsonLabelSourceStyle from './fixtures/example-style-geojson-labels.json'
+import badGlyphSourceStyle from './fixtures/example-style-bad-glyphs.json'
 import { imageDiff, skipIf } from './util'
 
 // Load MAPBOX_API_TOKEN from .env.test
@@ -22,6 +24,8 @@ if (!MAPBOX_API_TOKEN) {
         'MAPBOX_API_TOKEN environment variable is missing; tests that require this token will be skipped'
     )
 }
+
+const testMapbox = skipIf(!MAPBOX_API_TOKEN)
 
 test('creates image with correct format and dimensions', async () => {
     const data = await render(mbtilesTilesStyle, 512, 256, {
@@ -90,7 +94,7 @@ test('creates image using padding', async () => {
 
     expectedPath = path.join(__dirname, './fixtures/expected-padding25px.png')
     // to write out known good image:
-    fs.writeFileSync(expectedPath, data)
+    // fs.writeFileSync(expectedPath, data)
 
     diffPixels = await imageDiff(data, expectedPath)
     expect(diffPixels).toBeLessThan(100)
@@ -105,7 +109,7 @@ test('creates image using padding', async () => {
 
     expectedPath = path.join(__dirname, './fixtures/expected-padding-25px.png')
     // to write out known good image:
-    fs.writeFileSync(expectedPath, data)
+    // fs.writeFileSync(expectedPath, data)
 
     diffPixels = await imageDiff(data, expectedPath)
     expect(diffPixels).toBeLessThan(100)
@@ -293,8 +297,6 @@ test('fails on invalid mapbox token', async () => {
  * from the test machine.
  */
 
-const testMapbox = skipIf(!MAPBOX_API_TOKEN)
-
 testMapbox('resolves from mapbox source', async () => {
     const data = await render(mapboxSourceStyle, 512, 512, {
         zoom: 0,
@@ -349,4 +351,33 @@ test('gracefully handles missing tiles', async () => {
 
     const diffPixels = await imageDiff(data, expectedPath)
     expect(diffPixels).toBeLessThan(100)
+})
+
+testMapbox('creates image using geojson labels', async () => {
+    const data = await render(geojsonLabelSourceStyle, 100, 100, {
+        zoom: null,
+        center: null,
+        bounds: [-125, 37.5, -115, 42.5],
+        token: MAPBOX_API_TOKEN, // only required for mapbox hosted glyphs
+    })
+
+    const expectedPath = path.join(
+        __dirname,
+        './fixtures/expected-geojson-label.png'
+    )
+    // to write out known good image:
+    // fs.writeFileSync(expectedPath, data)
+
+    const diffPixels = await imageDiff(data, expectedPath)
+    expect(diffPixels).toBeLessThan(100)
+})
+
+test('fails with missing glyphs', async () => {
+    await expect(
+        render(badGlyphSourceStyle, 100, 100, {
+            zoom: null,
+            center: null,
+            bounds: [-125, 37.5, -115, 42.5],
+        })
+    ).rejects.toThrowError(/ENOTFOUND/)
 })
