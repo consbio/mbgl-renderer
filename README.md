@@ -354,6 +354,7 @@ In order to use this package on a headless server, you need to use `xvfb`. See `
 
 -   Added support for padding image bounds
 -   Handle missing remote assets correctly (#49)
+-   Added support for image sources (#52)
 
 ### 0.6.2
 

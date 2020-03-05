@@ -13,6 +13,7 @@ import mbtilesMissingSourceStyle from './fixtures/example-style-mbtiles-missing-
 import geojsonSourceStyle from './fixtures/example-style-geojson.json'
 import geojsonLabelSourceStyle from './fixtures/example-style-geojson-labels.json'
 import badGlyphSourceStyle from './fixtures/example-style-bad-glyphs.json'
+import imageSourceStyle from './fixtures/example-style-image-source.json'
 import { imageDiff, skipIf } from './util'
 
 // Load MAPBOX_API_TOKEN from .env.test
@@ -380,4 +381,28 @@ test('fails with missing glyphs', async () => {
             bounds: [-125, 37.5, -115, 42.5],
         })
     ).rejects.toThrowError(/ENOTFOUND/)
+})
+
+test('creates image from image source', async () => {
+    const data = await render(imageSourceStyle, 512, 512, {
+        zoom: 0,
+        center: [0, 0],
+        ratio: 0.5, // we have to use 512 x 512 and 0.5 ratio to fetch first world tile
+    })
+
+    // feed it back through sharp to verify that we got an image
+    const { format, width, height } = await sharp(data).metadata()
+    expect(format).toBe('png')
+    expect(width).toBe(256)
+    expect(height).toBe(256)
+
+    const expectedPath = path.join(
+        __dirname,
+        './fixtures/expected-image-source.png'
+    )
+    // to write out known good image:
+    // fs.writeFileSync(expectedPath, data)
+
+    const diffPixels = await imageDiff(data, expectedPath)
+    expect(diffPixels).toBeLessThan(100)
 })

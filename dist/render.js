@@ -565,6 +565,13 @@ var render = function render(style) {
                 break;
               }
 
+            case 7:
+              {
+                // image source
+                getRemoteAsset(_url["default"].parse(url), callback);
+                break;
+              }
+
             default:
               {
                 // NOT HANDLED!

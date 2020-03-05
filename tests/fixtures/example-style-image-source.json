@@ -1,0 +1,30 @@
+{
+    "version": 8,
+    "sources": {
+        "basemap": {
+            "type": "raster",
+            "tiles": [
+                "https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}"
+            ]
+        },
+        "image": {
+            "type": "image",
+            "url": "https://services.arcgisonline.com/arcgis/rest/services/World_Terrain_Base/MapServer/tile/0/0/0",
+            "coordinates": [
+                [-180, 90],
+                [180, 90],
+                [180, -90],
+                [-180, -90]
+            ]
+        }
+    },
+    "layers": [
+        { "id": "basemap", "source": "basemap", "type": "raster" },
+        {
+            "id": "image",
+            "source": "image",
+            "type": "raster",
+            "paint": { "raster-opacity": 0.5 }
+        }
+    ]
+}

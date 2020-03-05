@@ -529,6 +529,11 @@ export const render = (style, width = 1024, height = 1024, options) =>
                             )
                             break
                         }
+                        case 7: {
+                            // image source
+                            getRemoteAsset(URL.parse(url), callback)
+                            break
+                        }
                         default: {
                             // NOT HANDLED!
                             throw new Error(
