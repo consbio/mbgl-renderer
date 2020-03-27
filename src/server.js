@@ -4,6 +4,7 @@ import restify from 'restify'
 import restifyValidation from 'node-restify-validation'
 import restifyErrors from 'restify-errors'
 import cli from 'commander'
+import logger from 'morgan'
 
 import { version } from '../package.json'
 import { render } from './render'
@@ -249,9 +250,10 @@ cli.version(version)
         '-t, --tiles <mbtiles_path>',
         'Directory containing local mbtiles files to render'
     )
+    .option('-v, --verbose', 'Enable request logging')
     .parse(process.argv)
 
-const { port = 8000, tiles: tilePath = null } = cli
+const { port = 8000, tiles: tilePath = null, verbose = false } = cli
 
 export const server = restify.createServer({
     ignoreTrailingSlash: true,
@@ -265,6 +267,10 @@ server.use(
         errorHandler: restifyErrors.BadRequestError,
     })
 )
+
+if (verbose) {
+    server.use(logger('dev'))
+}
 
 /**
  * /render (GET): renders an image based on request query parameters.
@@ -308,6 +314,7 @@ server.get({ url: '/' }, (req, res) => {
 
     res.send({
         routes,
+        version,
     })
 })
 
