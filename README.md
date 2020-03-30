@@ -245,6 +245,7 @@ You start this from the command line:
     -V, --version               output the version number
     -p, --port <n>              Server port
     -t, --tiles <mbtiles_path>  Directory containing local mbtiles files to render
+    -v, --verbose               Enable request logging
     -h, --help                  output usage information
 ```
 
@@ -350,11 +351,12 @@ In order to use this package on a headless server, you need to use `xvfb`. See `
 
 ## Changes
 
-### 0.7.0 (in progress)
+### 0.7.0
 
 -   Added support for padding image bounds
 -   Handle missing remote assets correctly (#49)
 -   Added support for image sources (#52)
+-   Added request logging (#54)
 
 ### 0.6.2
 
