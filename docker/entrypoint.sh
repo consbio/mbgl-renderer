@@ -11,7 +11,7 @@ done
 echo "Xvfb is running"
 
 echo "Starting mbgl-renderer server"
-node dist/server.js -p 80 -t /app/tiles &
+node dist/server.js -p 80 -t /app/tiles -v &
 echo "Hit Ctrl-C to exit"
 
 trap "echo 'Stopping'; kill -s TERM $Xvfb_pid" INT TERM

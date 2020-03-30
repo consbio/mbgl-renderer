@@ -18,6 +18,7 @@ RUN apt-get update && \
   libprotobuf-dev \
   libxxf86vm-dev \
   xvfb \
+  curl \
   x11-utils && \
   rm -rf /var/lib/apt/lists/* && \
   # install node deps, then remove any that are not used in production
