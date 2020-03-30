@@ -5,17 +5,7 @@ on:
     types: [published]
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-node@v1
-        with:
-          node-version: 10.14
-      - run: npm ci
-      - run: npm test
-
-  publish-npm:
+  publish:
     needs: build
     runs-on: ubuntu-latest
     steps:
