@@ -9,6 +9,8 @@ import logger from 'morgan'
 import { version } from '../package.json'
 import { render } from './render'
 
+logger.token('url', req => req.path())
+
 const parseListToFloat = text => text.split(',').map(Number)
 
 const raiseError = msg => {

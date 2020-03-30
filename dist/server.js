@@ -28,6 +28,10 @@ var _package = require("../package.json");
 
 var _render = require("./render");
 
+_morgan["default"].token('url', function (req) {
+  return req.path();
+});
+
 var parseListToFloat = function parseListToFloat(text) {
   return text.split(',').map(Number);
 };
