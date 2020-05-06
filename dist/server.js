@@ -104,6 +104,7 @@ var renderImage = function renderImage(params, response, next, tilePath) {
   if (typeof style === 'string') {
     try {
       style = JSON.parse(style);
+      console.log(style);
     } catch (jsonErr) {
       console.error('Error parsing JSON style in request: %j', jsonErr);
       return next(new _restifyErrors["default"].BadRequestError({
