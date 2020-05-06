@@ -100,11 +100,11 @@ var renderImage = function renderImage(params, response, next, tilePath) {
       bounds = _params$bounds === void 0 ? null : _params$bounds,
       _params$ratio = params.ratio,
       ratio = _params$ratio === void 0 ? 1 : _params$ratio;
+  console.log(params);
 
   if (typeof style === 'string') {
     try {
       style = JSON.parse(style);
-      console.log(style);
     } catch (jsonErr) {
       console.error('Error parsing JSON style in request: %j', jsonErr);
       return next(new _restifyErrors["default"].BadRequestError({
