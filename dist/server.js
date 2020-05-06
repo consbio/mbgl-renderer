@@ -100,7 +100,7 @@ var renderImage = function renderImage(params, response, next, tilePath) {
       bounds = _params$bounds === void 0 ? null : _params$bounds,
       _params$ratio = params.ratio,
       ratio = _params$ratio === void 0 ? 1 : _params$ratio;
-  console.log(params);
+  console.log(JSON.stringify(params));
 
   if (typeof style === 'string') {
     try {
@@ -122,11 +122,11 @@ var renderImage = function renderImage(params, response, next, tilePath) {
       return next(new _restifyErrors["default"].BadRequestError("Center must be longitude,latitude.  Invalid value found: ".concat((0, _toConsumableArray2["default"])(center))));
     }
 
-    if (Number.isNaN(center[0]) || Math.abs(center[0]) > 180) {
+    if (!Number.isFinite(center[0]) || Math.abs(center[0]) > 180) {
       return next(new _restifyErrors["default"].BadRequestError("Center longitude is outside world bounds (-180 to 180 deg): ".concat(center[0])));
     }
 
-    if (Number.isNaN(center[1]) || Math.abs(center[1]) > 90) {
+    if (!Number.isFinite(center[1]) || Math.abs(center[1]) > 90) {
       return next(new _restifyErrors["default"].BadRequestError("Center latitude is outside world bounds (-90 to 90 deg): ".concat(center[1])));
     }
   }
@@ -156,13 +156,32 @@ var renderImage = function renderImage(params, response, next, tilePath) {
       return next(new _restifyErrors["default"].BadRequestError("Bounds must be west,south,east,north.  Invalid value found: ".concat((0, _toConsumableArray2["default"])(bounds))));
     }
 
-    bounds.forEach(function (b) {
-      if (Number.isNaN(b)) {
-        return next(new _restifyErrors["default"].BadRequestError("Bounds must be west,south,east,north.  Invalid value found: ".concat((0, _toConsumableArray2["default"])(bounds))));
-      }
+    var _iteratorNormalCompletion = true;
+    var _didIteratorError = false;
+    var _iteratorError = undefined;
 
-      return null;
-    });
+    try {
+      for (var _iterator = bounds[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+        var b = _step.value;
+
+        if (!Number.isFinite(b)) {
+          return next(new _restifyErrors["default"].BadRequestError("Bounds must be west,south,east,north.  Invalid value found: ".concat((0, _toConsumableArray2["default"])(bounds))));
+        }
+      }
+    } catch (err) {
+      _didIteratorError = true;
+      _iteratorError = err;
+    } finally {
+      try {
+        if (!_iteratorNormalCompletion && _iterator["return"] != null) {
+          _iterator["return"]();
+        }
+      } finally {
+        if (_didIteratorError) {
+          throw _iteratorError;
+        }
+      }
+    }
 
     var _bounds = bounds,
         _bounds2 = (0, _slicedToArray2["default"])(_bounds, 4),
