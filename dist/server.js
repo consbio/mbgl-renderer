@@ -100,7 +100,6 @@ var renderImage = function renderImage(params, response, next, tilePath) {
       bounds = _params$bounds === void 0 ? null : _params$bounds,
       _params$ratio = params.ratio,
       ratio = _params$ratio === void 0 ? 1 : _params$ratio;
-  console.log(JSON.stringify(params));
 
   if (typeof style === 'string') {
     try {

@@ -40,7 +40,6 @@ const renderImage = (params, response, next, tilePath) => {
         pitch = null,
     } = params
     let { style, zoom = null, center = null, bounds = null, ratio = 1 } = params
-    console.log(JSON.stringify(params))
 
     if (typeof style === 'string') {
         try {
