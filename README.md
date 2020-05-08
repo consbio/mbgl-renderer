@@ -351,6 +351,10 @@ In order to use this package on a headless server, you need to use `xvfb`. See `
 
 ## Changes
 
+### 0.7.1
+
+-   Fixed handling of `NaN` and `Infinity` in inputs for `bounds` and `center` (#58)
+
 ### 0.7.0
 
 -   Added support for padding image bounds

@@ -27,8 +27,6 @@ test('returns correct version', async () => {
 })
 
 test('fails without required parameters', async () => {
-    // console.log(result.stderr, '|', result.stdout)
-
     let result = await cli([], '.')
     expect(result.stderr).toContain('ERROR: style is a required parameter')
 
@@ -250,6 +248,11 @@ test('fails with invalid bounds', async () => {
     result = await cli([...params, '-b', '-10,0,10,0'], '.')
     expect(result.stderr).toContain(
         'ERROR: Bounds south and north coordinate are the same value'
+    )
+
+    result = await cli([...params, '-b', '-Infinity,0,10,0'], '.')
+    expect(result.stderr).toContain(
+        'ERROR: Bounds must be valid floating point values.'
     )
 })
 

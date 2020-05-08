@@ -6,12 +6,12 @@ import webRequest from 'request'
 import { version } from '../package.json'
 import { render, isMapboxStyleURL, normalizeMapboxStyleURL } from './render'
 
-const raiseError = msg => {
+const raiseError = (msg) => {
     console.error('ERROR:', msg)
     process.exit(1)
 }
 
-const parseListToFloat = text => text.split(',').map(Number)
+const parseListToFloat = (text) => text.split(',').map(Number)
 
 cli.version(version)
     .name('mbgl-render')
@@ -126,10 +126,10 @@ if (bounds !== null) {
         )
     }
 
-    bounds.forEach(b => {
+    bounds.forEach((b) => {
         if (!Number.isFinite(b)) {
             raiseError(
-                `Bounds must be west,south,east,north.  Invalid value found: ${[
+                `Bounds must be valid floating point values.  Invalid value found: ${[
                     ...bounds,
                 ]}`
             )
@@ -181,7 +181,7 @@ if (tilePath !== null) {
     console.log(`using local mbtiles in: ${tilePath}`)
 }
 
-const renderRequest = style => {
+const renderRequest = (style) => {
     render(style, imgWidth, imgHeight, {
         zoom,
         ratio,
@@ -193,12 +193,12 @@ const renderRequest = style => {
         tilePath,
         token,
     })
-        .then(data => {
+        .then((data) => {
             fs.writeFileSync(imgFilename, data)
             console.log('Done!')
             console.log('\n')
         })
-        .catch(err => {
+        .catch((err) => {
             console.error(err)
         })
 }
