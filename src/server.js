@@ -70,7 +70,7 @@ const renderImage = (params, response, next, tilePath) => {
             )
         }
 
-        if (Number.isNaN(center[0]) || Math.abs(center[0]) > 180) {
+        if (!Number.isFinite(center[0]) || Math.abs(center[0]) > 180) {
             return next(
                 new restifyErrors.BadRequestError(
                     `Center longitude is outside world bounds (-180 to 180 deg): ${center[0]}`
@@ -78,7 +78,7 @@ const renderImage = (params, response, next, tilePath) => {
             )
         }
 
-        if (Number.isNaN(center[1]) || Math.abs(center[1]) > 90) {
+        if (!Number.isFinite(center[1]) || Math.abs(center[1]) > 90) {
             return next(
                 new restifyErrors.BadRequestError(
                     `Center latitude is outside world bounds (-90 to 90 deg): ${center[1]}`
@@ -120,8 +120,8 @@ const renderImage = (params, response, next, tilePath) => {
                 )
             )
         }
-        bounds.forEach(b => {
-            if (Number.isNaN(b)) {
+        for (const b of bounds) {
+            if (!Number.isFinite(b)) {
                 return next(
                     new restifyErrors.BadRequestError(
                         `Bounds must be west,south,east,north.  Invalid value found: ${[
@@ -130,8 +130,7 @@ const renderImage = (params, response, next, tilePath) => {
                     )
                 )
             }
-            return null
-        })
+        }
 
         const [west, south, east, north] = bounds
         if (west === east) {

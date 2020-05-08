@@ -127,7 +127,7 @@ if (bounds !== null) {
     }
 
     bounds.forEach(b => {
-        if (Number.isNaN(b)) {
+        if (!Number.isFinite(b)) {
             raiseError(
                 `Bounds must be west,south,east,north.  Invalid value found: ${[
                     ...bounds,
