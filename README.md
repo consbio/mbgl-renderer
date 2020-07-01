@@ -415,12 +415,12 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
     <td align="center"><a href="https://github.com/bob-gray"><img src="https://avatars0.githubusercontent.com/u/814812?v=4" width="100px;" alt="Bob Gray"/><br /><sub><b>Bob Gray</b></sub></a><br /><a href="https://github.com/consbio/mbgl-renderer/issues?q=author%3Abob-gray" title="Bug reports">🐛</a></td>
     <td align="center"><a href="https://github.com/abraztsov"><img src="https://avatars3.githubusercontent.com/u/19175580?v=4" width="100px;" alt="Nikita Abraztsov"/><br /><sub><b>Nikita Abraztsov</b></sub></a><br /><a href="https://github.com/consbio/mbgl-renderer/issues?q=author%3Aabraztsov" title="Bug reports">🐛</a></td>
     <td align="center"><a href="https://github.com/LePetitTim"><img src="https://avatars1.githubusercontent.com/u/26329336?v=4" width="100px;" alt="Timothée Monty"/><br /><sub><b>Timothée Monty</b></sub></a><br /><a href="https://github.com/consbio/mbgl-renderer/issues?q=author%3ALePetitTim" title="Bug reports">🐛</a></td>
+    <td align="center"><a href="https://stunkymonkey.de"><img src="https://avatars0.githubusercontent.com/u/1315818?v=4" width="100px;" alt="felix"/><br /><sub><b>felix</b></sub></a><br /><a href="https://github.com/consbio/mbgl-renderer/commits?author=Stunkymonkey" title="Documentation">📖</a></td>
   </tr>
 </table>
 
 <!-- markdownlint-enable -->
 <!-- prettier-ignore-end -->
-
 <!-- ALL-CONTRIBUTORS-LIST:END -->
 
 This project follows the [all-contributors](https://github.com/all-contributors/all-contributors) specification. Contributions of any kind welcome!

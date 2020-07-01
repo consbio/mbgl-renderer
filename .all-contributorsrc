@@ -1,132 +1,141 @@
 {
-    "projectName": "mbgl-renderer",
-    "projectOwner": "consbio",
-    "repoType": "github",
-    "repoHost": "https://github.com",
-    "files": [
-        "README.md"
-    ],
-    "imageSize": 100,
-    "commit": false,
-    "commitConvention": "none",
-    "contributors": [
-        {
-            "login": "brendan-ward",
-            "name": "Brendan Ward",
-            "avatar_url": "https://avatars2.githubusercontent.com/u/3375604?v=4",
-            "profile": "https://astutespruce.com",
-            "contributions": [
-                "code",
-                "doc",
-                "bug",
-                "blog",
-                "review",
-                "ideas"
-            ]
-        },
-        {
-            "login": "nikmolnar",
-            "name": "Nik Molnar",
-            "avatar_url": "https://avatars1.githubusercontent.com/u/2422416?v=4",
-            "profile": "https://github.com/nikmolnar",
-            "contributions": [
-                "code",
-                "bug",
-                "ideas"
-            ]
-        },
-        {
-            "login": "ka7eh",
-            "name": "Kaveh",
-            "avatar_url": "https://avatars1.githubusercontent.com/u/4112646?v=4",
-            "profile": "https://github.com/ka7eh",
-            "contributions": [
-                "bug",
-                "ideas"
-            ]
-        },
-        {
-            "login": "bertrandmd",
-            "name": "bertrandmd",
-            "avatar_url": "https://avatars0.githubusercontent.com/u/9257198?v=4",
-            "profile": "https://github.com/bertrandmd",
-            "contributions": [
-                "code"
-            ]
-        },
-        {
-            "login": "korpd",
-            "name": "Daniel Korp",
-            "avatar_url": "https://avatars1.githubusercontent.com/u/44464673?v=4",
-            "profile": "https://github.com/korpd",
-            "contributions": [
-                "code"
-            ]
-        },
-        {
-            "login": "kjkurtz",
-            "name": "Kyle Kurtz",
-            "avatar_url": "https://avatars2.githubusercontent.com/u/6036168?v=4",
-            "profile": "https://github.com/kjkurtz",
-            "contributions": [
-                "code"
-            ]
-        },
-        {
-            "login": "normanrz",
-            "name": "Norman Rzepka",
-            "avatar_url": "https://avatars1.githubusercontent.com/u/335438?v=4",
-            "profile": "http://normanrz.com/",
-            "contributions": [
-                "code"
-            ]
-        },
-        {
-            "login": "submarcos",
-            "name": "J-E Castagnede",
-            "avatar_url": "https://avatars3.githubusercontent.com/u/7448208?v=4",
-            "profile": "https://github.com/submarcos",
-            "contributions": [
-                "bug"
-            ]
-        },
-        {
-            "login": "jnicho02",
-            "name": "Jez Nicholson",
-            "avatar_url": "https://avatars3.githubusercontent.com/u/83251?v=4",
-            "profile": "http://itsallinthega.me/",
-            "contributions": [
-                "bug",
-                "ideas"
-            ]
-        },
-        {
-            "login": "bob-gray",
-            "name": "Bob Gray",
-            "avatar_url": "https://avatars0.githubusercontent.com/u/814812?v=4",
-            "profile": "https://github.com/bob-gray",
-            "contributions": [
-                "bug"
-            ]
-        },
-        {
-            "login": "abraztsov",
-            "name": "Nikita Abraztsov",
-            "avatar_url": "https://avatars3.githubusercontent.com/u/19175580?v=4",
-            "profile": "https://github.com/abraztsov",
-            "contributions": [
-                "bug"
-            ]
-        },
-        {
-            "login": "LePetitTim",
-            "name": "Timothée Monty",
-            "avatar_url": "https://avatars1.githubusercontent.com/u/26329336?v=4",
-            "profile": "https://github.com/LePetitTim",
-            "contributions": [
-                "bug"
-            ]
-        }
-    ],
-    "contributorsPerLine": 7
+  "projectName": "mbgl-renderer",
+  "projectOwner": "consbio",
+  "repoType": "github",
+  "repoHost": "https://github.com",
+  "files": [
+    "README.md"
+  ],
+  "imageSize": 100,
+  "commit": false,
+  "commitConvention": "none",
+  "contributors": [
+    {
+      "login": "brendan-ward",
+      "name": "Brendan Ward",
+      "avatar_url": "https://avatars2.githubusercontent.com/u/3375604?v=4",
+      "profile": "https://astutespruce.com",
+      "contributions": [
+        "code",
+        "doc",
+        "bug",
+        "blog",
+        "review",
+        "ideas"
+      ]
+    },
+    {
+      "login": "nikmolnar",
+      "name": "Nik Molnar",
+      "avatar_url": "https://avatars1.githubusercontent.com/u/2422416?v=4",
+      "profile": "https://github.com/nikmolnar",
+      "contributions": [
+        "code",
+        "bug",
+        "ideas"
+      ]
+    },
+    {
+      "login": "ka7eh",
+      "name": "Kaveh",
+      "avatar_url": "https://avatars1.githubusercontent.com/u/4112646?v=4",
+      "profile": "https://github.com/ka7eh",
+      "contributions": [
+        "bug",
+        "ideas"
+      ]
+    },
+    {
+      "login": "bertrandmd",
+      "name": "bertrandmd",
+      "avatar_url": "https://avatars0.githubusercontent.com/u/9257198?v=4",
+      "profile": "https://github.com/bertrandmd",
+      "contributions": [
+        "code"
+      ]
+    },
+    {
+      "login": "korpd",
+      "name": "Daniel Korp",
+      "avatar_url": "https://avatars1.githubusercontent.com/u/44464673?v=4",
+      "profile": "https://github.com/korpd",
+      "contributions": [
+        "code"
+      ]
+    },
+    {
+      "login": "kjkurtz",
+      "name": "Kyle Kurtz",
+      "avatar_url": "https://avatars2.githubusercontent.com/u/6036168?v=4",
+      "profile": "https://github.com/kjkurtz",
+      "contributions": [
+        "code"
+      ]
+    },
+    {
+      "login": "normanrz",
+      "name": "Norman Rzepka",
+      "avatar_url": "https://avatars1.githubusercontent.com/u/335438?v=4",
+      "profile": "http://normanrz.com/",
+      "contributions": [
+        "code"
+      ]
+    },
+    {
+      "login": "submarcos",
+      "name": "J-E Castagnede",
+      "avatar_url": "https://avatars3.githubusercontent.com/u/7448208?v=4",
+      "profile": "https://github.com/submarcos",
+      "contributions": [
+        "bug"
+      ]
+    },
+    {
+      "login": "jnicho02",
+      "name": "Jez Nicholson",
+      "avatar_url": "https://avatars3.githubusercontent.com/u/83251?v=4",
+      "profile": "http://itsallinthega.me/",
+      "contributions": [
+        "bug",
+        "ideas"
+      ]
+    },
+    {
+      "login": "bob-gray",
+      "name": "Bob Gray",
+      "avatar_url": "https://avatars0.githubusercontent.com/u/814812?v=4",
+      "profile": "https://github.com/bob-gray",
+      "contributions": [
+        "bug"
+      ]
+    },
+    {
+      "login": "abraztsov",
+      "name": "Nikita Abraztsov",
+      "avatar_url": "https://avatars3.githubusercontent.com/u/19175580?v=4",
+      "profile": "https://github.com/abraztsov",
+      "contributions": [
+        "bug"
+      ]
+    },
+    {
+      "login": "LePetitTim",
+      "name": "Timothée Monty",
+      "avatar_url": "https://avatars1.githubusercontent.com/u/26329336?v=4",
+      "profile": "https://github.com/LePetitTim",
+      "contributions": [
+        "bug"
+      ]
+    },
+    {
+      "login": "Stunkymonkey",
+      "name": "felix",
+      "avatar_url": "https://avatars0.githubusercontent.com/u/1315818?v=4",
+      "profile": "https://stunkymonkey.de",
+      "contributions": [
+        "doc"
+      ]
+    }
+  ],
+  "contributorsPerLine": 7
 }
