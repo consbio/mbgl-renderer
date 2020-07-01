@@ -334,7 +334,7 @@ docker run --rm -p 8080:80 consbio/mbgl-renderer
 Mount your local tiles directory to `/app/tiles` in the container to use these in the server or CLI:
 
 ```
-docker run --rm -p 8080:80 -v $(pwd)tests/fixtures:/app/tiles consbio/mbgl-renderer
+docker run --rm -p 8080:80 -v $(pwd)/tests/fixtures:/app/tiles consbio/mbgl-renderer
 ```
 
 ### Build your own image:
