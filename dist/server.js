@@ -287,7 +287,12 @@ server.use(_nodeRestifyValidation["default"].validationPlugin({
 }));
 
 if (verbose) {
-  server.use((0, _morgan["default"])('dev'));
+  server.use((0, _morgan["default"])('dev', {
+    // only log valid endpoints
+    skip: function skip(req, res) {
+      return req.statusCode === 404;
+    }
+  }));
 }
 /**
  * /render (GET): renders an image based on request query parameters.

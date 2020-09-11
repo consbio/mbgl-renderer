@@ -351,6 +351,10 @@ In order to use this package on a headless server, you need to use `xvfb`. See `
 
 ## Changes
 
+### 0.7.2
+
+-   skip request logging for routes that do not exist (e.g., docker health check)
+
 ### 0.7.1
 
 -   Fixed handling of `NaN` and `Infinity` in inputs for `bounds` and `center` (#58)
@@ -421,6 +425,7 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
 
 <!-- markdownlint-enable -->
 <!-- prettier-ignore-end -->
+
 <!-- ALL-CONTRIBUTORS-LIST:END -->
 
 This project follows the [all-contributors](https://github.com/all-contributors/all-contributors) specification. Contributions of any kind welcome!

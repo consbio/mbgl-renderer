@@ -9,11 +9,11 @@ import logger from 'morgan'
 import { version } from '../package.json'
 import { render } from './render'
 
-logger.token('url', req => req.path())
+logger.token('url', (req) => req.path())
 
-const parseListToFloat = text => text.split(',').map(Number)
+const parseListToFloat = (text) => text.split(',').map(Number)
 
-const raiseError = msg => {
+const raiseError = (msg) => {
     console.error('ERROR:', msg)
     process.exit(1)
 }
@@ -221,7 +221,7 @@ const renderImage = (params, response, next, tilePath) => {
                     'content-type': 'image/png',
                 })
             })
-            .catch(err => {
+            .catch((err) => {
                 console.error('Error processing render request', err)
                 return next(
                     new restifyErrors.InternalServerError(
@@ -270,7 +270,14 @@ server.use(
 )
 
 if (verbose) {
-    server.use(logger('dev'))
+    server.use(
+        logger('dev', {
+            // only log valid endpoints
+            skip: function (req, res) {
+                return req.statusCode === 404
+            },
+        })
+    )
 }
 
 /**

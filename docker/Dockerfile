@@ -44,5 +44,5 @@ COPY ./dist/* /app/dist/
 COPY ./docker/entrypoint.sh /root
 RUN chmod +x /root/entrypoint.sh
 ENTRYPOINT [ "/root/entrypoint.sh" ]
-HEALTHCHECK CMD curl --fail http://localhost:80 || exit 1
+HEALTHCHECK CMD curl --fail http://localhost:80/health || exit 1
 
