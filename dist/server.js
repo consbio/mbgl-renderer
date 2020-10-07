@@ -343,6 +343,16 @@ server.get({
     version: _package.version
   });
 });
+/**
+ * /health: returns 200 to confirm that server is up
+ */
+
+server.get({
+  url: '/health'
+}, function (req, res, next) {
+  res.send(200);
+  next();
+});
 
 if (tilePath !== null) {
   if (!_fs["default"].existsSync(tilePath)) {

@@ -326,6 +326,15 @@ server.get({ url: '/' }, (req, res) => {
     })
 })
 
+
+/**
+ * /health: returns 200 to confirm that server is up
+ */
+server.get({url: '/health'}, (req, res, next) => {
+    res.send(200)
+    next()
+})
+
 if (tilePath !== null) {
     if (!fs.existsSync(tilePath)) {
         raiseError(`Path to mbtiles files does not exist: ${tilePath}`)
