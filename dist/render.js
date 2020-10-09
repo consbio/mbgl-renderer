@@ -9,6 +9,8 @@ exports["default"] = exports.render = exports.normalizeMapboxGlyphURL = exports.
 
 var _toConsumableArray2 = _interopRequireDefault(require("@babel/runtime/helpers/toConsumableArray"));
 
+var _regenerator = _interopRequireDefault(require("@babel/runtime/regenerator"));
+
 var _slicedToArray2 = _interopRequireDefault(require("@babel/runtime/helpers/slicedToArray"));
 
 var _fs = _interopRequireDefault(require("fs"));
@@ -28,6 +30,8 @@ var _mbtiles = _interopRequireDefault(require("@mapbox/mbtiles"));
 var _request = _interopRequireDefault(require("request"));
 
 var _url = _interopRequireDefault(require("url"));
+
+var _pngjs = require("pngjs");
 
 /* eslint-disable no-new */
 // sharp must be before zlib and other imports or sharp gets wrong version of zlib and breaks on some servers
@@ -368,6 +372,93 @@ var getRemoteAsset = function getRemoteAsset(url, callback) {
   });
 };
 /**
+ * Fetch a remotely hosted PNG image and add it to the map.
+ *
+ *
+ * @param {String} name - name of the png image
+ * @param {String} url - URL of the png image
+ * @param {Object} map - Mapbox GL Map
+ */
+
+
+var loadPNG = function loadPNG(name, url, map) {
+  return new Promise(function (resolve, reject) {
+    (0, _request["default"])({
+      url: url,
+      encoding: null,
+      gzip: true
+    }, function (err, res, data) {
+      if (err) {
+        return false;
+      }
+
+      switch (res.statusCode) {
+        case 200:
+          {
+            var pngImage = _pngjs.PNG.sync.read(data);
+
+            var imageOptions = {
+              width: pngImage.width,
+              height: pngImage.height,
+              pixelRatio: 1
+            };
+            map.addImage(name, pngImage.data, imageOptions);
+            return true;
+          }
+
+        default:
+          {
+            // assume error
+            console.error("Error with request for: ".concat(url, "\nstatus: ").concat(res.statusCode));
+            return false;
+          }
+      }
+    });
+  });
+};
+/**
+ * Adds a list of images to the map.
+ *
+ * @param {String} images - an object, image name to image url
+ * @param {Object} map - Mapbox GL Map
+ */
+
+
+var loadImages = function loadImages(images, map) {
+  var imageName;
+  return _regenerator["default"].async(function loadImages$(_context) {
+    while (1) {
+      switch (_context.prev = _context.next) {
+        case 0:
+          if (!(images !== null)) {
+            _context.next = 8;
+            break;
+          }
+
+          _context.t0 = _regenerator["default"].keys(images);
+
+        case 2:
+          if ((_context.t1 = _context.t0()).done) {
+            _context.next = 8;
+            break;
+          }
+
+          imageName = _context.t1.value;
+          _context.next = 6;
+          return _regenerator["default"].awrap(loadPNG(imageName, images[imageName], map));
+
+        case 6:
+          _context.next = 2;
+          break;
+
+        case 8:
+        case "end":
+          return _context.stop();
+      }
+    }
+  });
+};
+/**
  * Render a map using Mapbox GL, based on layers specified in style.
  * Returns a Promise with the PNG image data as its first parameter for the map image.
  * If zoom and center are not provided, bounds must be provided
@@ -399,7 +490,9 @@ var render = function render(style) {
         _options$ratio = options.ratio,
         ratio = _options$ratio === void 0 ? 1 : _options$ratio,
         _options$padding = options.padding,
-        padding = _options$padding === void 0 ? 0 : _options$padding;
+        padding = _options$padding === void 0 ? 0 : _options$padding,
+        _options$images = options.images,
+        images = _options$images === void 0 ? null : _options$images;
     var _options$center = options.center,
         center = _options$center === void 0 ? null : _options$center,
         _options$zoom = options.zoom,
@@ -587,6 +680,7 @@ var render = function render(style) {
     };
     var map = new _mapboxGlNative["default"].Map(mapOptions);
     map.load(style);
+    loadImages(images, map);
     map.render({
       zoom: zoom,
       center: center,

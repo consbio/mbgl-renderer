@@ -274,6 +274,11 @@ In your client of choice, you can make either HTTP GET or POST requests.
 `bounds` if provided must be `west,south,east,north` with floating point values (NO spaces or brackets)
 `padding` if provided must be an integer value that is less than 1/2 of width or height, whichever is smaller. Can only be used with bounds.
 `bearing is a floating point value (0-360)`pitch`is a floating point value (0-60)`token` if provided must a string
+`images` is a JSON with image names as keys and image urls as values.
+
+Images parameter is used when your style includes and `icon-image` property (e.g. festival.png). Server
+will download the image from the url specified in this parameter and add it to the map
+(e.g. {"festival.png": "http://images.com/festival.png"}). Only png images are supported for now.
 
 Your style JSON needs to be URL encoded:
 

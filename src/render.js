@@ -11,6 +11,8 @@ import webRequest from 'request'
 
 import URL from 'url'
 
+import { PNG } from 'pngjs';
+
 const TILE_REGEXP = RegExp('mbtiles://([^/]+)/(\\d+)/(\\d+)/(\\d+)')
 const MBTILES_REGEXP = /mbtiles:\/\/(\S+?)(?=[/"]+)/gi
 
@@ -311,6 +313,64 @@ const getRemoteAsset = (url, callback) => {
 }
 
 /**
+ * Fetch a remotely hosted PNG image and add it to the map.
+ *
+ *
+ * @param {String} name - name of the png image
+ * @param {String} url - URL of the png image
+ * @param {Object} map - Mapbox GL Map
+ */
+const loadPNG = (name, url, map) => {
+    return new Promise((resolve, reject) => {
+        webRequest(
+        {
+            url,
+            encoding: null,
+            gzip: true,
+        },
+        (err, res, data) => {
+            if (err) {
+                return false
+            }
+
+            switch (res.statusCode) {
+                case 200: {
+                    let pngImage = PNG.sync.read(data);
+                    let imageOptions = {
+                        width: pngImage.width,
+                        height: pngImage.height,
+                        pixelRatio: 1
+                    }
+                    map.addImage(name, pngImage.data, imageOptions)
+                    return true
+                }
+                default: {
+                    // assume error
+                    console.error(
+                        `Error with request for: ${url}\nstatus: ${res.statusCode}`
+                    )
+                    return false
+                }
+            }
+        })
+    })
+}
+
+/**
+ * Adds a list of images to the map.
+ *
+ * @param {String} images - an object, image name to image url
+ * @param {Object} map - Mapbox GL Map
+ */
+const loadImages = async (images, map) => {
+    if (images !== null) {
+        for (let imageName in images) {
+            await loadPNG(imageName, images[imageName], map)
+        }
+    }
+}
+
+/**
  * Render a map using Mapbox GL, based on layers specified in style.
  * Returns a Promise with the PNG image data as its first parameter for the map image.
  * If zoom and center are not provided, bounds must be provided
@@ -333,6 +393,7 @@ export const render = (style, width = 1024, height = 1024, options) =>
             token = null,
             ratio = 1,
             padding = 0,
+            images = null
         } = options
         let { center = null, zoom = null, tilePath = null } = options
 
@@ -551,6 +612,8 @@ export const render = (style, width = 1024, height = 1024, options) =>
 
         const map = new mbgl.Map(mapOptions)
         map.load(style)
+
+        loadImages(images, map)
 
         map.render(
             {
