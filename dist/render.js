@@ -29,6 +29,8 @@ var _mbtiles = _interopRequireDefault(require("@mapbox/mbtiles"));
 
 var _request = _interopRequireDefault(require("request"));
 
+var _requestPromise = _interopRequireDefault(require("request-promise"));
+
 var _url = _interopRequireDefault(require("url"));
 
 var _pngjs = require("pngjs");
@@ -372,48 +374,18 @@ var getRemoteAsset = function getRemoteAsset(url, callback) {
   });
 };
 /**
- * Fetch a remotely hosted PNG image and add it to the map.
+ * Fetch a remotely hosted PNG image.
  *
  *
- * @param {String} name - name of the png image
  * @param {String} url - URL of the png image
- * @param {Object} map - Mapbox GL Map
  */
 
 
-var loadPNG = function loadPNG(name, url, map) {
-  return new Promise(function (resolve, reject) {
-    (0, _request["default"])({
-      url: url,
-      encoding: null,
-      gzip: true
-    }, function (err, res, data) {
-      if (err) {
-        return false;
-      }
-
-      switch (res.statusCode) {
-        case 200:
-          {
-            var pngImage = _pngjs.PNG.sync.read(data);
-
-            var imageOptions = {
-              width: pngImage.width,
-              height: pngImage.height,
-              pixelRatio: 1
-            };
-            map.addImage(name, pngImage.data, imageOptions);
-            return true;
-          }
-
-        default:
-          {
-            // assume error
-            console.error("Error with request for: ".concat(url, "\nstatus: ").concat(res.statusCode));
-            return false;
-          }
-      }
-    });
+var loadPNG = function loadPNG(url) {
+  return (0, _requestPromise["default"])({
+    url: url,
+    encoding: null,
+    gzip: true
   });
 };
 /**
@@ -421,17 +393,18 @@ var loadPNG = function loadPNG(name, url, map) {
  *
  * @param {String} images - an object, image name to image url
  * @param {Object} map - Mapbox GL Map
+ * @param {Function} callback - function to call after all images download, if any
  */
 
 
-var loadImages = function loadImages(images, map) {
-  var imageName;
+var loadImages = function loadImages(images, map, callback) {
+  var imageName, result, pngImage, imageOptions;
   return _regenerator["default"].async(function loadImages$(_context) {
     while (1) {
       switch (_context.prev = _context.next) {
         case 0:
           if (!(images !== null)) {
-            _context.next = 8;
+            _context.next = 18;
             break;
           }
 
@@ -439,24 +412,45 @@ var loadImages = function loadImages(images, map) {
 
         case 2:
           if ((_context.t1 = _context.t0()).done) {
-            _context.next = 8;
+            _context.next = 18;
             break;
           }
 
           imageName = _context.t1.value;
-          _context.next = 6;
-          return _regenerator["default"].awrap(loadPNG(imageName, images[imageName], map));
+          _context.prev = 4;
+          _context.next = 7;
+          return _regenerator["default"].awrap(loadPNG(images[imageName]));
 
-        case 6:
+        case 7:
+          result = _context.sent;
+          pngImage = _pngjs.PNG.sync.read(result);
+          imageOptions = {
+            width: pngImage.width,
+            height: pngImage.height,
+            pixelRatio: 1
+          };
+          map.addImage(imageName, pngImage.data, imageOptions);
+          _context.next = 16;
+          break;
+
+        case 13:
+          _context.prev = 13;
+          _context.t2 = _context["catch"](4);
+          console.error("Error downloading image: ".concat(images[imageName]));
+
+        case 16:
           _context.next = 2;
           break;
 
-        case 8:
+        case 18:
+          callback();
+
+        case 19:
         case "end":
           return _context.stop();
       }
     }
-  });
+  }, null, null, [[4, 13]]);
 };
 /**
  * Render a map using Mapbox GL, based on layers specified in style.
@@ -680,57 +674,58 @@ var render = function render(style) {
     };
     var map = new _mapboxGlNative["default"].Map(mapOptions);
     map.load(style);
-    loadImages(images, map);
-    map.render({
-      zoom: zoom,
-      center: center,
-      height: height,
-      width: width,
-      bearing: bearing,
-      pitch: pitch
-    }, function (err, buffer) {
-      if (err) {
-        console.error('Error rendering map');
-        console.error(err);
-        return reject(err);
-      }
-
-      map.release(); // release map resources to prevent reusing in future render requests
-      // Un-premultiply pixel values
-      // Mapbox GL buffer contains premultiplied values, which are not handled correctly by sharp
-      // https://github.com/mapbox/mapbox-gl-native/issues/9124
-      // since we are dealing with 8-bit RGBA values, normalize alpha onto 0-255 scale and divide
-      // it out of RGB values
-
-      for (var i = 0; i < buffer.length; i += 4) {
-        var alpha = buffer[i + 3];
-        var norm = alpha / 255;
-
-        if (alpha === 0) {
-          buffer[i] = 0;
-          buffer[i + 1] = 0;
-          buffer[i + 2] = 0;
-        } else {
-          buffer[i] = buffer[i] / norm;
-          buffer[i + 1] = buffer[i + 1] / norm;
-          buffer[i + 2] = buffer[i + 2] / norm;
+    loadImages(images, map, function () {
+      map.render({
+        zoom: zoom,
+        center: center,
+        height: height,
+        width: width,
+        bearing: bearing,
+        pitch: pitch
+      }, function (err, buffer) {
+        if (err) {
+          console.error('Error rendering map');
+          console.error(err);
+          return reject(err);
         }
-      } // Convert raw image buffer to PNG
 
+        map.release(); // release map resources to prevent reusing in future render requests
+        // Un-premultiply pixel values
+        // Mapbox GL buffer contains premultiplied values, which are not handled correctly by sharp
+        // https://github.com/mapbox/mapbox-gl-native/issues/9124
+        // since we are dealing with 8-bit RGBA values, normalize alpha onto 0-255 scale and divide
+        // it out of RGB values
 
-      try {
-        return (0, _sharp["default"])(buffer, {
-          raw: {
-            width: width * ratio,
-            height: height * ratio,
-            channels: 4
+        for (var i = 0; i < buffer.length; i += 4) {
+          var alpha = buffer[i + 3];
+          var norm = alpha / 255;
+
+          if (alpha === 0) {
+            buffer[i] = 0;
+            buffer[i + 1] = 0;
+            buffer[i + 2] = 0;
+          } else {
+            buffer[i] = buffer[i] / norm;
+            buffer[i + 1] = buffer[i + 1] / norm;
+            buffer[i + 2] = buffer[i + 2] / norm;
           }
-        }).png().toBuffer().then(resolve)["catch"](reject);
-      } catch (pngErr) {
-        console.error('Error encoding PNG');
-        console.error(pngErr);
-        return reject(pngErr);
-      }
+        } // Convert raw image buffer to PNG
+
+
+        try {
+          return (0, _sharp["default"])(buffer, {
+            raw: {
+              width: width * ratio,
+              height: height * ratio,
+              channels: 4
+            }
+          }).png().toBuffer().then(resolve)["catch"](reject);
+        } catch (pngErr) {
+          console.error('Error encoding PNG');
+          console.error(pngErr);
+          return reject(pngErr);
+        }
+      });
     });
   });
 };
