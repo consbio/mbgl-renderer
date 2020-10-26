@@ -222,6 +222,10 @@ const renderImage = (params, response, next, tilePath) => {
                 })
             })
             .catch((err) => {
+                if (err instanceof restifyErrors.InternalServerError) {
+                    return next(err)
+                }
+
                 console.error('Error processing render request', err)
                 return next(
                     new restifyErrors.InternalServerError(
@@ -231,6 +235,10 @@ const renderImage = (params, response, next, tilePath) => {
                 )
             })
     } catch (err) {
+        if (err instanceof restifyErrors.InternalServerError) {
+            return next(err)
+        }
+
         console.error('Error processing render request', err)
         return next(
             new restifyErrors.InternalServerError(

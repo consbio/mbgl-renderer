@@ -351,6 +351,10 @@ In order to use this package on a headless server, you need to use `xvfb`. See `
 
 ## Changes
 
+### NEXT
+
+-   avoid nesting error messages
+
 ### 0.7.2
 
 -   skip request logging for routes that do not exist (e.g., docker health check)
