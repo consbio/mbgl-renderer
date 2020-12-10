@@ -1,5 +1,4 @@
-
-FROM node:10-slim
+FROM node:10-buster-slim
 
 WORKDIR /app
 
@@ -14,7 +13,7 @@ RUN apt-get update && \
   libcairo2-dev \
   libgles2-mesa-dev \
   libgbm-dev \
-  libllvm3.9 \
+  libllvm7 \
   libprotobuf-dev \
   libxxf86vm-dev \
   xvfb \
