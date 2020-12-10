@@ -297,8 +297,9 @@ server.use(_nodeRestifyValidation["default"].validationPlugin({
 if (verbose) {
   server.use((0, _morgan["default"])('dev', {
     // only log valid endpoints
+    // specifically ignore health check endpoint
     skip: function skip(req, res) {
-      return req.statusCode === 404;
+      return req.statusCode === 404 || req.path() === "/health";
     }
   }));
 }

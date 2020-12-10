@@ -281,8 +281,9 @@ if (verbose) {
     server.use(
         logger('dev', {
             // only log valid endpoints
+            // specifically ignore health check endpoint
             skip: function (req, res) {
-                return req.statusCode === 404
+                return req.statusCode === 404 || req.path() === "/health"
             },
         })
     )
