@@ -237,7 +237,7 @@ const getRemoteTile = (url, callback) => {
             encoding: null,
             gzip: true,
         },
-        (err, res, data) => {
+        async (err, res, data) => {
             if (err) {
                 return callback(err)
             }
@@ -245,6 +245,35 @@ const getRemoteTile = (url, callback) => {
             switch (res.statusCode) {
                 case 200: {
                     return callback(null, { data })
+                }
+                case 202: {
+                    // Request accepted but tile is not ready
+                    if (!res.headers['retry-after']) {
+                        console.error(`Error with request for: ${url}\nRequest for remote tile was accepted but no Retry-After header was sent.`)
+                        return callback(
+                            new Error(`Error with request for: ${url}\nRequest for remote tile was accepted but no Retry-After header was sent.`)
+                        )
+                    }
+
+                    const retryAfter = res.headers['retry-after']
+                    console.log(`Retry-After header received. Attempting to retrieve tile in ${retryAfter} seconds.`)
+
+                    const retryAfterMs = parseInt(retryAfter) * 1000
+                    await new Promise(resolve => setTimeout(resolve, retryAfterMs))
+
+                    try {
+                        const retriedData = await webRequestPromise({ url, encoding: null, gzip: true })
+                        return callback(null, { data: retriedData })
+                    } catch {
+                        console.error(
+                            `Error with request for: ${url}\nstatus: ${res.statusCode}`
+                        )
+                        return callback(
+                            new Error(
+                                `Error with request for: ${url}\nstatus: ${res.statusCode}`
+                            )
+                        )
+                    }
                 }
                 case 204: {
                     // No data for this url
