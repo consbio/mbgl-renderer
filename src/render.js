@@ -8,8 +8,11 @@ import geoViewport from '@mapbox/geo-viewport'
 import mbgl from '@mapbox/mapbox-gl-native'
 import MBTiles from '@mapbox/mbtiles'
 import webRequest from 'request'
+import webRequestPromise from 'request-promise'
 
 import URL from 'url'
+
+import { PNG } from 'pngjs';
 
 const TILE_REGEXP = RegExp('mbtiles://([^/]+)/(\\d+)/(\\d+)/(\\d+)')
 const MBTILES_REGEXP = /mbtiles:\/\/(\S+?)(?=[/"]+)/gi
@@ -311,6 +314,50 @@ const getRemoteAsset = (url, callback) => {
 }
 
 /**
+ * Fetch a remotely hosted PNG image.
+ *
+ *
+ * @param {String} url - URL of the png image
+ */
+const loadPNG = (url) => {
+    return webRequestPromise(
+        {
+            url,
+            encoding: null,
+            gzip: true,
+        }
+    )
+}
+
+/**
+ * Adds a list of images to the map.
+ *
+ * @param {String} images - an object, image name to image url
+ * @param {Object} map - Mapbox GL Map
+ * @param {Function} callback - function to call after all images download, if any
+ */
+const loadImages = async (images, map, callback) => {
+    if (images !== null) {
+        for (let imageName in images) {
+            try {
+                let result = await loadPNG(images[imageName])
+                let pngImage = PNG.sync.read(result);
+                let imageOptions = {
+                    width: pngImage.width,
+                    height: pngImage.height,
+                    pixelRatio: 1
+                }
+                map.addImage(imageName, pngImage.data, imageOptions)
+            } catch (e) {
+                console.error(`Error downloading image: ${images[imageName]}`);
+            }
+        }
+    }
+
+    callback()
+}
+
+/**
  * Render a map using Mapbox GL, based on layers specified in style.
  * Returns a Promise with the PNG image data as its first parameter for the map image.
  * If zoom and center are not provided, bounds must be provided
@@ -333,6 +380,7 @@ export const render = (style, width = 1024, height = 1024, options) =>
             token = null,
             ratio = 1,
             padding = 0,
+            images = null
         } = options
         let { center = null, zoom = null, tilePath = null } = options
 
@@ -552,63 +600,65 @@ export const render = (style, width = 1024, height = 1024, options) =>
         const map = new mbgl.Map(mapOptions)
         map.load(style)
 
-        map.render(
-            {
-                zoom,
-                center,
-                height,
-                width,
-                bearing,
-                pitch,
-            },
-            (err, buffer) => {
-                if (err) {
-                    console.error('Error rendering map')
-                    console.error(err)
-                    return reject(err)
-                }
+        loadImages(images, map, () => {
+            map.render(
+                {
+                    zoom,
+                    center,
+                    height,
+                    width,
+                    bearing,
+                    pitch,
+                },
+                (err, buffer) => {
+                    if (err) {
+                        console.error('Error rendering map')
+                        console.error(err)
+                        return reject(err)
+                    }
 
-                map.release() // release map resources to prevent reusing in future render requests
+                    map.release() // release map resources to prevent reusing in future render requests
 
-                // Un-premultiply pixel values
-                // Mapbox GL buffer contains premultiplied values, which are not handled correctly by sharp
-                // https://github.com/mapbox/mapbox-gl-native/issues/9124
-                // since we are dealing with 8-bit RGBA values, normalize alpha onto 0-255 scale and divide
-                // it out of RGB values
-                for (let i = 0; i < buffer.length; i += 4) {
-                    const alpha = buffer[i + 3]
-                    const norm = alpha / 255
-                    if (alpha === 0) {
-                        buffer[i] = 0
-                        buffer[i + 1] = 0
-                        buffer[i + 2] = 0
-                    } else {
-                        buffer[i] = buffer[i] / norm
-                        buffer[i + 1] = buffer[i + 1] / norm
-                        buffer[i + 2] = buffer[i + 2] / norm
+                    // Un-premultiply pixel values
+                    // Mapbox GL buffer contains premultiplied values, which are not handled correctly by sharp
+                    // https://github.com/mapbox/mapbox-gl-native/issues/9124
+                    // since we are dealing with 8-bit RGBA values, normalize alpha onto 0-255 scale and divide
+                    // it out of RGB values
+                    for (let i = 0; i < buffer.length; i += 4) {
+                        const alpha = buffer[i + 3]
+                        const norm = alpha / 255
+                        if (alpha === 0) {
+                            buffer[i] = 0
+                            buffer[i + 1] = 0
+                            buffer[i + 2] = 0
+                        } else {
+                            buffer[i] = buffer[i] / norm
+                            buffer[i + 1] = buffer[i + 1] / norm
+                            buffer[i + 2] = buffer[i + 2] / norm
+                        }
+                    }
+
+                    // Convert raw image buffer to PNG
+                    try {
+                        return sharp(buffer, {
+                            raw: {
+                                width: width * ratio,
+                                height: height * ratio,
+                                channels: 4,
+                            },
+                        })
+                            .png()
+                            .toBuffer()
+                            .then(resolve)
+                            .catch(reject)
+                    } catch (pngErr) {
+                        console.error('Error encoding PNG')
+                        console.error(pngErr)
+                        return reject(pngErr)
                     }
                 }
-
-                // Convert raw image buffer to PNG
-                try {
-                    return sharp(buffer, {
-                        raw: {
-                            width: width * ratio,
-                            height: height * ratio,
-                            channels: 4,
-                        },
-                    })
-                        .png()
-                        .toBuffer()
-                        .then(resolve)
-                        .catch(reject)
-                } catch (pngErr) {
-                    console.error('Error encoding PNG')
-                    console.error(pngErr)
-                    return reject(pngErr)
-                }
-            }
-        )
+            )
+        })
     })
 
 export default render
