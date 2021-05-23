@@ -6,6 +6,9 @@ import restifyErrors from 'restify-errors'
 import cli from 'commander'
 import logger from 'morgan'
 
+import validUrl from 'valid-url'
+import path from 'path'
+
 import { version } from '../package.json'
 import { render } from './render'
 
@@ -28,6 +31,7 @@ const PARAMS = {
     bearing: { isRequired: false, isDecimal: true },
     pitch: { isRequired: false, isDecimal: true },
     token: { isRequired: false, isString: true },
+    images: { isRequired: false, isObject: true },
 }
 
 const renderImage = (params, response, next, tilePath) => {
@@ -37,9 +41,16 @@ const renderImage = (params, response, next, tilePath) => {
         token = null,
         padding = 0,
         bearing = null,
-        pitch = null,
+        pitch = null
     } = params
-    let { style, zoom = null, center = null, bounds = null, ratio = 1 } = params
+    let {
+        style,
+        zoom = null,
+        center = null,
+        bounds = null,
+        ratio = 1,
+        images = null
+    } = params
 
     if (typeof style === 'string') {
         try {
@@ -195,6 +206,36 @@ const renderImage = (params, response, next, tilePath) => {
         )
     }
 
+    if (images !== null) {
+        if (typeof images === 'string') {
+            images = JSON.parse(images)
+        } else if (typeof images !== 'object') {
+            return next(
+                new restifyErrors.BadRequestError(
+                    'Images must be an object or a string'
+                )
+            )
+        }
+
+        for (let imageName in images) {
+            let url = images[imageName]
+            if (!validUrl.isUri(url)) {
+                return next(
+                    new restifyErrors.BadRequestError(
+                        `All images must be valid urls. ${url} is invalid`
+                    )
+                )
+            }
+            if (path.extname(imageName) !== '.png') {
+                return next(
+                    new restifyErrors.BadRequestError(
+                        `Only png images are supported for now`
+                    )
+                )
+            }
+        }
+    }
+
     try {
         render(style, parseInt(width, 10), parseInt(height, 10), {
             zoom,
@@ -206,6 +247,7 @@ const renderImage = (params, response, next, tilePath) => {
             bearing,
             pitch,
             token,
+            images
         })
             .then((data, rejected) => {
                 if (rejected) {
