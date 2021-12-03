@@ -4,7 +4,17 @@
 
 [![Coverage Status](https://coveralls.io/repos/github/consbio/mbgl-renderer/badge.svg?branch=master)](https://coveralls.io/github/consbio/mbgl-renderer?branch=master)
 
-Create static map images using Mapbox GL with a command line interface, an HTTP interface, and a NodeJS API.
+Create static map images using Mapbox GL with a command-line interface, an HTTP interface, and a NodeJS API.
+
+## WARNING
+
+This project depends on the Mapbox GL bindings for NodeJS, which are no longer maintained by Mapbox. These require
+NodeJS 10, which is now beyond end of life for that version.
+
+We are monitoring the ecosystem for other alternatives (e.g., MapLibre) but have not yet identified a suitable replacement
+for the NodeJS bindings from Mapbox. Feel free to create an issue to report discovery of a suitable replacement.
+
+As such, this project is largely in maintenance mode, and we are unlikely to make major changes in functionality.
 
 ## Features:
 
@@ -43,10 +53,7 @@ or
 
 ### Supported versions of NodeJS:
 
--   8
 -   10
-
-Node 10 appears fully supported by the latest version of Mapbox GL. Originally, there were several issues when running on Node 10, causing segmentation faults and other errors. If you experience issues, we recommend using Node 8.
 
 Only NodeJS versions with `@mapbox/mapbox-gl-native` binaries built by Mapbox are supported via `npm install`, otherwise you need to build `@mapbox/mapbox-gl-native` from source yourself. See [build instructions](https://github.com/mapbox/mapbox-gl-native/blob/master/platform/node/DEVELOPING.md) for more information.
 
@@ -351,9 +358,19 @@ In order to use this package on a headless server, you need to use `xvfb`. See `
 
 ## Changes
 
-### NEXT
+### 0.7.3
 
+-   actually skip request logging for docker health check
 -   avoid nesting error messages
+-   upgraded JS dependencies
+
+Potentially breaking:
+
+-   @mapbox/geo-viewport 0.4.1 included a fix for calculating center points, which
+    causes a small change in the center and zoom level automatically calculated
+    here when `bounds` are provided for rendering. If you depend on precise
+    control over how `bounds` are used for rendering, please check the outputs
+    after upgrading.
 
 ### 0.7.2
 

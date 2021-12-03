@@ -5,7 +5,7 @@ var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefau
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports["default"] = exports.render = exports.normalizeMapboxGlyphURL = exports.normalizeMapboxSpriteURL = exports.normalizeMapboxStyleURL = exports.isMapboxStyleURL = exports.isMapboxURL = void 0;
+exports.render = exports.normalizeMapboxStyleURL = exports.normalizeMapboxSpriteURL = exports.normalizeMapboxGlyphURL = exports.isMapboxURL = exports.isMapboxStyleURL = exports["default"] = void 0;
 
 var _toConsumableArray2 = _interopRequireDefault(require("@babel/runtime/helpers/toConsumableArray"));
 
