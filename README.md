@@ -358,6 +358,10 @@ In order to use this package on a headless server, you need to use `xvfb`. See `
 
 ## Changes
 
+### 0.8.0
+
+-   upgrade NodeJS version in Docker and use newer base OS
+
 ### 0.7.3
 
 -   actually skip request logging for docker health check
