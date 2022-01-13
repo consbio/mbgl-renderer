@@ -8,6 +8,8 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.server = exports["default"] = void 0;
 
+var _typeof2 = _interopRequireDefault(require("@babel/runtime/helpers/typeof"));
+
 var _slicedToArray2 = _interopRequireDefault(require("@babel/runtime/helpers/slicedToArray"));
 
 var _toConsumableArray2 = _interopRequireDefault(require("@babel/runtime/helpers/toConsumableArray"));
@@ -83,6 +85,10 @@ var PARAMS = {
   token: {
     isRequired: false,
     isString: true
+  },
+  images: {
+    isRequired: false,
+    isObject: true
   }
 };
 
@@ -105,7 +111,9 @@ var renderImage = function renderImage(params, response, next, tilePath) {
       _params$bounds = params.bounds,
       bounds = _params$bounds === void 0 ? null : _params$bounds,
       _params$ratio = params.ratio,
-      ratio = _params$ratio === void 0 ? 1 : _params$ratio;
+      ratio = _params$ratio === void 0 ? 1 : _params$ratio,
+      _params$images = params.images,
+      images = _params$images === void 0 ? null : _params$images;
 
   if (typeof style === 'string') {
     try {
@@ -221,6 +229,30 @@ var renderImage = function renderImage(params, response, next, tilePath) {
     return next(new _restifyErrors["default"].BadRequestError('Either center and zoom OR bounds must be provided'));
   }
 
+  if (images !== null) {
+    if (typeof images === 'string') {
+      images = JSON.parse(images);
+    } else if ((0, _typeof2["default"])(images) !== 'object') {
+      return next(new _restifyErrors["default"].BadRequestError('images must be an object or a string'));
+    } // validate URLs
+
+
+    for (var _i = 0, _Object$values = Object.values(images); _i < _Object$values.length; _i++) {
+      var image = _Object$values[_i];
+
+      if (!(image && image.url)) {
+        return next(new _restifyErrors["default"].BadRequestError('Invalid image object; a url is required for each image'));
+      }
+
+      try {
+        // use new URL to validate URL
+        var url = new URL(image.url);
+      } catch (e) {
+        return next(new _restifyErrors["default"].BadRequestError("Invalid image URL: ".concat(image.url)));
+      }
+    }
+  }
+
   try {
     (0, _render.render)(style, parseInt(width, 10), parseInt(height, 10), {
       zoom: zoom,
@@ -231,7 +263,8 @@ var renderImage = function renderImage(params, response, next, tilePath) {
       ratio: ratio,
       bearing: bearing,
       pitch: pitch,
-      token: token
+      token: token,
+      images: images
     }).then(function (data, rejected) {
       if (rejected) {
         console.error('render request rejected', rejected);
@@ -295,7 +328,7 @@ if (verbose) {
     // only log valid endpoints
     // specifically ignore health check endpoint
     skip: function skip(req, res) {
-      return req.statusCode === 404 || req.path() === "/health";
+      return req.statusCode === 404 || req.path() === '/health';
     }
   }));
 }

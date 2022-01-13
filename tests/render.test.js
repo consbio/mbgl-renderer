@@ -14,6 +14,10 @@ import geojsonSourceStyle from './fixtures/example-style-geojson.json'
 import geojsonLabelSourceStyle from './fixtures/example-style-geojson-labels.json'
 import badGlyphSourceStyle from './fixtures/example-style-bad-glyphs.json'
 import imageSourceStyle from './fixtures/example-style-image-source.json'
+import base64IconImageStyle from './fixtures/example-style-image-base64-icons.json'
+import remoteIconImageStyle from './fixtures/example-style-image-remote-icons.json'
+import base64ImageIcons from './fixtures/example-images-base64.json'
+import remoteImageIcons from './fixtures/example-images-remote.json'
 import { imageDiff, skipIf } from './util'
 
 // Load MAPBOX_API_TOKEN from .env.test
@@ -405,4 +409,84 @@ test('creates image from image source', async () => {
 
     const diffPixels = await imageDiff(data, expectedPath)
     expect(diffPixels).toBeLessThan(100)
+})
+
+test('creates image from base64 image icons', async () => {
+    const data = await render(base64IconImageStyle, 256, 256, {
+        zoom: 0,
+        center: [0, 0],
+        images: base64ImageIcons,
+    })
+
+    // feed it back through sharp to verify that we got an image
+    const { format, width, height } = await sharp(data).metadata()
+    expect(format).toBe('png')
+    expect(width).toBe(256)
+    expect(height).toBe(256)
+
+    const expectedPath = path.join(
+        __dirname,
+        './fixtures/expected-image-base64-icons.png'
+    )
+    // to write out known good image:
+    // fs.writeFileSync(expectedPath, data)
+
+    const diffPixels = await imageDiff(data, expectedPath)
+    expect(diffPixels).toBeLessThan(100)
+})
+
+test('creates image from remote image icons', async () => {
+    const data = await render(remoteIconImageStyle, 256, 256, {
+        zoom: 0,
+        center: [0, 0],
+        images: remoteImageIcons,
+    })
+
+    // feed it back through sharp to verify that we got an image
+    const { format, width, height } = await sharp(data).metadata()
+    expect(format).toBe('png')
+    expect(width).toBe(256)
+    expect(height).toBe(256)
+
+    const expectedPath = path.join(
+        __dirname,
+        './fixtures/expected-image-remote-icons.png'
+    )
+    // to write out known good image:
+    // fs.writeFileSync(expectedPath, data)
+
+    const diffPixels = await imageDiff(data, expectedPath)
+    expect(diffPixels).toBeLessThan(100)
+})
+
+test('fails to create image from bad image icon urls', async () => {
+    await expect(
+        render(base64IconImageStyle, 256, 256, {
+            zoom: 0,
+            center: [0, 0],
+            images: {
+                foo: 'bar',
+            },
+        })
+    ).rejects.toThrowError(/Invalid url for image/)
+
+    await expect(
+        render(base64IconImageStyle, 256, 256, {
+            zoom: 0,
+            center: [0, 0],
+            images: {
+                foo: { url: 'bar' },
+            },
+        })
+    ).rejects.toThrowError(/Invalid URI/)
+
+    await expect(
+        render(remoteIconImageStyle, 256, 256, {
+            zoom: 0,
+            center: [0, 0],
+            images: {
+                cat: { url: 'https://google.com' },
+            },
+        })
+    ).rejects.toThrowError(/Input buffer contains unsupported image format/)
 })

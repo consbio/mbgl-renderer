@@ -184,6 +184,45 @@ render(style, width, height, { bounds, token: '<your access token>' })
     }))
 ```
 
+You can also provide icon images that will be available for `icon-image`, `line-pattern`, and `fill-pattern` style properties.
+The `images` property is an object with keys for at least `url` and optional keys `pixelRatio` and `sdf`.
+
+`url` must point to a valid remote URL that is accessible from `mbgl-renderer`. It may include base64 encoded image data (example below).
+
+Set `sdf` to `true` to enable the image to be converted into an SDF icon. [Read more](https://docs.mapbox.com/help/troubleshooting/using-recolorable-images-in-mapbox-maps/).
+
+`pixelRatio` is only used for `symbols`; due to a bug in Mapbox GL Native, it does not work properly for `line-pattern` and `fill-pattern` icon images.
+
+```
+const images = {
+    "exampleImageID": {
+        "url": "data:image/png;base64,iVBORw0KGg....truncated...",
+        "sdf": true / false (default),
+        "pixelRatio": 1 (default)
+    }
+}
+```
+
+Then refer to `exampleImageID` in your style:
+
+```
+...
+layers:[
+    {
+        "id": "...",
+        "type": "symbol",
+        "source": "...",
+        "layout": {
+            "icon-image": "exampleImageID",
+            ...
+        },
+        "paint": {
+            ...
+        }
+    }
+]
+```
+
 ### Command line interface:
 
 ```
@@ -203,6 +242,7 @@ render(style, width, height, { bounds, token: '<your access token>' })
     --pitch <degrees>                     Pitch in degrees (0-60)
     -t, --tiles <mbtiles_path>            Directory containing local mbtiles files to render
     --token <mapbox access token>         Mapbox access token (required for using Mapbox styles and sources)
+    --images <images.json                 JSON file containing image config
     -h, --help                            output usage information
 ```
 
@@ -230,7 +270,7 @@ To use local mbtiles tilesets:
 mbgl-render tests/fixtures/example-style-mbtiles-source-vector.json test.png 1024 1024 -z 0 -c 0,0 -t tests/fixtures
 ```
 
-To use an Mapbox hosted style (see attribution above!):
+To use a Mapbox hosted style (see attribution above!):
 
 ```
 mbgl-render mapbox://styles/mapbox/outdoors-v10 test.png 1024 1024 -c 0,0 -z 0 --token <your mapbox token>
@@ -270,17 +310,25 @@ npm start -- --port 8080 --tiles tests/fixtures
 
 #### Making requests
 
-In your client of choice, you can make either HTTP GET or POST requests.
+In your client of choice, you can make either HTTP GET or POST requests to
+
+```
+http://localhost:8080/render
+```
 
 ##### GET requests:
 
-`height` and `width` are integer values
-`zoom` is a floating point value
-`ratio` is an integer value
-`center` if provided must be a `longitude,latitude` with floating point values (NO spaces or brackets)
-`bounds` if provided must be `west,south,east,north` with floating point values (NO spaces or brackets)
-`padding` if provided must be an integer value that is less than 1/2 of width or height, whichever is smaller. Can only be used with bounds.
-`bearing is a floating point value (0-360)`pitch`is a floating point value (0-60)`token` if provided must a string
+Include the following query parameters:
+
+-   `height` and `width` are integer values (required).
+-   `zoom` is a floating point value.
+-   `ratio` is an integer value.
+-   `center` if provided must be a `longitude,latitude` with floating point values (NO spaces or brackets).
+-   `bounds` if provided must be `west,south,east,north` with floating point values (NO spaces or brackets).
+-   `padding` if provided must be an integer value that is less than 1/2 of width or height, whichever is smaller. Can only be used with bounds.
+-   `bearing is a floating point value (0-360)`pitch`is a floating point value (0-60).
+-   `token` if provided must a string.
+-   `images` if provided must be URL encoded JSON object (see `images` property above).
 
 Your style JSON needs to be URL encoded:
 
@@ -361,6 +409,7 @@ In order to use this package on a headless server, you need to use `xvfb`. See `
 ### 0.8.0
 
 -   upgrade NodeJS version in Docker and use newer base OS
+-   added ability to provide images that can be used for `icon-image`, `line-pattern`, `fill-pattern` properties in style
 
 ### 0.7.3
 
@@ -430,25 +479,26 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
 <!-- markdownlint-disable -->
 <table>
   <tr>
-    <td align="center"><a href="https://astutespruce.com"><img src="https://avatars2.githubusercontent.com/u/3375604?v=4" width="100px;" alt="Brendan Ward"/><br /><sub><b>Brendan Ward</b></sub></a><br /><a href="https://github.com/consbio/mbgl-renderer/commits?author=brendan-ward" title="Code">💻</a> <a href="https://github.com/consbio/mbgl-renderer/commits?author=brendan-ward" title="Documentation">📖</a> <a href="https://github.com/consbio/mbgl-renderer/issues?q=author%3Abrendan-ward" title="Bug reports">🐛</a> <a href="#blog-brendan-ward" title="Blogposts">📝</a> <a href="https://github.com/consbio/mbgl-renderer/pulls?q=is%3Apr+reviewed-by%3Abrendan-ward" title="Reviewed Pull Requests">👀</a> <a href="#ideas-brendan-ward" title="Ideas, Planning, & Feedback">🤔</a></td>
-    <td align="center"><a href="https://github.com/nikmolnar"><img src="https://avatars1.githubusercontent.com/u/2422416?v=4" width="100px;" alt="Nik Molnar"/><br /><sub><b>Nik Molnar</b></sub></a><br /><a href="https://github.com/consbio/mbgl-renderer/commits?author=nikmolnar" title="Code">💻</a> <a href="https://github.com/consbio/mbgl-renderer/issues?q=author%3Anikmolnar" title="Bug reports">🐛</a> <a href="#ideas-nikmolnar" title="Ideas, Planning, & Feedback">🤔</a></td>
-    <td align="center"><a href="https://github.com/ka7eh"><img src="https://avatars1.githubusercontent.com/u/4112646?v=4" width="100px;" alt="Kaveh"/><br /><sub><b>Kaveh</b></sub></a><br /><a href="https://github.com/consbio/mbgl-renderer/issues?q=author%3Aka7eh" title="Bug reports">🐛</a> <a href="#ideas-ka7eh" title="Ideas, Planning, & Feedback">🤔</a></td>
-    <td align="center"><a href="https://github.com/bertrandmd"><img src="https://avatars0.githubusercontent.com/u/9257198?v=4" width="100px;" alt="bertrandmd"/><br /><sub><b>bertrandmd</b></sub></a><br /><a href="https://github.com/consbio/mbgl-renderer/commits?author=bertrandmd" title="Code">💻</a></td>
-    <td align="center"><a href="https://github.com/korpd"><img src="https://avatars1.githubusercontent.com/u/44464673?v=4" width="100px;" alt="Daniel Korp"/><br /><sub><b>Daniel Korp</b></sub></a><br /><a href="https://github.com/consbio/mbgl-renderer/commits?author=korpd" title="Code">💻</a></td>
-    <td align="center"><a href="https://github.com/kjkurtz"><img src="https://avatars2.githubusercontent.com/u/6036168?v=4" width="100px;" alt="Kyle Kurtz"/><br /><sub><b>Kyle Kurtz</b></sub></a><br /><a href="https://github.com/consbio/mbgl-renderer/commits?author=kjkurtz" title="Code">💻</a></td>
-    <td align="center"><a href="http://normanrz.com/"><img src="https://avatars1.githubusercontent.com/u/335438?v=4" width="100px;" alt="Norman Rzepka"/><br /><sub><b>Norman Rzepka</b></sub></a><br /><a href="https://github.com/consbio/mbgl-renderer/commits?author=normanrz" title="Code">💻</a></td>
+    <td align="center"><a href="https://astutespruce.com"><img src="https://avatars2.githubusercontent.com/u/3375604?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Brendan Ward</b></sub></a><br /><a href="https://github.com/consbio/mbgl-renderer/commits?author=brendan-ward" title="Code">💻</a> <a href="https://github.com/consbio/mbgl-renderer/commits?author=brendan-ward" title="Documentation">📖</a> <a href="https://github.com/consbio/mbgl-renderer/issues?q=author%3Abrendan-ward" title="Bug reports">🐛</a> <a href="#blog-brendan-ward" title="Blogposts">📝</a> <a href="https://github.com/consbio/mbgl-renderer/pulls?q=is%3Apr+reviewed-by%3Abrendan-ward" title="Reviewed Pull Requests">👀</a> <a href="#ideas-brendan-ward" title="Ideas, Planning, & Feedback">🤔</a></td>
+    <td align="center"><a href="https://github.com/nikmolnar"><img src="https://avatars1.githubusercontent.com/u/2422416?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Nik Molnar</b></sub></a><br /><a href="https://github.com/consbio/mbgl-renderer/commits?author=nikmolnar" title="Code">💻</a> <a href="https://github.com/consbio/mbgl-renderer/issues?q=author%3Anikmolnar" title="Bug reports">🐛</a> <a href="#ideas-nikmolnar" title="Ideas, Planning, & Feedback">🤔</a></td>
+    <td align="center"><a href="https://github.com/ka7eh"><img src="https://avatars1.githubusercontent.com/u/4112646?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Kaveh</b></sub></a><br /><a href="https://github.com/consbio/mbgl-renderer/issues?q=author%3Aka7eh" title="Bug reports">🐛</a> <a href="#ideas-ka7eh" title="Ideas, Planning, & Feedback">🤔</a></td>
+    <td align="center"><a href="https://github.com/bertrandmd"><img src="https://avatars0.githubusercontent.com/u/9257198?v=4?s=100" width="100px;" alt=""/><br /><sub><b>bertrandmd</b></sub></a><br /><a href="https://github.com/consbio/mbgl-renderer/commits?author=bertrandmd" title="Code">💻</a></td>
+    <td align="center"><a href="https://github.com/korpd"><img src="https://avatars1.githubusercontent.com/u/44464673?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Daniel Korp</b></sub></a><br /><a href="https://github.com/consbio/mbgl-renderer/commits?author=korpd" title="Code">💻</a></td>
+    <td align="center"><a href="https://github.com/kjkurtz"><img src="https://avatars2.githubusercontent.com/u/6036168?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Kyle Kurtz</b></sub></a><br /><a href="https://github.com/consbio/mbgl-renderer/commits?author=kjkurtz" title="Code">💻</a></td>
+    <td align="center"><a href="http://normanrz.com/"><img src="https://avatars1.githubusercontent.com/u/335438?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Norman Rzepka</b></sub></a><br /><a href="https://github.com/consbio/mbgl-renderer/commits?author=normanrz" title="Code">💻</a></td>
   </tr>
   <tr>
-    <td align="center"><a href="https://github.com/submarcos"><img src="https://avatars3.githubusercontent.com/u/7448208?v=4" width="100px;" alt="J-E Castagnede"/><br /><sub><b>J-E Castagnede</b></sub></a><br /><a href="https://github.com/consbio/mbgl-renderer/issues?q=author%3Asubmarcos" title="Bug reports">🐛</a></td>
-    <td align="center"><a href="http://itsallinthega.me/"><img src="https://avatars3.githubusercontent.com/u/83251?v=4" width="100px;" alt="Jez Nicholson"/><br /><sub><b>Jez Nicholson</b></sub></a><br /><a href="https://github.com/consbio/mbgl-renderer/issues?q=author%3Ajnicho02" title="Bug reports">🐛</a> <a href="#ideas-jnicho02" title="Ideas, Planning, & Feedback">🤔</a></td>
-    <td align="center"><a href="https://github.com/bob-gray"><img src="https://avatars0.githubusercontent.com/u/814812?v=4" width="100px;" alt="Bob Gray"/><br /><sub><b>Bob Gray</b></sub></a><br /><a href="https://github.com/consbio/mbgl-renderer/issues?q=author%3Abob-gray" title="Bug reports">🐛</a></td>
-    <td align="center"><a href="https://github.com/abraztsov"><img src="https://avatars3.githubusercontent.com/u/19175580?v=4" width="100px;" alt="Nikita Abraztsov"/><br /><sub><b>Nikita Abraztsov</b></sub></a><br /><a href="https://github.com/consbio/mbgl-renderer/issues?q=author%3Aabraztsov" title="Bug reports">🐛</a></td>
-    <td align="center"><a href="https://github.com/LePetitTim"><img src="https://avatars1.githubusercontent.com/u/26329336?v=4" width="100px;" alt="Timothée Monty"/><br /><sub><b>Timothée Monty</b></sub></a><br /><a href="https://github.com/consbio/mbgl-renderer/issues?q=author%3ALePetitTim" title="Bug reports">🐛</a></td>
-    <td align="center"><a href="https://stunkymonkey.de"><img src="https://avatars0.githubusercontent.com/u/1315818?v=4" width="100px;" alt="felix"/><br /><sub><b>felix</b></sub></a><br /><a href="https://github.com/consbio/mbgl-renderer/commits?author=Stunkymonkey" title="Documentation">📖</a></td>
+    <td align="center"><a href="https://github.com/submarcos"><img src="https://avatars3.githubusercontent.com/u/7448208?v=4?s=100" width="100px;" alt=""/><br /><sub><b>J-E Castagnede</b></sub></a><br /><a href="https://github.com/consbio/mbgl-renderer/issues?q=author%3Asubmarcos" title="Bug reports">🐛</a></td>
+    <td align="center"><a href="http://itsallinthega.me/"><img src="https://avatars3.githubusercontent.com/u/83251?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Jez Nicholson</b></sub></a><br /><a href="https://github.com/consbio/mbgl-renderer/issues?q=author%3Ajnicho02" title="Bug reports">🐛</a> <a href="#ideas-jnicho02" title="Ideas, Planning, & Feedback">🤔</a></td>
+    <td align="center"><a href="https://github.com/bob-gray"><img src="https://avatars0.githubusercontent.com/u/814812?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Bob Gray</b></sub></a><br /><a href="https://github.com/consbio/mbgl-renderer/issues?q=author%3Abob-gray" title="Bug reports">🐛</a></td>
+    <td align="center"><a href="https://github.com/abraztsov"><img src="https://avatars3.githubusercontent.com/u/19175580?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Nikita Abraztsov</b></sub></a><br /><a href="https://github.com/consbio/mbgl-renderer/issues?q=author%3Aabraztsov" title="Bug reports">🐛</a></td>
+    <td align="center"><a href="https://github.com/LePetitTim"><img src="https://avatars1.githubusercontent.com/u/26329336?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Timothée Monty</b></sub></a><br /><a href="https://github.com/consbio/mbgl-renderer/issues?q=author%3ALePetitTim" title="Bug reports">🐛</a></td>
+    <td align="center"><a href="https://stunkymonkey.de"><img src="https://avatars0.githubusercontent.com/u/1315818?v=4?s=100" width="100px;" alt=""/><br /><sub><b>felix</b></sub></a><br /><a href="https://github.com/consbio/mbgl-renderer/commits?author=Stunkymonkey" title="Documentation">📖</a></td>
+    <td align="center"><a href="https://github.com/rstcruzo"><img src="https://avatars.githubusercontent.com/u/18235687?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Rodrigo Santa Cruz Ortega</b></sub></a><br /><a href="https://github.com/consbio/mbgl-renderer/commits?author=rstcruzo" title="Code">💻</a></td>
   </tr>
 </table>
 
-<!-- markdownlint-enable -->
+<!-- markdownlint-restore -->
 <!-- prettier-ignore-end -->
 
 <!-- ALL-CONTRIBUTORS-LIST:END -->
