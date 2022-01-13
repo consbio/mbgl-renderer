@@ -184,6 +184,45 @@ render(style, width, height, { bounds, token: '<your access token>' })
     }))
 ```
 
+You can also provide icon images that will be available for `icon-image`, `line-pattern`, and `fill-pattern` style properties.
+The `images` property is an object with keys for at least `url` and optional keys `pixelRatio` and `sdf`.
+
+`url` must point to a valid remote URL that is accessible from `mbgl-renderer`. It may include base64 encoded image data (example below).
+
+Set `sdf` to `true` to enable the image to be converted into an SDF icon. [Read more](https://docs.mapbox.com/help/troubleshooting/using-recolorable-images-in-mapbox-maps/).
+
+`pixelRatio` is only used for `symbols`; due to a bug in Mapbox GL Native, it does not work properly for `line-pattern` and `fill-pattern` icon images.
+
+```
+const images = {
+    "exampleImageID": {
+        "url": "data:image/png;base64,iVBORw0KGg....truncated...",
+        "sdf": true / false (default),
+        "pixelRatio": 1 (default)
+    }
+}
+```
+
+Then refer to `exampleImageID` in your style:
+
+```
+...
+layers:[
+    {
+        "id": "...",
+        "type": "symbol",
+        "source": "...",
+        "layout": {
+            "icon-image": "exampleImageID",
+            ...
+        },
+        "paint": {
+            ...
+        }
+    }
+]
+```
+
 ### Command line interface:
 
 ```
@@ -203,6 +242,7 @@ render(style, width, height, { bounds, token: '<your access token>' })
     --pitch <degrees>                     Pitch in degrees (0-60)
     -t, --tiles <mbtiles_path>            Directory containing local mbtiles files to render
     --token <mapbox access token>         Mapbox access token (required for using Mapbox styles and sources)
+    --images <images.json                 JSON file containing image config
     -h, --help                            output usage information
 ```
 
@@ -230,7 +270,7 @@ To use local mbtiles tilesets:
 mbgl-render tests/fixtures/example-style-mbtiles-source-vector.json test.png 1024 1024 -z 0 -c 0,0 -t tests/fixtures
 ```
 
-To use an Mapbox hosted style (see attribution above!):
+To use a Mapbox hosted style (see attribution above!):
 
 ```
 mbgl-render mapbox://styles/mapbox/outdoors-v10 test.png 1024 1024 -c 0,0 -z 0 --token <your mapbox token>
@@ -270,17 +310,25 @@ npm start -- --port 8080 --tiles tests/fixtures
 
 #### Making requests
 
-In your client of choice, you can make either HTTP GET or POST requests.
+In your client of choice, you can make either HTTP GET or POST requests to
+
+```
+http://localhost:8080/render
+```
 
 ##### GET requests:
 
-`height` and `width` are integer values
-`zoom` is a floating point value
-`ratio` is an integer value
-`center` if provided must be a `longitude,latitude` with floating point values (NO spaces or brackets)
-`bounds` if provided must be `west,south,east,north` with floating point values (NO spaces or brackets)
-`padding` if provided must be an integer value that is less than 1/2 of width or height, whichever is smaller. Can only be used with bounds.
-`bearing is a floating point value (0-360)`pitch`is a floating point value (0-60)`token` if provided must a string
+Include the following query parameters:
+
+-   `height` and `width` are integer values (required).
+-   `zoom` is a floating point value.
+-   `ratio` is an integer value.
+-   `center` if provided must be a `longitude,latitude` with floating point values (NO spaces or brackets).
+-   `bounds` if provided must be `west,south,east,north` with floating point values (NO spaces or brackets).
+-   `padding` if provided must be an integer value that is less than 1/2 of width or height, whichever is smaller. Can only be used with bounds.
+-   `bearing is a floating point value (0-360)`pitch`is a floating point value (0-60).
+-   `token` if provided must a string.
+-   `images` if provided must be URL encoded JSON object (see `images` property above).
 
 Your style JSON needs to be URL encoded:
 
@@ -361,6 +409,7 @@ In order to use this package on a headless server, you need to use `xvfb`. See `
 ### 0.8.0
 
 -   upgrade NodeJS version in Docker and use newer base OS
+-   added ability to provide images that can be used for `icon-image`, `line-pattern`, `fill-pattern` properties in style
 
 ### 0.7.3
 

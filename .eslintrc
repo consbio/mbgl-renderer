@@ -35,6 +35,7 @@
         ],
         "default-case": "off",
         "function-paren-newline": ["error", "consistent"],
+        "no-restricted-syntax": "off",
         "import/no-extraneous-dependencies": 0,
         "indent": [
             "error",

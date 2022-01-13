@@ -1,0 +1,128 @@
+{
+    "version": 8,
+    "sources": {
+        "geojson": {
+            "type": "geojson",
+            "data": {
+                "type": "GeometryCollection",
+                "geometries": [
+                    {
+                        "type": "LineString",
+                        "coordinates": [
+                            [-50, 50],
+                            [50, 50]
+                        ]
+                    },
+                    {
+                        "type": "LineString",
+                        "coordinates": [
+                            [50, 30],
+                            [-50, 30]
+                        ]
+                    },
+                    { "type": "Point", "coordinates": [0, 10] },
+                    {
+                        "type": "Polygon",
+                        "coordinates": [
+                            [
+                                [-50, -60],
+                                [-50, -20],
+                                [50, -20],
+                                [50, -60],
+                                [-50, -60]
+                            ]
+                        ]
+                    }
+                ]
+            }
+        }
+    },
+    "layers": [
+        {
+            "id": "background",
+            "type": "background",
+            "paint": {
+                "background-color": "#FFFFFF"
+            }
+        },
+        {
+            "id": "line",
+            "type": "line",
+            "source": "geojson",
+            "filter": ["==", "$type", "LineString"],
+            "paint": {
+                "line-color": "#0000FF",
+                "line-width": 3,
+                "line-opacity": 1
+            }
+        },
+        {
+            "id": "line-symbols",
+            "type": "symbol",
+            "source": "geojson",
+            "filter": ["==", "$type", "LineString"],
+            "layout": {
+                "icon-image": "arrow",
+                "symbol-placement": "line",
+                "icon-rotate": 135,
+                "icon-size": 1.5,
+                "symbol-spacing": 2
+            },
+            "paint": {
+                "icon-color": "#0000FF"
+            }
+        },
+        {
+            "id": "poly-pattern",
+            "type": "fill",
+            "source": "geojson",
+            "filter": ["==", "$type", "Polygon"],
+            "paint": {
+                "fill-pattern": "crosshatch"
+            }
+        },
+        {
+            "id": "poly-outline",
+            "type": "line",
+            "source": "geojson",
+            "filter": ["==", "$type", "Polygon"],
+            "paint": {
+                "line-color": "#FF0000",
+                "line-width": 2,
+                "line-opacity": 1
+            }
+        },
+        {
+            "id": "point-icon-default",
+            "type": "symbol",
+            "source": "geojson",
+            "filter": ["==", "$type", "Point"],
+            "layout": {
+                "icon-image": "xbox",
+                "icon-padding": 0,
+                "icon-allow-overlap": true
+            },
+            "paint": {
+                "icon-translate": [-20, 0]
+            }
+        },
+        {
+            "id": "point-icon-large-red",
+            "type": "symbol",
+            "source": "geojson",
+            "filter": ["==", "$type", "Point"],
+            "layout": {
+                "icon-image": "xbox",
+                "icon-padding": 0,
+                "icon-allow-overlap": true,
+                "icon-size": 2
+            },
+            "paint": {
+                "icon-color": "red",
+                "icon-halo-color": "black",
+                "icon-halo-width": 4,
+                "icon-translate": [0, 20]
+            }
+        }
+    ]
+}

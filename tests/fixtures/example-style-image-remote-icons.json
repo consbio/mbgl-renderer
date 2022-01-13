@@ -1,0 +1,28 @@
+{
+    "version": 8,
+    "sources": {
+        "geojson": {
+            "type": "geojson",
+            "data": { "type": "Point", "coordinates": [0, 10] }
+        }
+    },
+    "layers": [
+        {
+            "id": "background",
+            "type": "background",
+            "paint": {
+                "background-color": "#FFFFFF"
+            }
+        },
+        {
+            "id": "icon",
+            "type": "symbol",
+            "source": "geojson",
+            "layout": {
+                "icon-image": "cat",
+                "icon-size": 0.25
+            },
+            "paint": {}
+        }
+    ]
+}

@@ -28,6 +28,7 @@ const PARAMS = {
     bearing: { isRequired: false, isDecimal: true },
     pitch: { isRequired: false, isDecimal: true },
     token: { isRequired: false, isString: true },
+    images: { isRequired: false, isObject: true },
 }
 
 const renderImage = (params, response, next, tilePath) => {
@@ -39,7 +40,14 @@ const renderImage = (params, response, next, tilePath) => {
         bearing = null,
         pitch = null,
     } = params
-    let { style, zoom = null, center = null, bounds = null, ratio = 1 } = params
+    let {
+        style,
+        zoom = null,
+        center = null,
+        bounds = null,
+        ratio = 1,
+        images = null,
+    } = params
 
     if (typeof style === 'string') {
         try {
@@ -195,6 +203,47 @@ const renderImage = (params, response, next, tilePath) => {
         )
     }
 
+    if (images !== null) {
+        if (typeof images === 'string') {
+            images = JSON.parse(images)
+        } else if (typeof images !== 'object') {
+            return next(
+                new restifyErrors.BadRequestError(
+                    'images must be an object or a string'
+                )
+            )
+        }
+
+        // validate URLs
+        for (const image of Object.values(images)) {
+            if (!(image && image.url)) {
+                return next(
+                    new restifyErrors.BadRequestError(
+                        'Invalid image object; a url is required for each image'
+                    )
+                )
+            }
+            let url = null
+            try {
+                url = new URL(image.url)
+            } catch (e) {
+                return next(
+                    new restifyErrors.BadRequestError(
+                        `Invalid image URL: ${url}`
+                    )
+                )
+            }
+            if (url.protocol !== 'data:') {
+                // TODO: support PNG
+                return next(
+                    new restifyErrors.BadRequestError(
+                        'Only base64 image urls are currently supported'
+                    )
+                )
+            }
+        }
+    }
+
     try {
         render(style, parseInt(width, 10), parseInt(height, 10), {
             zoom,
@@ -206,6 +255,7 @@ const renderImage = (params, response, next, tilePath) => {
             bearing,
             pitch,
             token,
+            images,
         })
             .then((data, rejected) => {
                 if (rejected) {
@@ -282,8 +332,8 @@ if (verbose) {
         logger('dev', {
             // only log valid endpoints
             // specifically ignore health check endpoint
-            skip: function (req, res) {
-                return req.statusCode === 404 || req.path() === "/health"
+            skip(req, res) {
+                return req.statusCode === 404 || req.path() === '/health'
             },
         })
     )
@@ -335,11 +385,10 @@ server.get({ url: '/' }, (req, res) => {
     })
 })
 
-
 /**
  * /health: returns 200 to confirm that server is up
  */
-server.get({url: '/health'}, (req, res, next) => {
+server.get({ url: '/health' }, (req, res, next) => {
     res.send(200)
     next()
 })
