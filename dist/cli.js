@@ -26,7 +26,7 @@ var parseListToFloat = function parseListToFloat(text) {
   return text.split(',').map(Number);
 };
 
-_commander["default"].version(_package.version).name('mbgl-render').usage('<style.json> <img_filename> <width> <height> [options]').description('Export a Mapbox GL map to image.  You must provide either center and zoom, or bounds.').arguments('<style.json> <img_filename> <width> <height>').option('-c, --center <longitude,latitude>', 'center of map (NO SPACES)', parseListToFloat).option('-z, --zoom <n>', 'Zoom level', parseFloat).option('-r, --ratio <n>', 'Pixel ratio', parseInt).option('-b, --bounds <west,south,east,north>', 'Bounds (NO SPACES)', parseListToFloat).option('--padding <padding>', 'Number of pixels to add to the inside of each edge of the image.\nCan only be used with bounds option.', parseInt).option('--bearing <degrees>', 'Bearing (0-360)', parseFloat).option('--pitch <degrees>', 'Pitch (0-60)', parseFloat).option('-t, --tiles <mbtiles_path>', 'Directory containing local mbtiles files to render').option('--token <mapbox access token>', 'Mapbox access token (required for using Mapbox styles and sources)').parse(process.argv);
+_commander["default"].version(_package.version).name('mbgl-render').usage('<style.json> <img_filename> <width> <height> [options]').description('Export a Mapbox GL map to image.  You must provide either center and zoom, or bounds.').arguments('<style.json> <img_filename> <width> <height>').option('-c, --center <longitude,latitude>', 'center of map (NO SPACES)', parseListToFloat).option('-z, --zoom <n>', 'Zoom level', parseFloat).option('-r, --ratio <n>', 'Pixel ratio', parseInt).option('-b, --bounds <west,south,east,north>', 'Bounds (NO SPACES)', parseListToFloat).option('--padding <padding>', 'Number of pixels to add to the inside of each edge of the image.\nCan only be used with bounds option.', parseInt).option('--bearing <degrees>', 'Bearing (0-360)', parseFloat).option('--pitch <degrees>', 'Pitch (0-60)', parseFloat).option('-t, --tiles <mbtiles_path>', 'Directory containing local mbtiles files to render').option('--token <mapbox access token>', 'Mapbox access token (required for using Mapbox styles and sources)').option('--images <images.json', 'JSON file containing image config').parse(process.argv);
 
 var _cli$args = (0, _slicedToArray2["default"])(_commander["default"].args, 4),
     styleFilename = _cli$args[0],
@@ -50,7 +50,9 @@ var _cli$args = (0, _slicedToArray2["default"])(_commander["default"].args, 4),
     _cli$tiles = _commander["default"].tiles,
     tilePath = _cli$tiles === void 0 ? null : _cli$tiles,
     _cli$token = _commander["default"].token,
-    token = _cli$token === void 0 ? null : _cli$token; // verify that all arguments are present
+    token = _cli$token === void 0 ? null : _cli$token,
+    _cli$images = _commander["default"].images,
+    imagesFilename = _cli$images === void 0 ? null : _cli$images; // verify that all arguments are present
 
 
 if (!styleFilename) {
@@ -156,6 +158,16 @@ if (tilePath !== null) {
   }
 }
 
+var images = null;
+
+if (imagesFilename !== null) {
+  if (!_fs["default"].existsSync(imagesFilename)) {
+    raiseError("Path to images config file does not exist: ".concat(imagesFilename));
+  }
+
+  images = JSON.parse(_fs["default"].readFileSync(imagesFilename));
+}
+
 console.log('\n\n-------- Export Mapbox GL Map --------');
 console.log('style: %j', styleFilename);
 console.log("output image: ".concat(imgFilename, " (").concat(width, "w x ").concat(height, "h)"));
@@ -174,7 +186,8 @@ var renderRequest = function renderRequest(style) {
     bearing: bearing,
     pitch: pitch,
     tilePath: tilePath,
-    token: token
+    token: token,
+    images: images
   }).then(function (data) {
     _fs["default"].writeFileSync(imgFilename, data);
 

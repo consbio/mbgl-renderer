@@ -47,6 +47,7 @@ cli.version(version)
         '--token <mapbox access token>',
         'Mapbox access token (required for using Mapbox styles and sources)'
     )
+    .option('--images <images.json', 'JSON file containing image config')
     .parse(process.argv)
 
 const {
@@ -60,6 +61,7 @@ const {
     pitch = null,
     tiles: tilePath = null,
     token = null,
+    images: imagesFilename = null,
 } = cli
 
 // verify that all arguments are present
@@ -174,6 +176,16 @@ if (tilePath !== null) {
     }
 }
 
+let images = null
+if (imagesFilename !== null) {
+    if (!fs.existsSync(imagesFilename)) {
+        raiseError(
+            `Path to images config file does not exist: ${imagesFilename}`
+        )
+    }
+    images = JSON.parse(fs.readFileSync(imagesFilename))
+}
+
 console.log('\n\n-------- Export Mapbox GL Map --------')
 console.log('style: %j', styleFilename)
 console.log(`output image: ${imgFilename} (${width}w x ${height}h)`)
@@ -192,6 +204,7 @@ const renderRequest = (style) => {
         pitch,
         tilePath,
         token,
+        images,
     })
         .then((data) => {
             fs.writeFileSync(imgFilename, data)
