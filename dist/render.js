@@ -62,15 +62,19 @@ var isMBTilesURL = function isMBTilesURL(url) {
 
 
 var normalizeMapboxSourceURL = function normalizeMapboxSourceURL(url, token) {
-  var urlObject = _url["default"].parse(url);
+  try {
+    var urlObject = _url["default"].parse(url);
 
-  urlObject.query = urlObject.query || {};
-  urlObject.pathname = "/v4/".concat(url.split('mapbox://')[1], ".json");
-  urlObject.protocol = 'https';
-  urlObject.host = 'api.mapbox.com';
-  urlObject.query.secure = true;
-  urlObject.query.access_token = token;
-  return _url["default"].format(urlObject);
+    urlObject.query = urlObject.query || {};
+    urlObject.pathname = "/v4/".concat(url.split('mapbox://')[1], ".json");
+    urlObject.protocol = 'https';
+    urlObject.host = 'api.mapbox.com';
+    urlObject.query.secure = true;
+    urlObject.query.access_token = token;
+    return _url["default"].format(urlObject);
+  } catch (e) {
+    throw new Error("Could not normalize Mapbox source URL: ".concat(url, "\n").concat(e));
+  }
 };
 /**
  * Normalize a Mapbox tile URL to a full URL
@@ -81,14 +85,18 @@ var normalizeMapboxSourceURL = function normalizeMapboxSourceURL(url, token) {
 
 
 var normalizeMapboxTileURL = function normalizeMapboxTileURL(url, token) {
-  var urlObject = _url["default"].parse(url);
+  try {
+    var urlObject = _url["default"].parse(url);
 
-  urlObject.query = urlObject.query || {};
-  urlObject.pathname = "/v4".concat(urlObject.path);
-  urlObject.protocol = 'https';
-  urlObject.host = 'a.tiles.mapbox.com';
-  urlObject.query.access_token = token;
-  return _url["default"].format(urlObject);
+    urlObject.query = urlObject.query || {};
+    urlObject.pathname = "/v4".concat(urlObject.path);
+    urlObject.protocol = 'https';
+    urlObject.host = 'a.tiles.mapbox.com';
+    urlObject.query.access_token = token;
+    return _url["default"].format(urlObject);
+  } catch (e) {
+    throw new Error("Could not normalize Mapbox tile URL: ".concat(url, "\n").concat(e));
+  }
 };
 /**
  * Normalize a Mapbox style URL to a full URL
@@ -98,16 +106,20 @@ var normalizeMapboxTileURL = function normalizeMapboxTileURL(url, token) {
 
 
 var normalizeMapboxStyleURL = function normalizeMapboxStyleURL(url, token) {
-  var urlObject = _url["default"].parse(url);
+  try {
+    var urlObject = _url["default"].parse(url);
 
-  urlObject.query = {
-    access_token: token,
-    secure: true
-  };
-  urlObject.pathname = "styles/v1".concat(urlObject.path);
-  urlObject.protocol = 'https';
-  urlObject.host = 'api.mapbox.com';
-  return _url["default"].format(urlObject);
+    urlObject.query = {
+      access_token: token,
+      secure: true
+    };
+    urlObject.pathname = "styles/v1".concat(urlObject.path);
+    urlObject.protocol = 'https';
+    urlObject.host = 'api.mapbox.com';
+    return _url["default"].format(urlObject);
+  } catch (e) {
+    throw new Error("Could not normalize Mapbox style URL: ".concat(url, "\n").concat(e));
+  }
 };
 /**
  * Normalize a Mapbox sprite URL to a full URL
@@ -121,20 +133,24 @@ var normalizeMapboxStyleURL = function normalizeMapboxStyleURL(url, token) {
 exports.normalizeMapboxStyleURL = normalizeMapboxStyleURL;
 
 var normalizeMapboxSpriteURL = function normalizeMapboxSpriteURL(url, token) {
-  var extMatch = /(\.png|\.json)$/g.exec(url);
-  var ratioMatch = /(@\d+x)\./g.exec(url);
-  var trimIndex = Math.min(ratioMatch != null ? ratioMatch.index : Infinity, extMatch.index);
+  try {
+    var extMatch = /(\.png|\.json)$/g.exec(url);
+    var ratioMatch = /(@\d+x)\./g.exec(url);
+    var trimIndex = Math.min(ratioMatch != null ? ratioMatch.index : Infinity, extMatch.index);
 
-  var urlObject = _url["default"].parse(url.substring(0, trimIndex));
+    var urlObject = _url["default"].parse(url.substring(0, trimIndex));
 
-  var extPart = extMatch[1];
-  var ratioPart = ratioMatch != null ? ratioMatch[1] : '';
-  urlObject.query = urlObject.query || {};
-  urlObject.query.access_token = token;
-  urlObject.pathname = "/styles/v1".concat(urlObject.path, "/sprite").concat(ratioPart).concat(extPart);
-  urlObject.protocol = 'https';
-  urlObject.host = 'api.mapbox.com';
-  return _url["default"].format(urlObject);
+    var extPart = extMatch[1];
+    var ratioPart = ratioMatch != null ? ratioMatch[1] : '';
+    urlObject.query = urlObject.query || {};
+    urlObject.query.access_token = token;
+    urlObject.pathname = "/styles/v1".concat(urlObject.path, "/sprite").concat(ratioPart).concat(extPart);
+    urlObject.protocol = 'https';
+    urlObject.host = 'api.mapbox.com';
+    return _url["default"].format(urlObject);
+  } catch (e) {
+    throw new Error("Could not normalize Mapbox sprite URL: ".concat(url, "\n").concat(e));
+  }
 };
 /**
  * Normalize a Mapbox glyph URL to a full URL
@@ -148,14 +164,18 @@ var normalizeMapboxSpriteURL = function normalizeMapboxSpriteURL(url, token) {
 exports.normalizeMapboxSpriteURL = normalizeMapboxSpriteURL;
 
 var normalizeMapboxGlyphURL = function normalizeMapboxGlyphURL(url, token) {
-  var urlObject = _url["default"].parse(url);
+  try {
+    var urlObject = _url["default"].parse(url);
 
-  urlObject.query = urlObject.query || {};
-  urlObject.query.access_token = token;
-  urlObject.pathname = "/fonts/v1".concat(urlObject.path);
-  urlObject.protocol = 'https';
-  urlObject.host = 'api.mapbox.com';
-  return _url["default"].format(urlObject);
+    urlObject.query = urlObject.query || {};
+    urlObject.query.access_token = token;
+    urlObject.pathname = "/fonts/v1".concat(urlObject.path);
+    urlObject.protocol = 'https';
+    urlObject.host = 'api.mapbox.com';
+    return _url["default"].format(urlObject);
+  } catch (e) {
+    throw new Error("Could not normalize Mapbox glyph URL: ".concat(url, "\n").concat(e));
+  }
 };
 /**
  * Very simplistic function that splits out mbtiles service name from the URL
@@ -477,11 +497,19 @@ var requestHandler = function requestHandler(tilePath, token) {
           }
       }
     } catch (err) {
-      console.error('Error while making tile request: %j', err);
+      console.error("Error while making resource request to: ".concat(url, "\n").concat(err));
       callback(err);
     }
   };
 };
+/**
+ * Load an icon image from base64 data or a URL and add it to the map.
+ *
+ * @param {Object} map - Mapbox GL map object
+ * @param {String} id - id of image to add
+ * @param {Object} options - options object with {url, pixelRatio, sdf}.  url is required
+ */
+
 
 var loadImage = /*#__PURE__*/function () {
   var _ref3 = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee(map, id, _ref2) {
@@ -501,38 +529,39 @@ var loadImage = /*#__PURE__*/function () {
             throw new Error("Invalid url for image: ".concat(id));
 
           case 3:
+            _context.prev = 3;
             imgBuffer = null;
 
             if (!url.startsWith('data:')) {
-              _context.next = 8;
+              _context.next = 9;
               break;
             }
 
             imgBuffer = Buffer.from(url.split('base64,')[1], 'base64');
-            _context.next = 12;
+            _context.next = 13;
             break;
 
-          case 8:
-            _context.next = 10;
+          case 9:
+            _context.next = 11;
             return getRemoteAssetPromise(url);
 
-          case 10:
+          case 11:
             _img = _context.sent;
             imgBuffer = _img.data;
 
-          case 12:
+          case 13:
             img = (0, _sharp["default"])(imgBuffer);
-            _context.next = 15;
+            _context.next = 16;
             return img.metadata();
 
-          case 15:
+          case 16:
             metadata = _context.sent;
-            _context.next = 18;
+            _context.next = 19;
             return img.raw().toBuffer();
 
-          case 18:
+          case 19:
             data = _context.sent;
-            _context.next = 21;
+            _context.next = 22;
             return map.addImage(id, data, {
               width: metadata.width,
               height: metadata.height,
@@ -540,18 +569,33 @@ var loadImage = /*#__PURE__*/function () {
               sdf: sdf
             });
 
-          case 21:
+          case 22:
+            _context.next = 27;
+            break;
+
+          case 24:
+            _context.prev = 24;
+            _context.t0 = _context["catch"](3);
+            throw new Error("Error loading icon image: ".concat(id, "\n").concat(_context.t0));
+
+          case 27:
           case "end":
             return _context.stop();
         }
       }
-    }, _callee);
+    }, _callee, null, [[3, 24]]);
   }));
 
   return function loadImage(_x, _x2, _x3) {
     return _ref3.apply(this, arguments);
   };
 }();
+/**
+ * Load all icon images to the map.
+ * @param {Object} map - Mapbox GL map object
+ * @param {Object} images - object with {id: {url, ...other image properties}}
+ */
+
 
 var loadImages = /*#__PURE__*/function () {
   var _ref4 = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee3(map, images) {
@@ -602,6 +646,14 @@ var loadImages = /*#__PURE__*/function () {
     return _ref4.apply(this, arguments);
   };
 }();
+/**
+ * Render the map, returning a Promise.
+ *
+ * @param {Object} map - Mapbox GL map object
+ * @param {Object} options - Mapbox GL map options
+ * @returns
+ */
+
 
 var renderMap = function renderMap(map, options) {
   return new Promise(function (resolve, reject) {
@@ -615,8 +667,7 @@ var renderMap = function renderMap(map, options) {
   });
 };
 /**
- * toPNG converts premultiplied image buffer from Mapbox GL and converts to RGBA
- * PNG format.
+ * Convert premultiplied image buffer from Mapbox GL to RGBA PNG format.
  * @param {Uint8Array} buffer - image data buffer
  * @param {Number} width - image width
  * @param {Number} height - image height

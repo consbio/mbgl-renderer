@@ -26,14 +26,18 @@ const isMBTilesURL = (url) => url.startsWith('mbtiles://')
  * @param {string} token - mapbox public token
  */
 const normalizeMapboxSourceURL = (url, token) => {
-    const urlObject = urlLib.parse(url)
-    urlObject.query = urlObject.query || {}
-    urlObject.pathname = `/v4/${url.split('mapbox://')[1]}.json`
-    urlObject.protocol = 'https'
-    urlObject.host = 'api.mapbox.com'
-    urlObject.query.secure = true
-    urlObject.query.access_token = token
-    return urlLib.format(urlObject)
+    try {
+        const urlObject = urlLib.parse(url)
+        urlObject.query = urlObject.query || {}
+        urlObject.pathname = `/v4/${url.split('mapbox://')[1]}.json`
+        urlObject.protocol = 'https'
+        urlObject.host = 'api.mapbox.com'
+        urlObject.query.secure = true
+        urlObject.query.access_token = token
+        return urlLib.format(urlObject)
+    } catch (e) {
+        throw new Error(`Could not normalize Mapbox source URL: ${url}\n${e}`)
+    }
 }
 
 /**
@@ -43,13 +47,17 @@ const normalizeMapboxSourceURL = (url, token) => {
  * @param {string} token - mapbox public token
  */
 const normalizeMapboxTileURL = (url, token) => {
-    const urlObject = urlLib.parse(url)
-    urlObject.query = urlObject.query || {}
-    urlObject.pathname = `/v4${urlObject.path}`
-    urlObject.protocol = 'https'
-    urlObject.host = 'a.tiles.mapbox.com'
-    urlObject.query.access_token = token
-    return urlLib.format(urlObject)
+    try {
+        const urlObject = urlLib.parse(url)
+        urlObject.query = urlObject.query || {}
+        urlObject.pathname = `/v4${urlObject.path}`
+        urlObject.protocol = 'https'
+        urlObject.host = 'a.tiles.mapbox.com'
+        urlObject.query.access_token = token
+        return urlLib.format(urlObject)
+    } catch (e) {
+        throw new Error(`Could not normalize Mapbox tile URL: ${url}\n${e}`)
+    }
 }
 
 /**
@@ -58,15 +66,19 @@ const normalizeMapboxTileURL = (url, token) => {
  * @param {string} token - mapbox public token
  */
 export const normalizeMapboxStyleURL = (url, token) => {
-    const urlObject = urlLib.parse(url)
-    urlObject.query = {
-        access_token: token,
-        secure: true,
+    try {
+        const urlObject = urlLib.parse(url)
+        urlObject.query = {
+            access_token: token,
+            secure: true,
+        }
+        urlObject.pathname = `styles/v1${urlObject.path}`
+        urlObject.protocol = 'https'
+        urlObject.host = 'api.mapbox.com'
+        return urlLib.format(urlObject)
+    } catch (e) {
+        throw new Error(`Could not normalize Mapbox style URL: ${url}\n${e}`)
     }
-    urlObject.pathname = `styles/v1${urlObject.path}`
-    urlObject.protocol = 'https'
-    urlObject.host = 'api.mapbox.com'
-    return urlLib.format(urlObject)
 }
 
 /**
@@ -77,22 +89,26 @@ export const normalizeMapboxStyleURL = (url, token) => {
  * Returns {string} - url, e.g., "https://api.mapbox.com/styles/v1/mapbox/streets-v9/sprite.png?access_token=<token>"
  */
 export const normalizeMapboxSpriteURL = (url, token) => {
-    const extMatch = /(\.png|\.json)$/g.exec(url)
-    const ratioMatch = /(@\d+x)\./g.exec(url)
-    const trimIndex = Math.min(
-        ratioMatch != null ? ratioMatch.index : Infinity,
-        extMatch.index
-    )
-    const urlObject = urlLib.parse(url.substring(0, trimIndex))
+    try {
+        const extMatch = /(\.png|\.json)$/g.exec(url)
+        const ratioMatch = /(@\d+x)\./g.exec(url)
+        const trimIndex = Math.min(
+            ratioMatch != null ? ratioMatch.index : Infinity,
+            extMatch.index
+        )
+        const urlObject = urlLib.parse(url.substring(0, trimIndex))
 
-    const extPart = extMatch[1]
-    const ratioPart = ratioMatch != null ? ratioMatch[1] : ''
-    urlObject.query = urlObject.query || {}
-    urlObject.query.access_token = token
-    urlObject.pathname = `/styles/v1${urlObject.path}/sprite${ratioPart}${extPart}`
-    urlObject.protocol = 'https'
-    urlObject.host = 'api.mapbox.com'
-    return urlLib.format(urlObject)
+        const extPart = extMatch[1]
+        const ratioPart = ratioMatch != null ? ratioMatch[1] : ''
+        urlObject.query = urlObject.query || {}
+        urlObject.query.access_token = token
+        urlObject.pathname = `/styles/v1${urlObject.path}/sprite${ratioPart}${extPart}`
+        urlObject.protocol = 'https'
+        urlObject.host = 'api.mapbox.com'
+        return urlLib.format(urlObject)
+    } catch (e) {
+        throw new Error(`Could not normalize Mapbox sprite URL: ${url}\n${e}`)
+    }
 }
 
 /**
@@ -103,13 +119,17 @@ export const normalizeMapboxSpriteURL = (url, token) => {
  * Returns {string} - url, e.g., "https://api.mapbox.com/styles/v1/mapbox/streets-v9/sprite.png?access_token=<token>"
  */
 export const normalizeMapboxGlyphURL = (url, token) => {
-    const urlObject = urlLib.parse(url)
-    urlObject.query = urlObject.query || {}
-    urlObject.query.access_token = token
-    urlObject.pathname = `/fonts/v1${urlObject.path}`
-    urlObject.protocol = 'https'
-    urlObject.host = 'api.mapbox.com'
-    return urlLib.format(urlObject)
+    try {
+        const urlObject = urlLib.parse(url)
+        urlObject.query = urlObject.query || {}
+        urlObject.query.access_token = token
+        urlObject.pathname = `/fonts/v1${urlObject.path}`
+        urlObject.protocol = 'https'
+        urlObject.host = 'api.mapbox.com'
+        return urlLib.format(urlObject)
+    } catch (e) {
+        throw new Error(`Could not normalize Mapbox glyph URL: ${url}\n${e}`)
+    }
 }
 
 /**
@@ -416,34 +436,52 @@ const requestHandler =
                 }
             }
         } catch (err) {
-            console.error('Error while making tile request: %j', err)
+            console.error(
+                `Error while making resource request to: ${url}\n${err}`
+            )
             callback(err)
         }
     }
 
+/**
+ * Load an icon image from base64 data or a URL and add it to the map.
+ *
+ * @param {Object} map - Mapbox GL map object
+ * @param {String} id - id of image to add
+ * @param {Object} options - options object with {url, pixelRatio, sdf}.  url is required
+ */
 const loadImage = async (map, id, { url, pixelRatio = 1, sdf = false }) => {
     if (!url) {
         throw new Error(`Invalid url for image: ${id}`)
     }
 
-    let imgBuffer = null
-    if (url.startsWith('data:')) {
-        imgBuffer = Buffer.from(url.split('base64,')[1], 'base64')
-    } else {
-        const img = await getRemoteAssetPromise(url)
-        imgBuffer = img.data
+    try {
+        let imgBuffer = null
+        if (url.startsWith('data:')) {
+            imgBuffer = Buffer.from(url.split('base64,')[1], 'base64')
+        } else {
+            const img = await getRemoteAssetPromise(url)
+            imgBuffer = img.data
+        }
+        const img = sharp(imgBuffer)
+        const metadata = await img.metadata()
+        const data = await img.raw().toBuffer()
+        await map.addImage(id, data, {
+            width: metadata.width,
+            height: metadata.height,
+            pixelRatio,
+            sdf,
+        })
+    } catch (e) {
+        throw new Error(`Error loading icon image: ${id}\n${e}`)
     }
-    const img = sharp(imgBuffer)
-    const metadata = await img.metadata()
-    const data = await img.raw().toBuffer()
-    await map.addImage(id, data, {
-        width: metadata.width,
-        height: metadata.height,
-        pixelRatio,
-        sdf,
-    })
 }
 
+/**
+ * Load all icon images to the map.
+ * @param {Object} map - Mapbox GL map object
+ * @param {Object} images - object with {id: {url, ...other image properties}}
+ */
 const loadImages = async (map, images) => {
     if (images !== null) {
         const imageRequests = Object.entries(images).map(async (image) => {
@@ -455,6 +493,13 @@ const loadImages = async (map, images) => {
     }
 }
 
+/**
+ * Render the map, returning a Promise.
+ *
+ * @param {Object} map - Mapbox GL map object
+ * @param {Object} options - Mapbox GL map options
+ * @returns
+ */
 const renderMap = (map, options) => {
     return new Promise((resolve, reject) => {
         map.render(options, (err, buffer) => {
@@ -467,8 +512,7 @@ const renderMap = (map, options) => {
 }
 
 /**
- * toPNG converts premultiplied image buffer from Mapbox GL and converts to RGBA
- * PNG format.
+ * Convert premultiplied image buffer from Mapbox GL to RGBA PNG format.
  * @param {Uint8Array} buffer - image data buffer
  * @param {Number} width - image width
  * @param {Number} height - image height

@@ -223,21 +223,13 @@ const renderImage = (params, response, next, tilePath) => {
                     )
                 )
             }
-            let url = null
             try {
-                url = new URL(image.url)
+                // use new URL to validate URL
+                const url = new URL(image.url)
             } catch (e) {
                 return next(
                     new restifyErrors.BadRequestError(
-                        `Invalid image URL: ${url}`
-                    )
-                )
-            }
-            if (url.protocol !== 'data:') {
-                // TODO: support PNG
-                return next(
-                    new restifyErrors.BadRequestError(
-                        'Only base64 image urls are currently supported'
+                        `Invalid image URL: ${image.url}`
                     )
                 )
             }

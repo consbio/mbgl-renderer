@@ -244,17 +244,11 @@ var renderImage = function renderImage(params, response, next, tilePath) {
         return next(new _restifyErrors["default"].BadRequestError('Invalid image object; a url is required for each image'));
       }
 
-      var url = null;
-
       try {
-        url = new URL(image.url);
+        // use new URL to validate URL
+        var url = new URL(image.url);
       } catch (e) {
-        return next(new _restifyErrors["default"].BadRequestError("Invalid image URL: ".concat(url)));
-      }
-
-      if (url.protocol !== 'data:') {
-        // TODO: support PNG
-        return next(new _restifyErrors["default"].BadRequestError('Only base64 image urls are currently supported'));
+        return next(new _restifyErrors["default"].BadRequestError("Invalid image URL: ".concat(image.url)));
       }
     }
   }
