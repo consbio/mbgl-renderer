@@ -5,7 +5,7 @@ import path from 'path'
 import sharp from 'sharp'
 import zlib from 'zlib'
 import geoViewport from '@mapbox/geo-viewport'
-import mbgl from '@mapbox/mapbox-gl-native'
+import mbgl from '@maplibre/maplibre-gl-native'
 import MBTiles from '@mapbox/mbtiles'
 import webRequest from 'request'
 
