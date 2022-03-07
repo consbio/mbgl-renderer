@@ -3,6 +3,7 @@ import dotenv from 'dotenv-flow'
 import path from 'path'
 import sharp from 'sharp'
 import { render } from '../src/render'
+import emptyStyle from './fixtures/example-style-empty.json'
 import mbtilesSourceStyle from './fixtures/example-style-mbtiles-source.json'
 import mbtilesSourceVectorStyle from './fixtures/example-style-mbtiles-source-vector.json'
 import mbtilesTilesStyle from './fixtures/example-style-mbtiles-tiles.json'
@@ -31,6 +32,19 @@ if (!MAPBOX_API_TOKEN) {
 }
 
 const testMapbox = skipIf(!MAPBOX_API_TOKEN)
+
+test('renders empty style', async () => {
+    const data = await render(emptyStyle, 100, 100, {
+        zoom: 0,
+        center: [0, 0],
+    })
+
+    // feed it back through sharp to verify that we got an image
+    const { format, width, height } = await sharp(data).metadata()
+    expect(format).toBe('png')
+    expect(width).toBe(100)
+    expect(height).toBe(100)
+})
 
 test('creates image with correct format and dimensions', async () => {
     const data = await render(mbtilesTilesStyle, 512, 256, {
