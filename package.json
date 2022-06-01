@@ -26,7 +26,7 @@
         "request": "^2.88.2",
         "restify": "^8.6.0",
         "restify-errors": "^8.0.2",
-        "sharp": "^0.28.3"
+        "sharp": "^0.30.5"
     },
     "devDependencies": {
         "@babel/cli": "^7.16.8",
