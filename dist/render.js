@@ -25,7 +25,7 @@ var _zlib = _interopRequireDefault(require("zlib"));
 
 var _geoViewport = _interopRequireDefault(require("@mapbox/geo-viewport"));
 
-var _mapboxGlNative = _interopRequireDefault(require("@mapbox/mapbox-gl-native"));
+var _maplibreGlNative = _interopRequireDefault(require("@maplibre/maplibre-gl-native"));
 
 var _mbtiles = _interopRequireDefault(require("@mapbox/mbtiles"));
 
@@ -313,10 +313,23 @@ var getLocalTile = function getLocalTile(tilePath, url, callback) {
 
 
 var getRemoteTile = function getRemoteTile(url, callback) {
+  var headers = {};
+
+  if (url.includes("@")) {
+    var urlObject = new URL(url); // eslint-disable-next-line no-param-reassign
+
+    url = urlObject.origin + urlObject.pathname + urlObject.search;
+    var base64Template = "".concat(decodeURIComponent(urlObject.username), ":").concat(decodeURIComponent(urlObject.password));
+    headers = {
+      "Authorization": "Basic ".concat(Buffer.from(base64Template).toString('base64'))
+    };
+  }
+
   (0, _request["default"])({
     url: url,
     encoding: null,
-    gzip: true
+    gzip: true,
+    headers: headers
   }, function (err, res, data) {
     if (err) {
       return callback(err);
@@ -348,8 +361,8 @@ var getRemoteTile = function getRemoteTile(url, callback) {
       default:
         {
           // assume error
-          console.error("Error with request for: ".concat(url, "\nstatus: ").concat(res.statusCode));
-          return callback(new Error("Error with request for: ".concat(url, "\nstatus: ").concat(res.statusCode)));
+          console.error("Error with request for remote tile: ".concat(url, "\nstatus: ").concat(res.statusCode));
+          return callback(new Error("Error with request for remote tile: ".concat(url, "\nstatus: ").concat(res.statusCode)));
         }
     }
   });
@@ -365,10 +378,23 @@ var getRemoteTile = function getRemoteTile(url, callback) {
 
 
 var getRemoteAsset = function getRemoteAsset(url, callback) {
+  var headers = {};
+  var urlObject = new URL(url);
+
+  if (urlObject.username) {
+    // eslint-disable-next-line no-param-reassign
+    url = urlObject.origin + urlObject.pathname + urlObject.search;
+    var base64Template = "".concat(decodeURIComponent(urlObject.username), ":").concat(decodeURIComponent(urlObject.password));
+    headers = {
+      "Authorization": "Basic ".concat(Buffer.from(base64Template).toString('base64'))
+    };
+  }
+
   (0, _request["default"])({
     url: url,
     encoding: null,
-    gzip: true
+    gzip: true,
+    headers: headers
   }, function (err, res, data) {
     if (err) {
       return callback(err);
@@ -385,8 +411,8 @@ var getRemoteAsset = function getRemoteAsset(url, callback) {
       default:
         {
           // assume error
-          console.error("Error with request for: ".concat(url, "\nstatus: ").concat(res.statusCode));
-          return callback(new Error("Error with request for: ".concat(url, "\nstatus: ").concat(res.statusCode)));
+          console.error("Error with request for remote asset: ".concat(url, "\nstatus: ").concat(res.statusCode));
+          return callback(new Error("Error with request for remote asset: ".concat(url, "\nstatus: ").concat(res.statusCode)));
         }
     }
   });
@@ -928,7 +954,7 @@ var render = /*#__PURE__*/function () {
               });
             }
 
-            map = new _mapboxGlNative["default"].Map({
+            map = new _maplibreGlNative["default"].Map({
               request: requestHandler(tilePath, token),
               ratio: ratio
             });

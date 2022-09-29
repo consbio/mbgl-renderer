@@ -5,7 +5,7 @@ import path from 'path'
 import sharp from 'sharp'
 import zlib from 'zlib'
 import geoViewport from '@mapbox/geo-viewport'
-import mbgl from '@mapbox/mapbox-gl-native'
+import mbgl from '@maplibre/maplibre-gl-native'
 import MBTiles from '@mapbox/mbtiles'
 import webRequest from 'request'
 
@@ -248,11 +248,20 @@ const getLocalTile = (tilePath, url, callback) => {
  * @param {function} callback - callback to call with (err, {data})
  */
 const getRemoteTile = (url, callback) => {
+    let headers = {}
+    if(url.includes("@")){
+        const urlObject = new URL(url)
+        // eslint-disable-next-line no-param-reassign
+        url = urlObject.origin + urlObject.pathname + urlObject.search
+        const base64Template = `${decodeURIComponent(urlObject.username)}:${decodeURIComponent(urlObject.password)}`
+        headers = {"Authorization":`Basic ${Buffer.from(base64Template).toString('base64')}`}
+    }
     webRequest(
         {
             url,
             encoding: null,
             gzip: true,
+            headers
         },
         (err, res, data) => {
             if (err) {
@@ -277,11 +286,11 @@ const getRemoteTile = (url, callback) => {
                 default: {
                     // assume error
                     console.error(
-                        `Error with request for: ${url}\nstatus: ${res.statusCode}`
+                        `Error with request for remote tile: ${url}\nstatus: ${res.statusCode}`
                     )
                     return callback(
                         new Error(
-                            `Error with request for: ${url}\nstatus: ${res.statusCode}`
+                            `Error with request for remote tile: ${url}\nstatus: ${res.statusCode}`
                         )
                     )
                 }
@@ -299,11 +308,20 @@ const getRemoteTile = (url, callback) => {
  * @param {function} callback - callback to call with (err, {data})
  */
 const getRemoteAsset = (url, callback) => {
+    let headers = {}
+    const urlObject = new URL(url)
+    if(urlObject.username){
+        // eslint-disable-next-line no-param-reassign
+        url = urlObject.origin + urlObject.pathname + urlObject.search
+        const base64Template = `${decodeURIComponent(urlObject.username)}:${decodeURIComponent(urlObject.password)}`
+        headers = {"Authorization":`Basic ${Buffer.from(base64Template).toString('base64')}`}
+    }
     webRequest(
         {
             url,
             encoding: null,
             gzip: true,
+            headers
         },
         (err, res, data) => {
             if (err) {
@@ -317,11 +335,11 @@ const getRemoteAsset = (url, callback) => {
                 default: {
                     // assume error
                     console.error(
-                        `Error with request for: ${url}\nstatus: ${res.statusCode}`
+                        `Error with request for remote asset: ${url}\nstatus: ${res.statusCode}`
                     )
                     return callback(
                         new Error(
-                            `Error with request for: ${url}\nstatus: ${res.statusCode}`
+                            `Error with request for remote asset: ${url}\nstatus: ${res.statusCode}`
                         )
                     )
                 }
@@ -356,92 +374,92 @@ const getRemoteAssetPromise = (url) => {
  */
 const requestHandler =
     (tilePath, token) =>
-    ({ url, kind }, callback) => {
-        const isMapbox = isMapboxURL(url)
-        if (isMapbox && !token) {
-            throw new Error('ERROR: mapbox access token is required')
-        }
+        ({ url, kind }, callback) => {
+            const isMapbox = isMapboxURL(url)
+            if (isMapbox && !token) {
+                throw new Error('ERROR: mapbox access token is required')
+            }
 
-        try {
-            switch (kind) {
-                case 2: {
+            try {
+                switch (kind) {
+                    case 2: {
                     // source
-                    if (isMBTilesURL(url)) {
-                        getLocalTileJSON(tilePath, url, callback)
-                    } else if (isMapbox) {
-                        getRemoteAsset(
-                            normalizeMapboxSourceURL(url, token),
-                            callback
-                        )
-                    } else {
-                        getRemoteAsset(url, callback)
+                        if (isMBTilesURL(url)) {
+                            getLocalTileJSON(tilePath, url, callback)
+                        } else if (isMapbox) {
+                            getRemoteAsset(
+                                normalizeMapboxSourceURL(url, token),
+                                callback
+                            )
+                        } else {
+                            getRemoteAsset(url, callback)
+                        }
+                        break
                     }
-                    break
-                }
-                case 3: {
+                    case 3: {
                     // tile
-                    if (isMBTilesURL(url)) {
-                        getLocalTile(tilePath, url, callback)
-                    } else if (isMapbox) {
+                        if (isMBTilesURL(url)) {
+                            getLocalTile(tilePath, url, callback)
+                        } else if (isMapbox) {
                         // This seems to be due to a bug in how the mapbox tile
                         // JSON is handled within mapbox-gl-native
                         // since it returns fully resolved tiles!
-                        getRemoteTile(
-                            normalizeMapboxTileURL(url, token),
+                            getRemoteTile(
+                                normalizeMapboxTileURL(url, token),
+                                callback
+                            )
+                        } else {
+                            getRemoteTile(url, callback)
+                        }
+                        break
+                    }
+                    case 4: {
+                    // glyph
+                        getRemoteAsset(
+                            isMapbox
+                                ? normalizeMapboxGlyphURL(url, token)
+                                : urlLib.parse(url),
                             callback
                         )
-                    } else {
-                        getRemoteTile(url, callback)
+                        break
                     }
-                    break
-                }
-                case 4: {
-                    // glyph
-                    getRemoteAsset(
-                        isMapbox
-                            ? normalizeMapboxGlyphURL(url, token)
-                            : urlLib.parse(url),
-                        callback
-                    )
-                    break
-                }
-                case 5: {
+                    case 5: {
                     // sprite image
-                    getRemoteAsset(
-                        isMapbox
-                            ? normalizeMapboxSpriteURL(url, token)
-                            : urlLib.parse(url),
-                        callback
-                    )
-                    break
-                }
-                case 6: {
+                        getRemoteAsset(
+                            isMapbox
+                                ? normalizeMapboxSpriteURL(url, token)
+                                : urlLib.parse(url),
+                            callback
+                        )
+                        break
+                    }
+                    case 6: {
                     // sprite json
-                    getRemoteAsset(
-                        isMapbox
-                            ? normalizeMapboxSpriteURL(url, token)
-                            : urlLib.parse(url),
-                        callback
-                    )
-                    break
-                }
-                case 7: {
+                        getRemoteAsset(
+                            isMapbox
+                                ? normalizeMapboxSpriteURL(url, token)
+                                : urlLib.parse(url),
+                            callback
+                        )
+                        break
+                    }
+                    case 7: {
                     // image source
-                    getRemoteAsset(urlLib.parse(url), callback)
-                    break
-                }
-                default: {
+                        getRemoteAsset(urlLib.parse(url), callback)
+                        break
+                    }
+                    default: {
                     // NOT HANDLED!
-                    throw new Error(`ERROR: Request kind not handled: ${kind}`)
+                        throw new Error(`ERROR: Request kind not handled: ${kind}`)
+                    }
                 }
+            } catch (err) {
+                console.error(
+                    `Error while making resource request to: ${url}\n${err}`
+                )
+                callback(err)
             }
-        } catch (err) {
-            console.error(
-                `Error while making resource request to: ${url}\n${err}`
-            )
-            callback(err)
         }
-    }
 
 /**
  * Load an icon image from base64 data or a URL and add it to the map.

@@ -2,7 +2,7 @@
 
 FROM debian:bullseye-slim
 
-ENV NODE_VERSION 10.24.1
+ENV NODE_VERSION 16.17.1
 
 RUN groupadd --gid 1000 node \
   && useradd --uid 1000 --gid node --shell /bin/bash --create-home node
@@ -12,7 +12,7 @@ WORKDIR /app
 # Note: this raises a deprecation warning for NodeJS 10
 RUN set -ex \
   && apt-get update && apt-get install -y ca-certificates curl dirmngr xz-utils --no-install-recommends \
-  && curl -fsSLO --compressed "https://nodejs.org/dist/latest-v10.x/node-v$NODE_VERSION-linux-x64.tar.xz" \
+  && curl -fsSLO --compressed "https://nodejs.org/dist/latest-v16.x/node-v$NODE_VERSION-linux-x64.tar.xz" \
   && tar -xJf "node-v$NODE_VERSION-linux-x64.tar.xz" -C /usr/local --strip-components=1 --no-same-owner \
   && rm "node-v$NODE_VERSION-linux-x64.tar.xz" \
   && apt-mark auto '.*' > /dev/null \
@@ -28,8 +28,6 @@ RUN set -ex \
   && node --version \
   && npm --version
 
-COPY package*.json /app/
-
 RUN DEBIAN_FRONTEND=noninteractive apt-get -y install \
   # note: curl added again here to prevent from autoremove
   curl \
@@ -40,9 +38,15 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get -y install \
   libprotobuf-dev \
   libxxf86vm-dev \
   xvfb \
-  x11-utils && \
+  x11-utils
   # install node deps, then remove any that are not used in production
-  npm install --no-save && \
+COPY package*.json /app/
+COPY src/ ./src/
+
+RUN curl http://archive.ubuntu.com/ubuntu/pool/main/libj/libjpeg-turbo/libjpeg-turbo8_2.0.3-0ubuntu1_amd64.deb --output libjpeg-turbo8_2.0.3-0ubuntu1_amd64.deb && apt install ./libjpeg-turbo8_2.0.3-0ubuntu1_amd64.deb
+RUN curl http://archive.ubuntu.com/ubuntu/pool/main/i/icu/libicu66_66.1-2ubuntu2_amd64.deb --output libicu66_66.1-2ubuntu2_amd64.deb && apt install ./libicu66_66.1-2ubuntu2_amd64.deb
+
+RUN npm ci && \
   rm -rf "/root/.npm" && \
   npm uninstall --no-save typescript eslint @babel/cli node-gyp && \
   npm prune --production && \
@@ -58,7 +62,7 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get -y install \
   # create local directory for tiles to prevent startup errors
   # if this is not defined via a bind point to host
   mkdir /app/tiles
-
+RUN apt install libuv1-dev -y
 EXPOSE 80
 ENV DISPLAY=:99
 
