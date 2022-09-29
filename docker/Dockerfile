@@ -31,6 +31,7 @@ RUN set -ex \
 RUN DEBIAN_FRONTEND=noninteractive apt-get -y install \
   # note: curl added again here to prevent from autoremove
   curl \
+  libuv1-dev \
   libcairo2-dev \
   libgles2-mesa-dev \
   libgbm-dev \
@@ -43,8 +44,10 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get -y install \
 COPY package*.json /app/
 COPY src/ ./src/
 
-RUN curl http://archive.ubuntu.com/ubuntu/pool/main/libj/libjpeg-turbo/libjpeg-turbo8_2.0.3-0ubuntu1_amd64.deb --output libjpeg-turbo8_2.0.3-0ubuntu1_amd64.deb && apt install ./libjpeg-turbo8_2.0.3-0ubuntu1_amd64.deb
-RUN curl http://archive.ubuntu.com/ubuntu/pool/main/i/icu/libicu66_66.1-2ubuntu2_amd64.deb --output libicu66_66.1-2ubuntu2_amd64.deb && apt install ./libicu66_66.1-2ubuntu2_amd64.deb
+RUN curl http://archive.ubuntu.com/ubuntu/pool/main/libj/libjpeg-turbo/libjpeg-turbo8_2.0.3-0ubuntu1_amd64.deb --output libjpeg-turbo8_2.0.3-0ubuntu1_amd64.deb && \
+     curl http://archive.ubuntu.com/ubuntu/pool/main/i/icu/libicu66_66.1-2ubuntu2_amd64.deb --output libicu66_66.1-2ubuntu2_amd64.deb &&  \
+     apt install ./libjpeg-turbo8_2.0.3-0ubuntu1_amd64.deb  && \
+     apt install ./libicu66_66.1-2ubuntu2_amd64.deb
 
 RUN npm ci && \
   rm -rf "/root/.npm" && \
@@ -62,7 +65,7 @@ RUN npm ci && \
   # create local directory for tiles to prevent startup errors
   # if this is not defined via a bind point to host
   mkdir /app/tiles
-RUN apt install libuv1-dev -y
+RUN apt install  -y
 EXPOSE 80
 ENV DISPLAY=:99
 
