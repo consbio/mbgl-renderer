@@ -24,6 +24,7 @@ jobs:
       - name: Build and push
         uses: docker/build-push-action@v3
         with:
-          context: docker/.
+          context: .
+          file: docker/Dockerfile
           push: true
           tags: alpha/libregl-renderer:latest
