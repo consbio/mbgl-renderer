@@ -1,6 +1,6 @@
 FROM debian:bullseye-slim
 
-ENV NODE_VERSION 19.6.0
+ENV NODE_VERSION 16.9.1
 
 RUN groupadd --gid 1000 node \
   && useradd --uid 1000 --gid node --shell /bin/bash --create-home node
