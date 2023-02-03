@@ -2,17 +2,16 @@
 
 FROM debian:bullseye-slim
 
-ENV NODE_VERSION 16.17.1
+ENV NODE_VERSION 19.6.0
 
 RUN groupadd --gid 1000 node \
   && useradd --uid 1000 --gid node --shell /bin/bash --create-home node
 
 WORKDIR /app
 
-# Note: this raises a deprecation warning for NodeJS 10
 RUN set -ex \
   && apt-get update && apt-get install -y ca-certificates curl dirmngr xz-utils --no-install-recommends \
-  && curl -fsSLO --compressed "https://nodejs.org/dist/latest-v16.x/node-v$NODE_VERSION-linux-x64.tar.xz" \
+  && curl -fsSLO --compressed "https://nodejs.org/dist/v$NODE_VERSION/node-v$NODE_VERSION-linux-x64.tar.xz" \
   && tar -xJf "node-v$NODE_VERSION-linux-x64.tar.xz" -C /usr/local --strip-components=1 --no-same-owner \
   && rm "node-v$NODE_VERSION-linux-x64.tar.xz" \
   && apt-mark auto '.*' > /dev/null \
