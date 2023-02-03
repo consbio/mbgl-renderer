@@ -18,7 +18,7 @@
     "dependencies": {
         "@babel/runtime": "^7.16.7",
         "@mapbox/geo-viewport": "^0.5.0",
-        "@maplibre/maplibre-gl-native": "^5.0.1-pre.0",
+        "@maplibre/maplibre-gl-native": "^5.1.1",
         "@mapbox/mbtiles": "^0.12.1",
         "commander": "^9.4.0",
         "morgan": "^1.10.0",
