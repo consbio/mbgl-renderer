@@ -1,5 +1,3 @@
-# NodeJS 10 setup modified from standard NodeJS bullseye-slim installation
-
 FROM debian:bullseye-slim
 
 ENV NODE_VERSION 19.6.0
@@ -48,7 +46,7 @@ RUN curl http://archive.ubuntu.com/ubuntu/pool/main/libj/libjpeg-turbo/libjpeg-t
      apt install ./libjpeg-turbo8_2.0.3-0ubuntu1_amd64.deb  && \
      apt install ./libicu66_66.1-2ubuntu2_amd64.deb
 
-RUN npm ci && \
+RUN npm i && \
   rm -rf "/root/.npm" && \
   npm uninstall --no-save typescript eslint @babel/cli node-gyp && \
   npm prune --production && \
