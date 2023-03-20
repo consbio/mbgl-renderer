@@ -68,6 +68,7 @@ RUN dpkgArch="$(dpkg --print-architecture)" && \
   wget http://archive.ubuntu.com/ubuntu/pool/main/i/icu/libicu66_66.1-2ubuntu2.1_amd64.deb ;\
   fi && \
   apt install ./libicu66_66.1-2ubuntu2.1_$dpkgArch.deb && \
+  rm -rf *.deb && \
   mkdir src && \
   npm ci --omit=dev && \
   rm -rf "/root/.npm" && \
