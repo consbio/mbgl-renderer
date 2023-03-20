@@ -225,6 +225,7 @@ const renderImage = (params, response, next, tilePath) => {
             }
             try {
                 // use new URL to validate URL
+                /* eslint-disable-next-line no-unused-vars */
                 const url = new URL(image.url)
             } catch (e) {
                 return next(
@@ -307,6 +308,8 @@ cli.version(version)
 const { port = 8000, tiles: tilePath = null, verbose = false } = cli
 
 export const server = restify.createServer({
+    name: 'mbgl-renderer',
+    version: '1.0.0',
     ignoreTrailingSlash: true,
 })
 server.use(restify.plugins.queryParser())
@@ -324,7 +327,7 @@ if (verbose) {
         logger('dev', {
             // only log valid endpoints
             // specifically ignore health check endpoint
-            skip(req, res) {
+            skip(req) {
                 return req.statusCode === 404 || req.path() === '/health'
             },
         })
@@ -360,7 +363,7 @@ server.post(
 /**
  * List all available endpoints.
  */
-server.get({ url: '/' }, (req, res) => {
+server.get({ url: '/' }, (req, res, next) => {
     const routes = {}
     Object.values(server.router.getRoutes()).forEach(
         ({ spec: { url, method } }) => {
@@ -375,6 +378,8 @@ server.get({ url: '/' }, (req, res) => {
         routes,
         version,
     })
+
+    return next()
 })
 
 /**

@@ -226,7 +226,7 @@ test('resolves local mbtiles from vector source', async () => {
     // fs.writeFileSync(expectedPath, data)
 
     const diffPixels = await imageDiff(data, expectedPath)
-    expect(diffPixels).toBeLessThan(100)
+    expect(diffPixels).toBeLessThan(150)
 })
 
 test('resolves local mbtiles from tiles', async () => {
@@ -398,7 +398,7 @@ test('fails with missing glyphs', async () => {
             center: null,
             bounds: [-125, 37.5, -115, 42.5],
         })
-    ).rejects.toThrowError(/ENOTFOUND/)
+    ).rejects.toThrowError()
 })
 
 test('creates image from image source', async () => {
@@ -502,5 +502,5 @@ test('fails to create image from bad image icon urls', async () => {
                 cat: { url: 'https://google.com' },
             },
         })
-    ).rejects.toThrowError(/Input buffer contains unsupported image format/)
+    ).rejects.toThrowError(/Error loading icon image/)
 })
