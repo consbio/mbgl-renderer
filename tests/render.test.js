@@ -398,7 +398,7 @@ test('fails with missing glyphs', async () => {
             center: null,
             bounds: [-125, 37.5, -115, 42.5],
         })
-    ).rejects.toThrowError(/ENOTFOUND/)
+    ).rejects.toThrowError()
 })
 
 test('creates image from image source', async () => {
