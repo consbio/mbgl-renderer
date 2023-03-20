@@ -502,5 +502,5 @@ test('fails to create image from bad image icon urls', async () => {
                 cat: { url: 'https://google.com' },
             },
         })
-    ).rejects.toThrowError(/Input buffer contains unsupported image format/)
+    ).rejects.toThrowError(/Error loading icon image/)
 })
