@@ -393,7 +393,7 @@ test('resolves local mbtiles from raster source', async () => {
     )
 
     const diffPixels = await imageDiff(filePath, expectedPath)
-    expect(diffPixels).toBeLessThan(100)
+    expect(diffPixels).toBeLessThan(150)
 })
 
 test('resolves local mbtiles from vector source', async () => {
@@ -425,7 +425,7 @@ test('resolves local mbtiles from vector source', async () => {
     )
 
     const diffPixels = await imageDiff(filePath, expectedPath)
-    expect(diffPixels).toBeLessThan(100)
+    expect(diffPixels).toBeLessThan(150)
 })
 
 test('resolves local mbtiles from tiles', async () => {

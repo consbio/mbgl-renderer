@@ -59,13 +59,13 @@ RUN dpkgArch="$(dpkg --print-architecture)" && \
   xvfb \
   x11-utils && \
   # install deps required by maplibre-gl-native but not available on bullseye
-  wget http://snapshot.debian.org/archive/debian/20190501T215844Z/pool/main/g/glibc/multiarch-support_2.28-10_$dpkgArch.deb && \
+  wget --no-verbose http://snapshot.debian.org/archive/debian/20190501T215844Z/pool/main/g/glibc/multiarch-support_2.28-10_$dpkgArch.deb && \
   apt install ./multiarch-support_2.28-10_$dpkgArch.deb && \
-  wget http://snapshot.debian.org/archive/debian/20141009T042436Z/pool/main/libj/libjpeg8/libjpeg8_8d1-2_$dpkgArch.deb && \
+  wget --no-verbose http://snapshot.debian.org/archive/debian/20141009T042436Z/pool/main/libj/libjpeg8/libjpeg8_8d1-2_$dpkgArch.deb && \
   apt install ./libjpeg8_8d1-2_$dpkgArch.deb && \
   if [ "$dpkgArch" = "arm64" ] ; then \
-  wget http://ports.ubuntu.com/pool/main/i/icu/libicu66_66.1-2ubuntu2.1_arm64.deb ; else \
-  wget http://archive.ubuntu.com/ubuntu/pool/main/i/icu/libicu66_66.1-2ubuntu2.1_amd64.deb ;\
+  wget --no-verbose http://ports.ubuntu.com/pool/main/i/icu/libicu66_66.1-2ubuntu2.1_arm64.deb ; else \
+  wget --no-verbose http://archive.ubuntu.com/ubuntu/pool/main/i/icu/libicu66_66.1-2ubuntu2.1_amd64.deb ;\
   fi && \
   apt install ./libicu66_66.1-2ubuntu2.1_$dpkgArch.deb && \
   rm -rf *.deb && \

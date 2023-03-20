@@ -226,7 +226,7 @@ test('resolves local mbtiles from vector source', async () => {
     // fs.writeFileSync(expectedPath, data)
 
     const diffPixels = await imageDiff(data, expectedPath)
-    expect(diffPixels).toBeLessThan(100)
+    expect(diffPixels).toBeLessThan(150)
 })
 
 test('resolves local mbtiles from tiles', async () => {

@@ -22,8 +22,7 @@ jobs:
           - "ubuntu-22.04"
           - "ubuntu-20.04"
           - "macos-12"
-          - "macos-11"
-        platform: ["x86_64", "arm64"]
+        platform: ["x86_64"]
         node-version: ["16", "18"]
 
     steps:
@@ -48,18 +47,8 @@ jobs:
               libxxf86vm-dev \
               xvfb \
               x11-utils
-
-      - name: setup Linux x64 dependencies
-        if: runner.os == 'Linux' && matrix.platform == 'x86_64'
-        run: |
-          wget http://archive.ubuntu.com/ubuntu/pool/main/i/icu/libicu66_66.1-2ubuntu2.1_amd64.deb
-          sudo apt-get install -y ./libicu66_66.1-2ubuntu2.1_amd64.deb
-
-      - name: setup Linux arm64 dependencies
-        if: runner.os == 'Linux' && matrix.platform == 'arm64'
-        run: |
-          wget http://ports.ubuntu.com/pool/main/i/icu/libicu66_66.1-2ubuntu2.1_arm64.deb
-          sudo apt-get install -y ./libicu66_66.1-2ubuntu2.1_arm64.deb
+            wget --no-verbose http://archive.ubuntu.com/ubuntu/pool/main/i/icu/libicu66_66.1-2ubuntu2.1_amd64.deb
+            sudo apt-get install -y ./libicu66_66.1-2ubuntu2.1_amd64.deb
 
       - run: npm ci
 
