@@ -56,8 +56,8 @@ jobs:
         if: runner.os == 'Linux'
         run: |
           xvfb-run -a --server-args="-screen 0 1024x768x24 -ac +render -noreset" \
-            npm run test tests
+            npx jest --silent --coverage tests
 
       - name: test on MacOS
         if: runner.os == 'macos'
-        run: npm run test tests
+        run: npx jest --silent --coverage tests
