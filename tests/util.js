@@ -21,9 +21,7 @@ export async function imageDiff(pngData, expectedPath) {
     const rawData = await pngImage.raw().toBuffer()
 
     // read the expected data and convert to raw byte buffer
-    const expected = await sharp(expectedPath)
-        .raw()
-        .toBuffer()
+    const expected = await sharp(expectedPath).raw().toBuffer()
 
     return pixelmatch(rawData, expected, null, width, height)
 }
@@ -43,7 +41,7 @@ export function cliEndpoint(cliPath) {
      * @param {String} cwd  - current working directory
      */
     return function cli(args, cwd) {
-        return new Promise(resolve => {
+        return new Promise((resolve) => {
             exec(
                 `node ${path.resolve(cliPath)} ${args.join(' ')}`,
                 { cwd },
@@ -65,7 +63,7 @@ export function cliEndpoint(cliPath) {
  * return `test` to test it normally.
  * @param {Boolean} condition - if `true`, tests will be skipped
  */
-export const skipIf = condition => {
+export const skipIf = (condition) => {
     if (condition) {
         return test.skip
     }

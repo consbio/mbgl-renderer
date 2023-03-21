@@ -9,6 +9,8 @@
 #### Enhancements
 
 -   switch from `@mapbox/mapbox-gl-native` (no longer maintained) to `@maplibre/maplibre-gl-native` (actively maintained)
+-   upgraded dependencies to latest
+-   better use builtin support in `commander` for validating arguments
 
 ### 0.8.0
 
