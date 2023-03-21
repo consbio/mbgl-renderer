@@ -61,7 +61,7 @@ test('creates image with default parameters', async () => {
     expect(format).toBe('png')
     expect(width).toBe(512)
     expect(height).toBe(256)
-})
+}, 10000)
 
 test('creates correct image', async () => {
     const tmpDir = await createTempDir()

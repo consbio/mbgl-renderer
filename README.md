@@ -1,20 +1,18 @@
 # Static Map Renderer using Mapbox GL
 
-[![Build Status](https://travis-ci.org/consbio/mbgl-renderer.svg?branch=master)](https://travis-ci.org/consbio/mbgl-renderer)
-
-[![Coverage Status](https://coveralls.io/repos/github/consbio/mbgl-renderer/badge.svg?branch=master)](https://coveralls.io/github/consbio/mbgl-renderer?branch=master)
+[![Coverage Status](https://coveralls.io/repos/github/consbio/mbgl-renderer/badge.svg?branch=main)](https://coveralls.io/github/consbio/mbgl-renderer?branch=main)
 
 Create static map images using MapLibre GL with a command-line interface, an HTTP interface, and a NodeJS API.
 
 ## Features:
 
--   Render static maps using NodeJS with [maplibre-gl-native](https://github.com/maplibre/maplibre-gl-native)
--   Supports raster and vector tiles
--   Compatible with Mapbox tiles (don't forget attribution) and other hosted tile providers
--   Use locally hosted mbtiles
--   Add GeoJSON overlays to your maps
--   Supports high DPI rendering
--   Also available for use in Docker
+- Render static maps using NodeJS with [maplibre-gl-native](https://github.com/maplibre/maplibre-gl-native)
+- Supports raster and vector tiles
+- Compatible with Mapbox tiles (don't forget attribution) and other hosted tile providers
+- Use locally hosted mbtiles
+- Add GeoJSON overlays to your maps
+- Supports high DPI rendering
+- Also available for use in Docker
 
 [Blog post](https://medium.com/@brendan_ward/creating-a-static-map-renderer-using-the-mapbox-gl-native-nodejs-api-23db560b219e) describing the background and goals in a bit more detail.
 
@@ -43,8 +41,8 @@ or
 
 ### Supported versions of NodeJS:
 
--   16
--   18
+- 16
+- 18
 
 Only NodeJS versions with `@maplibre/maplibre-gl-native` binaries built by MapLibre are supported via `npm install`, otherwise you need to build `@maplibre/maplibre-gl-native` from source yourself. See [build instructions](https://github.com/maplibre/maplibre-gl-native/tree/main/platform/node) for more information.
 
@@ -311,15 +309,15 @@ http://localhost:8080/render
 
 Include the following query parameters:
 
--   `height` and `width` are integer values (required).
--   `zoom` is a floating point value.
--   `ratio` is an integer value.
--   `center` if provided must be a `longitude,latitude` with floating point values (NO spaces or brackets).
--   `bounds` if provided must be `west,south,east,north` with floating point values (NO spaces or brackets).
--   `padding` if provided must be an integer value that is less than 1/2 of width or height, whichever is smaller. Can only be used with bounds.
--   `bearing is a floating point value (0-360)`pitch`is a floating point value (0-60).
--   `token` if provided must a string.
--   `images` if provided must be URL encoded JSON object (see `images` property above).
+- `height` and `width` are integer values (required).
+- `zoom` is a floating point value.
+- `ratio` is an integer value.
+- `center` if provided must be a `longitude,latitude` with floating point values (NO spaces or brackets).
+- `bounds` if provided must be `west,south,east,north` with floating point values (NO spaces or brackets).
+- `padding` if provided must be an integer value that is less than 1/2 of width or height, whichever is smaller. Can only be used with bounds.
+- `bearing is a floating point value (0-360)`pitch`is a floating point value (0-60).
+- `token` if provided must a string.
+- `images` if provided must be URL encoded JSON object (see `images` property above).
 
 Your style JSON needs to be URL encoded:
 
