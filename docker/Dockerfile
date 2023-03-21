@@ -70,7 +70,7 @@ RUN dpkgArch="$(dpkg --print-architecture)" && \
   apt install ./libicu66_66.1-2ubuntu2.1_$dpkgArch.deb && \
   rm -rf *.deb && \
   mkdir src && \
-  npm ci --omit=dev && \
+  npm ci --only=production && \
   rm -rf "/root/.npm" && \
   rm -rf "/root/.cache" && \
   # remove packages known not to be needed and cleanup apt cache
