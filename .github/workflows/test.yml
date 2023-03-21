@@ -8,8 +8,12 @@ on:
   workflow_dispatch:
 
 env:
-  BUILD_TEMP_DIR: "build"
   DEBIAN_FRONTEND: noninteractive
+
+concurrency:
+  # cancel jobs on PRs only
+  group: "${{ github.workflow }} @ ${{ github.event.pull_request.head.label || github.head_ref || github.ref }}"
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
 jobs:
   test:
@@ -50,7 +54,9 @@ jobs:
             wget --no-verbose http://archive.ubuntu.com/ubuntu/pool/main/i/icu/libicu66_66.1-2ubuntu2.1_amd64.deb
             sudo apt-get install -y ./libicu66_66.1-2ubuntu2.1_amd64.deb
 
-      - run: npm ci
+      - run: |
+          npm ci
+          npm install coveralls
 
       - name: test on Linux
         if: runner.os == 'Linux'
@@ -61,3 +67,9 @@ jobs:
       - name: test on MacOS
         if: runner.os == 'macos'
         run: npx jest --silent --coverage tests
+
+      - name: Coveralls
+        if: runner.os == 'Linux'
+        run: curl -sL https://coveralls.io/coveralls-linux.tar.gz | tar -xz && ./coveralls
+        env:
+          COVERALLS_REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
