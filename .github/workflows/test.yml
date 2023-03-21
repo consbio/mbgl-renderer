@@ -62,12 +62,14 @@ jobs:
         if: runner.os == 'Linux'
         run: |
           xvfb-run -a --server-args="-screen 0 1024x768x24 -ac +render -noreset" \
-            npx jest --silent --coverage tests && coveralls < coverage/lcov.info
+            npx jest --silent --coverage tests
 
       - name: test on MacOS
         if: runner.os == 'macos'
-        run: npx jest --silent --coverage tests && npx coveralls < coverage/lcov.info
+        run: npx jest --silent --coverage tests
 
       - name: Coveralls
-        uses: coverallsapp/github-action@v2
         if: runner.os == 'Linux'
+        run: curl -sL https://coveralls.io/coveralls-linux.tar.gz | tar -xz && ./coveralls
+        env:
+          COVERALLS_REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
