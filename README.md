@@ -363,10 +363,10 @@ This uses the `pixelmatch` package to determine if output images match those tha
 
 ## Docker
 
-Pull the latest image from [Docker Hub](https://hub.docker.com/r/consbio/mbgl-renderer):
+Pull the latest image from [Github Container Registry](https://github.com/consbio/mbgl-renderer/pkgs/container/mbgl-renderer):
 
 ```
-docker pull consbio/mbgl-renderer:latest
+docker pull ghcr.io/consbio/mbgl-renderer:latest
 ```
 
 To run `mbgl-server` in the docker container on port 8080:
@@ -395,7 +395,10 @@ In order to use this package on a headless server, you need to use `xvfb`. See `
 
 ## Credits
 
-This project was made possible based on support from the South Atlantic Landscape Conservation Cooperative (http://www.southatlanticlcc.org/) and the Paulson Institute (http://www.paulsoninstitute.org/).
+This project was made possible based on support from the
+[South Atlantic Landscape Conservation Cooperative](http://www.southatlanticlcc.org/),
+the [Paulson Institute](http://www.paulsoninstitute.org/), and the
+[California Department of Food and Agriculture - Office of Environmental Farming & Innovation](https://www.cdfa.ca.gov/oefi/).
 
 ## Contributors ✨
 
