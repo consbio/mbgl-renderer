@@ -10,14 +10,15 @@ on:
 env:
   DEBIAN_FRONTEND: noninteractive
 
+concurrency:
+  # cancel jobs on PRs only
+  group: "${{ github.workflow }} @ ${{ github.event.pull_request.head.label || github.head_ref || github.ref }}"
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+
 jobs:
   test:
     name: Test on ${{ matrix.os }} ${{ matrix.platform }}  (NodeJS ${{ matrix.node-version }})
     runs-on: ${{ matrix.os }}
-    concurrency:
-      # cancel jobs on PRs only
-      group: ${{ github.workflow }}-${{ github.ref }}
-      cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
     strategy:
       fail-fast: false
       matrix:
@@ -65,7 +66,7 @@ jobs:
 
       - name: test on MacOS
         if: runner.os == 'macos'
-        run: npx jest --silent --coverage tests && coveralls < coverage/lcov.info
+        run: npx jest --silent --coverage tests && npx coveralls < coverage/lcov.info
 
       - name: Coveralls
         uses: coverallsapp/github-action@v2
