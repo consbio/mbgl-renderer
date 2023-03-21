@@ -30,7 +30,9 @@ jobs:
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v2
         with:
-          platforms: "linux/amd64,linux/arm64"
+          # FIXME:
+          # platforms: "linux/amd64,linux/arm64"
+          platforms: linux/amd64
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
@@ -64,7 +66,9 @@ jobs:
         with:
           file: docker/Dockerfile
           context: .
-          platforms: linux/amd64,linux/arm64
+          # FIXME:
+          # platforms: "linux/amd64,linux/arm64"
+          platforms: "linux/amd64"
           provenance: false
           push: true
           # FIXME: enable
