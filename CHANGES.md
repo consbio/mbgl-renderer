@@ -4,13 +4,14 @@
 
 #### Breaking changes:
 
--   upgrade minimum supported NodeJS version to 16
+-   upgrade minimum supported NodeJS version to 16 (#101)
 
 #### Enhancements
 
--   switch from `@mapbox/mapbox-gl-native` (no longer maintained) to `@maplibre/maplibre-gl-native` (actively maintained)
--   upgraded dependencies to latest
+-   switch from `@mapbox/mapbox-gl-native` (no longer maintained) to `@maplibre/maplibre-gl-native` (actively maintained) (#101)
+-   upgraded dependencies to latest (#102)
 -   better use builtin support in `commander` for validating arguments
+-   Publish Docker images to [Github Container Registry](https://github.com/consbio/mbgl-renderer/pkgs/container/mbgl-renderer) instead of Docker Hub (#103)
 
 ### 0.8.0
 
