@@ -20,6 +20,9 @@ env:
 jobs:
   buildx:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
     concurrency:
       # cancel jobs on PRs only
       group: ${{ github.workflow }}-${{ github.ref }}
