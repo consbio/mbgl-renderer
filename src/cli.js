@@ -1,25 +1,40 @@
 #!/usr/bin/env node
 import fs from 'fs'
-import cli from 'commander'
+import { program, InvalidArgumentError } from 'commander'
 import webRequest from 'request'
 
 import { version } from '../package.json'
 import { render, isMapboxStyleURL, normalizeMapboxStyleURL } from './render'
 
 const raiseError = (msg) => {
-    console.error('ERROR:', msg)
+    console.error('error', msg)
     process.exit(1)
 }
 
 const parseListToFloat = (text) => text.split(',').map(Number)
 
-cli.version(version)
+const validateDimension = (value) => {
+    if (value <= 0) {
+        throw new InvalidArgumentError('Must be greater than 0')
+    }
+}
+
+program
+    .version(version)
     .name('mbgl-render')
-    .usage('<style.json> <img_filename> <width> <height> [options]')
+    .usage('<style> <image> <width> <height> [options]')
     .description(
         'Export a Mapbox GL map to image.  You must provide either center and zoom, or bounds.'
     )
-    .arguments('<style.json> <img_filename> <width> <height>')
+    .argument('<style>', 'style JSON', (styleFilename) => {
+        const isMapboxStyle = isMapboxStyleURL(styleFilename)
+        if (!(isMapboxStyle || fs.existsSync(styleFilename))) {
+            throw new InvalidArgumentError('File does not exist')
+        }
+    })
+    .argument('<image>', 'output image filename')
+    .argument('<width>', 'image width', validateDimension)
+    .argument('<height>', 'image height', validateDimension)
     .option(
         '-c, --center <longitude,latitude>',
         'center of map (NO SPACES)',
@@ -48,10 +63,11 @@ cli.version(version)
         'Mapbox access token (required for using Mapbox styles and sources)'
     )
     .option('--images <images.json', 'JSON file containing image config')
-    .parse(process.argv)
+    .parse()
+
+const [styleFilename, imgFilename, width, height] = program.args
 
 const {
-    args: [styleFilename, imgFilename, width, height],
     center = null,
     zoom = null,
     ratio = 1,
@@ -62,36 +78,12 @@ const {
     tiles: tilePath = null,
     token = null,
     images: imagesFilename = null,
-} = cli
-
-// verify that all arguments are present
-if (!styleFilename) {
-    raiseError('style is a required parameter')
-}
-if (!imgFilename) {
-    raiseError('output image filename is a required parameter')
-}
-if (!width) {
-    raiseError('width is a required parameter')
-}
-if (!height) {
-    raiseError('height is a required parameter')
-}
+} = program.opts()
 
 const imgWidth = parseInt(width, 10)
 const imgHeight = parseInt(height, 10)
 
 const isMapboxStyle = isMapboxStyleURL(styleFilename)
-
-if (!(isMapboxStyle || fs.existsSync(styleFilename))) {
-    raiseError(`Style JSON file does not exist: ${styleFilename}`)
-}
-
-if (imgWidth <= 0 || imgHeight <= 0) {
-    raiseError(
-        `Width and height must be greater than 0, they are width:${imgWidth} height:${imgHeight}`
-    )
-}
 
 if (center !== null) {
     if (center.length !== 2) {

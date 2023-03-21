@@ -13,7 +13,7 @@ var _fs = _interopRequireDefault(require("fs"));
 var _restify = _interopRequireDefault(require("restify"));
 var _nodeRestifyValidation = _interopRequireDefault(require("node-restify-validation"));
 var _restifyErrors = _interopRequireDefault(require("restify-errors"));
-var _commander = _interopRequireDefault(require("commander"));
+var _commander = require("commander");
 var _morgan = _interopRequireDefault(require("morgan"));
 var _package = require("../package.json");
 var _render = require("./render");
@@ -27,7 +27,7 @@ var parseListToFloat = function parseListToFloat(text) {
   return text.split(',').map(Number);
 };
 var raiseError = function raiseError(msg) {
-  console.error('ERROR:', msg);
+  console.error('error', msg);
   process.exit(1);
 };
 var PARAMS = {
@@ -252,13 +252,14 @@ var renderImage = function renderImage(params, response, next, tilePath) {
 };
 
 // Provide the CLI
-_commander["default"].version(_package.version).description('Start a server to render Mapbox GL map requests to images.').option('-p, --port <n>', 'Server port', parseInt).option('-t, --tiles <mbtiles_path>', 'Directory containing local mbtiles files to render').option('-v, --verbose', 'Enable request logging').parse(process.argv);
-var _cli$port = _commander["default"].port,
-  port = _cli$port === void 0 ? 8000 : _cli$port,
-  _cli$tiles = _commander["default"].tiles,
-  tilePath = _cli$tiles === void 0 ? null : _cli$tiles,
-  _cli$verbose = _commander["default"].verbose,
-  verbose = _cli$verbose === void 0 ? false : _cli$verbose;
+_commander.program.version(_package.version).description('Start a server to render Mapbox GL map requests to images.').option('-p, --port <n>', 'Server port', parseInt).option('-t, --tiles <mbtiles_path>', 'Directory containing local mbtiles files to render').option('-v, --verbose', 'Enable request logging').parse(process.argv);
+var _program$opts = _commander.program.opts(),
+  _program$opts$port = _program$opts.port,
+  port = _program$opts$port === void 0 ? 8000 : _program$opts$port,
+  _program$opts$tiles = _program$opts.tiles,
+  tilePath = _program$opts$tiles === void 0 ? null : _program$opts$tiles,
+  _program$opts$verbose = _program$opts.verbose,
+  verbose = _program$opts$verbose === void 0 ? false : _program$opts$verbose;
 var server = _restify["default"].createServer({
   name: 'mbgl-renderer',
   version: '1.0.0',

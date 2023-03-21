@@ -372,7 +372,7 @@ var requestHandler = function requestHandler(tilePath, token) {
       kind = _ref.kind;
     var isMapbox = isMapboxURL(url);
     if (isMapbox && !token) {
-      throw new Error('ERROR: mapbox access token is required');
+      throw new Error('error mapbox access token is required');
     }
     try {
       switch (kind) {
@@ -430,7 +430,7 @@ var requestHandler = function requestHandler(tilePath, token) {
         default:
           {
             // NOT HANDLED!
-            throw new Error("ERROR: Request kind not handled: ".concat(kind));
+            throw new Error("error Request kind not handled: ".concat(kind));
           }
       }
     } catch (err) {

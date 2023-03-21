@@ -28,21 +28,19 @@ test('returns correct version', async () => {
 
 test('fails without required parameters', async () => {
     let result = await cli([], '.')
-    expect(result.stderr).toContain('ERROR: style is a required parameter')
+    expect(result.stderr).toContain("error: missing required argument 'style'")
 
     result = await cli(['tests/fixtures/example-style.json'], '.')
-    expect(result.stderr).toContain(
-        'ERROR: output image filename is a required parameter'
-    )
+    expect(result.stderr).toContain("error: missing required argument 'image'")
 
     result = await cli(['tests/fixtures/example-style.json', 'test.png'], '.')
-    expect(result.stderr).toContain('ERROR: width is a required parameter')
+    expect(result.stderr).toContain("error: missing required argument 'width'")
 
     result = await cli(
         ['tests/fixtures/example-style.json', 'test.png', '512'],
         '.'
     )
-    expect(result.stderr).toContain('ERROR: height is a required parameter')
+    expect(result.stderr).toContain("error: missing required argument 'height'")
 })
 
 test('creates image with default parameters', async () => {
@@ -111,7 +109,7 @@ test('fails with invalid tile path', async () => {
         '.'
     )
 
-    expect(stderr).toContain('ERROR: Path to mbtiles files does not exist')
+    expect(stderr).toContain('error Path to mbtiles files does not exist')
 })
 
 test('fails with invalid dimensions', async () => {
@@ -133,15 +131,11 @@ test('fails with invalid dimensions', async () => {
 
     let result = await cli([...params, '0', '256', ...options], '.')
 
-    expect(result.stderr).toContain(
-        'ERROR: Width and height must be greater than 0, they are width:0 height:256'
-    )
+    expect(result.stderr).toContain('Must be greater than 0')
 
     result = await cli([...params, '256', '0', ...options], '.')
 
-    expect(result.stderr).toContain(
-        'ERROR: Width and height must be greater than 0, they are width:256 height:0'
-    )
+    expect(result.stderr).toContain('Must be greater than 0')
 })
 
 test('fails with invalid zoom', async () => {
@@ -165,7 +159,7 @@ test('fails with invalid zoom', async () => {
     )
 
     expect(stderr).toContain(
-        'ERROR: Zoom level is outside supported range (0-22): -1'
+        'error Zoom level is outside supported range (0-22): -1'
     )
 })
 
@@ -187,13 +181,13 @@ test('fails with invalid center', async () => {
     let result = await cli([...params, '-c', '-181,0'], '.')
 
     expect(result.stderr).toContain(
-        'ERROR: Center longitude is outside world bounds (-180 to 180 deg): -181'
+        'error Center longitude is outside world bounds (-180 to 180 deg): -181'
     )
 
     result = await cli([...params, '-c', '0,-91'], '.')
 
     expect(result.stderr).toContain(
-        'ERROR: Center latitude is outside world bounds (-90 to 90 deg): -91'
+        'error Center latitude is outside world bounds (-90 to 90 deg): -91'
     )
 })
 
@@ -242,17 +236,17 @@ test('fails with invalid bounds', async () => {
 
     let result = await cli([...params, '-b', '0,-10,0,10'], '.')
     expect(result.stderr).toContain(
-        'ERROR: Bounds west and east coordinate are the same value'
+        'error Bounds west and east coordinate are the same value'
     )
 
     result = await cli([...params, '-b', '-10,0,10,0'], '.')
     expect(result.stderr).toContain(
-        'ERROR: Bounds south and north coordinate are the same value'
+        'error Bounds south and north coordinate are the same value'
     )
 
     result = await cli([...params, '-b', '-Infinity,0,10,0'], '.')
     expect(result.stderr).toContain(
-        'ERROR: Bounds must be valid floating point values.'
+        'error Bounds must be valid floating point values.'
     )
 })
 
@@ -509,7 +503,7 @@ test('fails on missing mapbox token', async () => {
         '.'
     )
 
-    expect(stderr).toContain('ERROR: mapbox access token is required')
+    expect(stderr).toContain('error mapbox access token is required')
 })
 
 test('fails on invalid mapbox token', async () => {
@@ -534,7 +528,7 @@ test('fails on invalid mapbox token', async () => {
         '.'
     )
 
-    expect(stderr).toContain('Error: Error with request')
+    expect(stderr).toContain('Error with request')
 })
 
 test('renders with nonzero pitch', async () => {
@@ -584,12 +578,12 @@ test('fails with invalid pitch', async () => {
 
     let result = await cli([...params, '--pitch', -1], '.')
     expect(result.stderr).toContain(
-        'ERROR: Pitch is outside supported range (0-60): -1'
+        'error Pitch is outside supported range (0-60): -1'
     )
 
     result = await cli([...params, '--pitch', 61], '.')
     expect(result.stderr).toContain(
-        'ERROR: Pitch is outside supported range (0-60): 61'
+        'error Pitch is outside supported range (0-60): 61'
     )
 })
 
@@ -643,12 +637,12 @@ test('fails with invalid bearing', async () => {
 
     let result = await cli([...params, '--bearing', -1], '.')
     expect(result.stderr).toContain(
-        'ERROR: Bearing is outside supported range (0-360): -1'
+        'error Bearing is outside supported range (0-360): -1'
     )
 
     result = await cli([...params, '--bearing', 361], '.')
     expect(result.stderr).toContain(
-        'ERROR: Bearing is outside supported range (0-360): 361'
+        'error Bearing is outside supported range (0-360): 361'
     )
 })
 

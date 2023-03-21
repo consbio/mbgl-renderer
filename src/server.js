@@ -3,7 +3,7 @@ import fs from 'fs'
 import restify from 'restify'
 import restifyValidation from 'node-restify-validation'
 import restifyErrors from 'restify-errors'
-import cli from 'commander'
+import { program } from 'commander'
 import logger from 'morgan'
 
 import { version } from '../package.json'
@@ -14,7 +14,7 @@ logger.token('url', (req) => req.path())
 const parseListToFloat = (text) => text.split(',').map(Number)
 
 const raiseError = (msg) => {
-    console.error('ERROR:', msg)
+    console.error('error', msg)
     process.exit(1)
 }
 
@@ -295,7 +295,8 @@ const renderImage = (params, response, next, tilePath) => {
 }
 
 // Provide the CLI
-cli.version(version)
+program
+    .version(version)
     .description('Start a server to render Mapbox GL map requests to images.')
     .option('-p, --port <n>', 'Server port', parseInt)
     .option(
@@ -305,7 +306,7 @@ cli.version(version)
     .option('-v, --verbose', 'Enable request logging')
     .parse(process.argv)
 
-const { port = 8000, tiles: tilePath = null, verbose = false } = cli
+const { port = 8000, tiles: tilePath = null, verbose = false } = program.opts()
 
 export const server = restify.createServer({
     name: 'mbgl-renderer',

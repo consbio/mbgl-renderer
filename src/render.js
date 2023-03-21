@@ -359,7 +359,7 @@ const requestHandler =
     ({ url, kind }, callback) => {
         const isMapbox = isMapboxURL(url)
         if (isMapbox && !token) {
-            throw new Error('ERROR: mapbox access token is required')
+            throw new Error('error mapbox access token is required')
         }
 
         try {
@@ -432,7 +432,7 @@ const requestHandler =
                 }
                 default: {
                     // NOT HANDLED!
-                    throw new Error(`ERROR: Request kind not handled: ${kind}`)
+                    throw new Error(`error Request kind not handled: ${kind}`)
                 }
             }
         } catch (err) {
