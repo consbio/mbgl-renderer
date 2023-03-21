@@ -7,12 +7,23 @@ import zlib from 'zlib'
 import geoViewport from '@mapbox/geo-viewport'
 import maplibre from '@maplibre/maplibre-gl-native'
 import MBTiles from '@mapbox/mbtiles'
+import pino from 'pino'
 import webRequest from 'request'
 
 import urlLib from 'url'
 
 const TILE_REGEXP = RegExp('mbtiles://([^/]+)/(\\d+)/(\\d+)/(\\d+)')
 const MBTILES_REGEXP = /mbtiles:\/\/(\S+?)(?=[/"]+)/gi
+
+const logger = pino({
+    formatters: {
+        level: (label) => ({ level: label }),
+    },
+    redact: {
+        paths: ['pid', 'hostname'],
+        remove: true,
+    },
+})
 
 export const isMapboxURL = (url) => url.startsWith('mapbox://')
 export const isMapboxStyleURL = (url) => url.startsWith('mapbox://styles/')
@@ -218,7 +229,6 @@ const getLocalTile = (tilePath, url, callback) => {
 
         mbtiles.getTile(z, x, y, (tileErr, data) => {
             if (tileErr) {
-                // console.error(`error fetching tile: z:${z} x:${x} y:${y} from ${mbtilesFile}\n${tileErr}`)
                 callback(null, {})
                 return null
             }
@@ -271,14 +281,15 @@ const getRemoteTile = (url, callback) => {
                     // Tile not found
                     // this may be valid for some tilesets that have partial coverage
                     // on servers that do not return blank tiles in these areas.
-                    console.warn(`Missing tile at: ${url}`)
+                    logger.warn(`Missing tile at: ${url}`)
                     return callback(null, {})
                 }
                 default: {
                     // assume error
-                    console.error(
+                    logger.error(
                         `Error with request for: ${url}\nstatus: ${res.statusCode}`
                     )
+
                     return callback(
                         new Error(
                             `Error with request for: ${url}\nstatus: ${res.statusCode}`
@@ -316,7 +327,7 @@ const getRemoteAsset = (url, callback) => {
                 }
                 default: {
                     // assume error
-                    console.error(
+                    logger.error(
                         `Error with request for: ${url}\nstatus: ${res.statusCode}`
                     )
                     return callback(
@@ -436,7 +447,7 @@ const requestHandler =
                 }
             }
         } catch (err) {
-            console.error(
+            logger.error(
                 `Error while making resource request to: ${url}\n${err}`
             )
             callback(err)
