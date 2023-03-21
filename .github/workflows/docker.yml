@@ -20,6 +20,10 @@ env:
 jobs:
   buildx:
     runs-on: ubuntu-latest
+    concurrency:
+      # cancel jobs on PRs only
+      group: ${{ github.workflow }}-${{ github.ref }}
+      cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
     steps:
       - name: Checkout
         uses: actions/checkout@v3
