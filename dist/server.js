@@ -248,6 +248,7 @@ _commander.program.version(_package.version).description('Start a server to rend
   if (!_fs["default"].existsSync(tilePath)) {
     throw new _commander.InvalidOptionArgumentError("Path to mbtiles files does not exist: ".concat(tilePath));
   }
+  return tilePath;
 }).option('-v, --verbose', 'Enable request logging').parse(process.argv);
 var _program$opts = _commander.program.opts(),
   _program$opts$port = _program$opts.port,
@@ -336,11 +337,12 @@ server.get({
   res.send(200);
   next();
 });
+var tilePathMessage = '';
 if (tilePath !== null) {
-  console.log('Using local mbtiles in: %j', tilePath);
+  tilePathMessage = "\n using local mbtiles in: ".concat(tilePath);
 }
 server.listen(port, function () {
-  console.log('\n--------------------------------------------------------\n', "mbgl-renderer server started and listening at ".concat(server.url), '\n--------------------------------------------------------\n');
+  console.log('\n-----------------------------------------------------------------\n', "mbgl-renderer server started and listening at ".concat(server.url), tilePathMessage, '\n-----------------------------------------------------------------\n');
 });
 var _default = {
   server: server
