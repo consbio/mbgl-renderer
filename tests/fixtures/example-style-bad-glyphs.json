@@ -1,6 +1,6 @@
 {
     "version": 8,
-    "glyphs": "http://bad/url/{fontstack}/{range}.pbf",
+    "glyphs": "http://google.com/bad-endpoint/{fontstack}/{range}.pbf",
     "sources": {
         "geojson": {
             "type": "geojson",

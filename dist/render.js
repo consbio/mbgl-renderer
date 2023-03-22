@@ -16,6 +16,7 @@ var _zlib = _interopRequireDefault(require("zlib"));
 var _geoViewport = _interopRequireDefault(require("@mapbox/geo-viewport"));
 var _maplibreGlNative = _interopRequireDefault(require("@maplibre/maplibre-gl-native"));
 var _mbtiles = _interopRequireDefault(require("@mapbox/mbtiles"));
+var _pino = _interopRequireDefault(require("pino"));
 var _request = _interopRequireDefault(require("request"));
 var _url = _interopRequireDefault(require("url"));
 /* eslint-disable no-new */
@@ -24,6 +25,44 @@ var _url = _interopRequireDefault(require("url"));
 
 var TILE_REGEXP = RegExp('mbtiles://([^/]+)/(\\d+)/(\\d+)/(\\d+)');
 var MBTILES_REGEXP = /mbtiles:\/\/(\S+?)(?=[/"]+)/gi;
+var logger = (0, _pino["default"])({
+  formatters: {
+    level: function level(label) {
+      return {
+        level: label
+      };
+    }
+  },
+  redact: {
+    paths: ['pid', 'hostname'],
+    remove: true
+  }
+});
+_maplibreGlNative["default"].on('message', function (msg) {
+  // console.log(msg.severity, msg.class, msg.text)
+  switch (msg.severity) {
+    case 'ERROR':
+      {
+        logger.error(msg.text);
+        break;
+      }
+    case 'WARNING':
+      {
+        if (msg["class"] === 'ParseStyle') {
+          logger.error("Error parsing style: ".concat(msg.text));
+        } else {
+          logger.warn(msg.text);
+        }
+        break;
+      }
+    default:
+      {
+        // NOTE: includes INFO
+        logger.debug(msg.text);
+        break;
+      }
+  }
+});
 var isMapboxURL = function isMapboxURL(url) {
   return url.startsWith('mapbox://');
 };
@@ -239,7 +278,6 @@ var getLocalTile = function getLocalTile(tilePath, url, callback) {
     }
     mbtiles.getTile(z, x, y, function (tileErr, data) {
       if (tileErr) {
-        // console.error(`error fetching tile: z:${z} x:${x} y:${y} from ${mbtilesFile}\n${tileErr}`)
         callback(null, {});
         return null;
       }
@@ -295,14 +333,13 @@ var getRemoteTile = function getRemoteTile(url, callback) {
           // Tile not found
           // this may be valid for some tilesets that have partial coverage
           // on servers that do not return blank tiles in these areas.
-          console.warn("Missing tile at: ".concat(url));
+          logger.warn("Missing tile at: ".concat(url));
           return callback(null, {});
         }
       default:
         {
           // assume error
-          console.error("Error with request for: ".concat(url, "\nstatus: ").concat(res.statusCode));
-          return callback(new Error("Error with request for: ".concat(url, "\nstatus: ").concat(res.statusCode)));
+          return callback(new Error("request for remote tile failed: ".concat(url, " (status: ").concat(res.statusCode, ")")));
         }
     }
   });
@@ -334,9 +371,7 @@ var getRemoteAsset = function getRemoteAsset(url, callback) {
         }
       default:
         {
-          // assume error
-          console.error("Error with request for: ".concat(url, "\nstatus: ").concat(res.statusCode));
-          return callback(new Error("Error with request for: ".concat(url, "\nstatus: ").concat(res.statusCode)));
+          return callback(new Error("request for remote asset failed: ".concat(res.request.uri.href, " (status: ").concat(res.statusCode, ")")));
         }
     }
   });
@@ -372,7 +407,7 @@ var requestHandler = function requestHandler(tilePath, token) {
       kind = _ref.kind;
     var isMapbox = isMapboxURL(url);
     if (isMapbox && !token) {
-      throw new Error('error mapbox access token is required');
+      return callback(new Error('mapbox access token is required'));
     }
     try {
       switch (kind) {
@@ -434,8 +469,8 @@ var requestHandler = function requestHandler(tilePath, token) {
           }
       }
     } catch (err) {
-      console.error("Error while making resource request to: ".concat(url, "\n").concat(err));
-      callback(err);
+      logger.error("Error while making resource request to: ".concat(url, "\n").concat(err));
+      return callback(err);
     }
   };
 };

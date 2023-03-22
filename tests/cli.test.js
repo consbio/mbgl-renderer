@@ -503,7 +503,7 @@ test('fails on missing mapbox token', async () => {
         '.'
     )
 
-    expect(stderr).toContain('error mapbox access token is required')
+    expect(stderr).toContain('mapbox access token is required')
 })
 
 test('fails on invalid mapbox token', async () => {
@@ -528,7 +528,7 @@ test('fails on invalid mapbox token', async () => {
         '.'
     )
 
-    expect(stderr).toContain('Error with request')
+    expect(stderr).toContain('request for remote asset failed')
 })
 
 test('renders with nonzero pitch', async () => {

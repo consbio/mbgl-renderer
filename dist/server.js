@@ -14,21 +14,14 @@ var _restify = _interopRequireDefault(require("restify"));
 var _nodeRestifyValidation = _interopRequireDefault(require("node-restify-validation"));
 var _restifyErrors = _interopRequireDefault(require("restify-errors"));
 var _commander = require("commander");
-var _morgan = _interopRequireDefault(require("morgan"));
+var _restifyPinoLogger = _interopRequireDefault(require("restify-pino-logger"));
 var _package = require("../package.json");
 var _render = require("./render");
 function _createForOfIteratorHelper(o, allowArrayLike) { var it = typeof Symbol !== "undefined" && o[Symbol.iterator] || o["@@iterator"]; if (!it) { if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") { if (it) o = it; var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e) { throw _e; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var normalCompletion = true, didErr = false, err; return { s: function s() { it = it.call(o); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e2) { didErr = true; err = _e2; }, f: function f() { try { if (!normalCompletion && it["return"] != null) it["return"](); } finally { if (didErr) throw err; } } }; }
 function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
 function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) arr2[i] = arr[i]; return arr2; }
-_morgan["default"].token('url', function (req) {
-  return req.path();
-});
 var parseListToFloat = function parseListToFloat(text) {
   return text.split(',').map(Number);
-};
-var raiseError = function raiseError(msg) {
-  console.error('error', msg);
-  process.exit(1);
 };
 var PARAMS = {
   style: {
@@ -72,7 +65,7 @@ var PARAMS = {
     isObject: true
   }
 };
-var renderImage = function renderImage(params, response, next, tilePath) {
+var renderImage = function renderImage(params, response, next, tilePath, logger) {
   var width = params.width,
     height = params.height,
     _params$token = params.token,
@@ -98,7 +91,6 @@ var renderImage = function renderImage(params, response, next, tilePath) {
     try {
       style = JSON.parse(style);
     } catch (jsonErr) {
-      console.error('Error parsing JSON style in request: %j', jsonErr);
       return next(new _restifyErrors["default"].BadRequestError({
         cause: jsonErr
       }, 'Error parsing JSON style'));
@@ -222,7 +214,7 @@ var renderImage = function renderImage(params, response, next, tilePath) {
       images: images
     }).then(function (data, rejected) {
       if (rejected) {
-        console.error('render request rejected', rejected);
+        logger.error('render request rejected', rejected);
         return next(new _restifyErrors["default"].InternalServerError({
           cause: rejected
         }, 'Error processing render request'));
@@ -234,7 +226,7 @@ var renderImage = function renderImage(params, response, next, tilePath) {
       if (err instanceof _restifyErrors["default"].InternalServerError) {
         return next(err);
       }
-      console.error('Error processing render request', err);
+      logger.error('Error processing render request', err);
       return next(new _restifyErrors["default"].InternalServerError({
         cause: err
       }, 'Error processing render request'));
@@ -243,7 +235,7 @@ var renderImage = function renderImage(params, response, next, tilePath) {
     if (err instanceof _restifyErrors["default"].InternalServerError) {
       return next(err);
     }
-    console.error('Error processing render request', err);
+    logger.error('Error processing render request', err);
     return next(new _restifyErrors["default"].InternalServerError({
       cause: err
     }, 'Error processing render request'));
@@ -252,7 +244,11 @@ var renderImage = function renderImage(params, response, next, tilePath) {
 };
 
 // Provide the CLI
-_commander.program.version(_package.version).description('Start a server to render Mapbox GL map requests to images.').option('-p, --port <n>', 'Server port', parseInt).option('-t, --tiles <mbtiles_path>', 'Directory containing local mbtiles files to render').option('-v, --verbose', 'Enable request logging').parse(process.argv);
+_commander.program.version(_package.version).description('Start a server to render Mapbox GL map requests to images.').option('-p, --port <n>', 'Server port', parseInt).option('-t, --tiles <mbtiles_path>', 'Directory containing local mbtiles files to render', function (tilePath) {
+  if (!_fs["default"].existsSync(tilePath)) {
+    throw new _commander.InvalidOptionArgumentError("Path to mbtiles files does not exist: ".concat(tilePath));
+  }
+}).option('-v, --verbose', 'Enable request logging').parse(process.argv);
 var _program$opts = _commander.program.opts(),
   _program$opts$port = _program$opts.port,
   port = _program$opts$port === void 0 ? 8000 : _program$opts$port,
@@ -273,15 +269,16 @@ server.use(_nodeRestifyValidation["default"].validationPlugin({
   forbidUndefinedVariables: false,
   errorHandler: _restifyErrors["default"].BadRequestError
 }));
-if (verbose) {
-  server.use((0, _morgan["default"])('dev', {
-    // only log valid endpoints
-    // specifically ignore health check endpoint
-    skip: function skip(req) {
-      return req.statusCode === 404 || req.path() === '/health';
-    }
-  }));
-}
+server.use((0, _restifyPinoLogger["default"])({
+  enabled: verbose,
+  autoLogging: {
+    ignorePaths: ['/health']
+  },
+  redact: {
+    paths: ['pid', 'hostname', 'res.headers.server', 'req.id', 'req.connection', 'req.remoteAddress', 'req.remotePort'],
+    remove: true
+  }
+}));
 
 /**
  * /render (GET): renders an image based on request query parameters.
@@ -292,7 +289,7 @@ server.get({
     queries: PARAMS
   }
 }, function (req, res, next) {
-  return renderImage(req.query, res, next, tilePath);
+  return renderImage(req.query, res, next, tilePath, req.log);
 });
 
 /**
@@ -304,7 +301,7 @@ server.post({
     content: PARAMS
   }
 }, function (req, res, next) {
-  return renderImage(req.body, res, next, tilePath);
+  return renderImage(req.body, res, next, tilePath, req.log);
 });
 
 /**
@@ -340,13 +337,10 @@ server.get({
   next();
 });
 if (tilePath !== null) {
-  if (!_fs["default"].existsSync(tilePath)) {
-    raiseError("Path to mbtiles files does not exist: ".concat(tilePath));
-  }
   console.log('Using local mbtiles in: %j', tilePath);
 }
 server.listen(port, function () {
-  console.log('Mapbox GL static rendering server started and listening at %s', server.url);
+  console.log('\n--------------------------------------------------------\n', "mbgl-renderer server started and listening at ".concat(server.url), '\n--------------------------------------------------------\n');
 });
 var _default = {
   server: server

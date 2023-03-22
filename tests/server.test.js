@@ -11,5 +11,5 @@ test('returns correct version', async () => {
 
 test('fails with invalid tile path', async () => {
     const { stderr } = await cli(['-t', './bad-tile-path'], '.')
-    expect(stderr).toContain('error Path to mbtiles files does not exist')
+    expect(stderr).toContain('Path to mbtiles files does not exist')
 })
