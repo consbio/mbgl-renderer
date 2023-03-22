@@ -300,6 +300,7 @@ program
                     `Path to mbtiles files does not exist: ${tilePath}`
                 )
             }
+            return tilePath
         }
     )
     .option('-v, --verbose', 'Enable request logging')
@@ -399,15 +400,17 @@ server.get({ url: '/health' }, (req, res, next) => {
     next()
 })
 
+let tilePathMessage = ''
 if (tilePath !== null) {
-    console.log('Using local mbtiles in: %j', tilePath)
+    tilePathMessage = `\n using local mbtiles in: ${tilePath}`
 }
 
 server.listen(port, () => {
     console.log(
-        '\n--------------------------------------------------------\n',
+        '\n-----------------------------------------------------------------\n',
         `mbgl-renderer server started and listening at ${server.url}`,
-        '\n--------------------------------------------------------\n'
+        tilePathMessage,
+        '\n-----------------------------------------------------------------\n'
     )
 })
 
