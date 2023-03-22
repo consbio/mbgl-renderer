@@ -38,6 +38,31 @@ var logger = (0, _pino["default"])({
     remove: true
   }
 });
+_maplibreGlNative["default"].on('message', function (msg) {
+  // console.log(msg.severity, msg.class, msg.text)
+  switch (msg.severity) {
+    case 'ERROR':
+      {
+        logger.error(msg.text);
+        break;
+      }
+    case 'WARNING':
+      {
+        if (msg["class"] === 'ParseStyle') {
+          logger.error("Error parsing style: ".concat(msg.text));
+        } else {
+          logger.warn(msg.text);
+        }
+        break;
+      }
+    default:
+      {
+        // NOTE: includes INFO
+        logger.debug(msg.text);
+        break;
+      }
+  }
+});
 var isMapboxURL = function isMapboxURL(url) {
   return url.startsWith('mapbox://');
 };
@@ -314,8 +339,7 @@ var getRemoteTile = function getRemoteTile(url, callback) {
       default:
         {
           // assume error
-          logger.error("Error with request for: ".concat(url, "\nstatus: ").concat(res.statusCode));
-          return callback(new Error("Error with request for: ".concat(url, "\nstatus: ").concat(res.statusCode)));
+          return callback(new Error("request for remote tile failed: ".concat(url, " (status: ").concat(res.statusCode, ")")));
         }
     }
   });
@@ -347,9 +371,7 @@ var getRemoteAsset = function getRemoteAsset(url, callback) {
         }
       default:
         {
-          // assume error
-          logger.error("Error with request for: ".concat(url, "\nstatus: ").concat(res.statusCode));
-          return callback(new Error("Error with request for: ".concat(url, "\nstatus: ").concat(res.statusCode)));
+          return callback(new Error("request for remote asset failed: ".concat(res.request.uri.href, " (status: ").concat(res.statusCode, ")")));
         }
     }
   });
@@ -385,7 +407,7 @@ var requestHandler = function requestHandler(tilePath, token) {
       kind = _ref.kind;
     var isMapbox = isMapboxURL(url);
     if (isMapbox && !token) {
-      throw new Error('error mapbox access token is required');
+      return callback(new Error('mapbox access token is required'));
     }
     try {
       switch (kind) {
@@ -448,7 +470,7 @@ var requestHandler = function requestHandler(tilePath, token) {
       }
     } catch (err) {
       logger.error("Error while making resource request to: ".concat(url, "\n").concat(err));
-      callback(err);
+      return callback(err);
     }
   };
 };

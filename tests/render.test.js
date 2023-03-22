@@ -306,7 +306,7 @@ test('fails on invalid mapbox token', async () => {
             center: [0, 0],
             token: 'badtoken',
         })
-    ).rejects.toThrowError(/Error with request/)
+    ).rejects.toThrowError(/request for remote asset failed/)
 })
 
 /** Tests that require a valid Mapbox token
@@ -398,7 +398,7 @@ test('fails with missing glyphs', async () => {
             center: null,
             bounds: [-125, 37.5, -115, 42.5],
         })
-    ).rejects.toThrowError()
+    ).rejects.toThrowError(/request for remote asset failed/)
 })
 
 test('creates image from image source', async () => {

@@ -5,7 +5,7 @@
 #### Breaking changes:
 
 -   upgrade minimum supported NodeJS version to 16 (#101)
--   changed logging framework from `morgan` to `pino`; logs are now JSON
+-   changed logging framework from `morgan` to `pino`; logs are now JSON (#106)
 
 #### Enhancements
 

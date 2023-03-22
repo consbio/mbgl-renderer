@@ -25,6 +25,30 @@ const logger = pino({
     },
 })
 
+maplibre.on('message', (msg) => {
+    // console.log(msg.severity, msg.class, msg.text)
+    switch (msg.severity) {
+        case 'ERROR': {
+            logger.error(msg.text)
+            break
+        }
+        case 'WARNING': {
+            if (msg.class === 'ParseStyle') {
+                logger.error(`Error parsing style: ${msg.text}`)
+            } else {
+                logger.warn(msg.text)
+            }
+            break
+        }
+
+        default: {
+            // NOTE: includes INFO
+            logger.debug(msg.text)
+            break
+        }
+    }
+})
+
 export const isMapboxURL = (url) => url.startsWith('mapbox://')
 export const isMapboxStyleURL = (url) => url.startsWith('mapbox://styles/')
 const isMBTilesURL = (url) => url.startsWith('mbtiles://')
@@ -286,13 +310,9 @@ const getRemoteTile = (url, callback) => {
                 }
                 default: {
                     // assume error
-                    logger.error(
-                        `Error with request for: ${url}\nstatus: ${res.statusCode}`
-                    )
-
                     return callback(
                         new Error(
-                            `Error with request for: ${url}\nstatus: ${res.statusCode}`
+                            `request for remote tile failed: ${url} (status: ${res.statusCode})`
                         )
                     )
                 }
@@ -326,13 +346,9 @@ const getRemoteAsset = (url, callback) => {
                     return callback(null, { data })
                 }
                 default: {
-                    // assume error
-                    logger.error(
-                        `Error with request for: ${url}\nstatus: ${res.statusCode}`
-                    )
                     return callback(
                         new Error(
-                            `Error with request for: ${url}\nstatus: ${res.statusCode}`
+                            `request for remote asset failed: ${res.request.uri.href} (status: ${res.statusCode})`
                         )
                     )
                 }
@@ -370,7 +386,7 @@ const requestHandler =
     ({ url, kind }, callback) => {
         const isMapbox = isMapboxURL(url)
         if (isMapbox && !token) {
-            throw new Error('error mapbox access token is required')
+            return callback(new Error('mapbox access token is required'))
         }
 
         try {
@@ -450,7 +466,7 @@ const requestHandler =
             logger.error(
                 `Error while making resource request to: ${url}\n${err}`
             )
-            callback(err)
+            return callback(err)
         }
     }
 
@@ -710,6 +726,7 @@ export const render = async (style, width = 1024, height = 1024, options) => {
         request: requestHandler(tilePath, token),
         ratio,
     })
+
     map.load(style)
 
     await loadImages(map, images)
