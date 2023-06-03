@@ -13,7 +13,7 @@
 -   upgraded dependencies to latest (#102)
 -   better use builtin support in `commander` for validating arguments
 -   Publish Docker images to [Github Container Registry](https://github.com/consbio/mbgl-renderer/pkgs/container/mbgl-renderer) instead of Docker Hub (#103)
--   log all render errors to the logger
+-   fix error logging in server (#108) and log more errors to the logger when rendering
 
 ### 0.8.0
 
