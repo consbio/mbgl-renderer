@@ -9,7 +9,6 @@ import maplibre from '@maplibre/maplibre-gl-native'
 import MBTiles from '@mapbox/mbtiles'
 import pino from 'pino'
 import webRequest from 'request'
-
 import urlLib from 'url'
 
 const TILE_REGEXP = RegExp('mbtiles://([^/]+)/(\\d+)/(\\d+)/(\\d+)')
@@ -33,6 +32,7 @@ maplibre.on('message', (msg) => {
         }
         case 'WARNING': {
             if (msg.class === 'ParseStyle') {
+                // can't throw an exception here or it crashes NodeJS process
                 logger.error(`Error parsing style: ${msg.text}`)
             } else {
                 logger.warn(msg.text)
@@ -619,13 +619,11 @@ export const render = async (style, width = 1024, height = 1024, options) => {
 
     if (!style) {
         const msg = 'style is a required parameter'
-        logger.error(msg)
         throw new Error(msg)
     }
     if (!(width && height)) {
         const msg =
             'width and height are required parameters and must be non-zero'
-        logger.error(msg)
         throw new Error(msg)
     }
 
@@ -634,39 +632,32 @@ export const render = async (style, width = 1024, height = 1024, options) => {
             const msg = `Center must be longitude,latitude.  Invalid value found: ${[
                 ...center,
             ]}`
-
-            logger.error(msg)
             throw new Error(msg)
         }
 
         if (Math.abs(center[0]) > 180) {
             const msg = `Center longitude is outside world bounds (-180 to 180 deg): ${center[0]}`
-            logger.error(msg)
             throw new Error(msg)
         }
 
         if (Math.abs(center[1]) > 90) {
             const msg = `Center latitude is outside world bounds (-90 to 90 deg): ${center[1]}`
-            logger.error(msg)
             throw new Error(msg)
         }
     }
 
     if (zoom !== null && (zoom < 0 || zoom > 22)) {
         const msg = `Zoom level is outside supported range (0-22): ${zoom}`
-        logger.error(msg)
         throw new Error(msg)
     }
 
     if (bearing !== null && (bearing < 0 || bearing > 360)) {
         const msg = `bearing is outside supported range (0-360): ${bearing}`
-        logger.error(msg)
         throw new Error(msg)
     }
 
     if (pitch !== null && (pitch < 0 || pitch > 60)) {
         const msg = `pitch is outside supported range (0-60): ${pitch}`
-        logger.error(msg)
         throw new Error(msg)
     }
 
@@ -675,21 +666,16 @@ export const render = async (style, width = 1024, height = 1024, options) => {
             const msg = `Bounds must be west,south,east,north.  Invalid value found: ${[
                 ...bounds,
             ]}`
-            logger.error(msg)
             throw new Error(msg)
         }
 
         if (padding) {
             // padding must not be greater than width / 2 and height / 2
             if (Math.abs(padding) >= width / 2) {
-                const msg = 'Padding must be less than width / 2'
-                logger.error(msg)
-                throw new Error(msg)
+                throw new Error('Padding must be less than width / 2')
             }
             if (Math.abs(padding) >= height / 2) {
-                const msg = 'Padding must be less than height / 2'
-                logger.error(msg)
-                throw new Error(msg)
+                throw new Error('Padding must be less than height / 2')
             }
         }
     }
@@ -721,7 +707,6 @@ export const render = async (style, width = 1024, height = 1024, options) => {
     if (localMbtilesMatches && !tilePath) {
         const msg =
             'Style has local mbtiles file sources, but no tilePath is set'
-        logger.error(msg)
         throw new Error(msg)
     }
 
@@ -739,8 +724,6 @@ export const render = async (style, width = 1024, height = 1024, options) => {
                     name,
                     ext: '.mbtiles',
                 })} in style file is not found in: ${path.resolve(tilePath)}`
-
-                logger.error(msg)
                 throw new Error(msg)
             }
         })
