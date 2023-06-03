@@ -39,7 +39,6 @@ var logger = (0, _pino["default"])({
   }
 });
 _maplibreGlNative["default"].on('message', function (msg) {
-  // console.log(msg.severity, msg.class, msg.text)
   switch (msg.severity) {
     case 'ERROR':
       {
@@ -93,7 +92,9 @@ var normalizeMapboxSourceURL = function normalizeMapboxSourceURL(url, token) {
     urlObject.query.access_token = token;
     return _url["default"].format(urlObject);
   } catch (e) {
-    throw new Error("Could not normalize Mapbox source URL: ".concat(url, "\n").concat(e));
+    var msg = "Could not normalize Mapbox source URL: ".concat(url, "\n").concat(e);
+    logger.error(msg);
+    throw new Error(msg);
   }
 };
 
@@ -113,7 +114,9 @@ var normalizeMapboxTileURL = function normalizeMapboxTileURL(url, token) {
     urlObject.query.access_token = token;
     return _url["default"].format(urlObject);
   } catch (e) {
-    throw new Error("Could not normalize Mapbox tile URL: ".concat(url, "\n").concat(e));
+    var msg = "Could not normalize Mapbox tile URL: ".concat(url, "\n").concat(e);
+    logger.error(msg);
+    throw new Error(msg);
   }
 };
 
@@ -134,7 +137,9 @@ var normalizeMapboxStyleURL = function normalizeMapboxStyleURL(url, token) {
     urlObject.host = 'api.mapbox.com';
     return _url["default"].format(urlObject);
   } catch (e) {
-    throw new Error("Could not normalize Mapbox style URL: ".concat(url, "\n").concat(e));
+    var msg = "Could not normalize Mapbox style URL: ".concat(url, "\n").concat(e);
+    logger.error(msg);
+    throw new Error(msg);
   }
 };
 
@@ -161,7 +166,9 @@ var normalizeMapboxSpriteURL = function normalizeMapboxSpriteURL(url, token) {
     urlObject.host = 'api.mapbox.com';
     return _url["default"].format(urlObject);
   } catch (e) {
-    throw new Error("Could not normalize Mapbox sprite URL: ".concat(url, "\n").concat(e));
+    var msg = "Could not normalize Mapbox sprite URL: ".concat(url, "\n").concat(e);
+    logger.error(msg);
+    throw new Error(msg);
   }
 };
 
@@ -183,7 +190,9 @@ var normalizeMapboxGlyphURL = function normalizeMapboxGlyphURL(url, token) {
     urlObject.host = 'api.mapbox.com';
     return _url["default"].format(urlObject);
   } catch (e) {
-    throw new Error("Could not normalize Mapbox glyph URL: ".concat(url, "\n").concat(e));
+    var msg = "Could not normalize Mapbox glyph URL: ".concat(url, "\n").concat(e);
+    logger.error(msg);
+    throw new Error(msg);
   }
 };
 
@@ -339,7 +348,9 @@ var getRemoteTile = function getRemoteTile(url, callback) {
       default:
         {
           // assume error
-          return callback(new Error("request for remote tile failed: ".concat(url, " (status: ").concat(res.statusCode, ")")));
+          var msg = "request for remote tile failed: ".concat(url, " (status: ").concat(res.statusCode, ")");
+          logger.error(msg);
+          return callback(new Error(msg));
         }
     }
   });
@@ -371,7 +382,9 @@ var getRemoteAsset = function getRemoteAsset(url, callback) {
         }
       default:
         {
-          return callback(new Error("request for remote asset failed: ".concat(res.request.uri.href, " (status: ").concat(res.statusCode, ")")));
+          var msg = "request for remote asset failed: ".concat(res.request.uri.href, " (status: ").concat(res.statusCode, ")");
+          logger.error(msg);
+          return callback(new Error(msg));
         }
     }
   });
@@ -407,7 +420,9 @@ var requestHandler = function requestHandler(tilePath, token) {
       kind = _ref.kind;
     var isMapbox = isMapboxURL(url);
     if (isMapbox && !token) {
-      return callback(new Error('mapbox access token is required'));
+      var msg = 'mapbox access token is required';
+      logger.error(msg);
+      return callback(new Error(msg));
     }
     try {
       switch (kind) {
@@ -465,12 +480,15 @@ var requestHandler = function requestHandler(tilePath, token) {
         default:
           {
             // NOT HANDLED!
-            throw new Error("error Request kind not handled: ".concat(kind));
+            var _msg = "error Request kind not handled: ".concat(kind);
+            logger.error(_msg);
+            throw new Error(_msg);
           }
       }
     } catch (err) {
-      logger.error("Error while making resource request to: ".concat(url, "\n").concat(err));
-      return callback(err);
+      var _msg2 = "Error while making resource request to: ".concat(url, "\n").concat(err);
+      logger.error(_msg2);
+      return callback(_msg2);
     }
   };
 };
@@ -484,61 +502,65 @@ var requestHandler = function requestHandler(tilePath, token) {
  */
 var loadImage = /*#__PURE__*/function () {
   var _ref3 = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee(map, id, _ref2) {
-    var url, _ref2$pixelRatio, pixelRatio, _ref2$sdf, sdf, imgBuffer, _img, img, metadata, data;
+    var url, _ref2$pixelRatio, pixelRatio, _ref2$sdf, sdf, msg, imgBuffer, _img, img, metadata, data, _msg3;
     return _regenerator["default"].wrap(function _callee$(_context) {
       while (1) switch (_context.prev = _context.next) {
         case 0:
           url = _ref2.url, _ref2$pixelRatio = _ref2.pixelRatio, pixelRatio = _ref2$pixelRatio === void 0 ? 1 : _ref2$pixelRatio, _ref2$sdf = _ref2.sdf, sdf = _ref2$sdf === void 0 ? false : _ref2$sdf;
           if (url) {
-            _context.next = 3;
+            _context.next = 5;
             break;
           }
-          throw new Error("Invalid url for image: ".concat(id));
-        case 3:
-          _context.prev = 3;
+          msg = "Invalid url for image: ".concat(id);
+          logger.error(msg);
+          throw new Error(msg);
+        case 5:
+          _context.prev = 5;
           imgBuffer = null;
           if (!url.startsWith('data:')) {
-            _context.next = 9;
+            _context.next = 11;
             break;
           }
           imgBuffer = Buffer.from(url.split('base64,')[1], 'base64');
-          _context.next = 13;
+          _context.next = 15;
           break;
-        case 9:
-          _context.next = 11;
-          return getRemoteAssetPromise(url);
         case 11:
+          _context.next = 13;
+          return getRemoteAssetPromise(url);
+        case 13:
           _img = _context.sent;
           imgBuffer = _img.data;
-        case 13:
+        case 15:
           img = (0, _sharp["default"])(imgBuffer);
-          _context.next = 16;
+          _context.next = 18;
           return img.metadata();
-        case 16:
+        case 18:
           metadata = _context.sent;
-          _context.next = 19;
+          _context.next = 21;
           return img.raw().toBuffer();
-        case 19:
+        case 21:
           data = _context.sent;
-          _context.next = 22;
+          _context.next = 24;
           return map.addImage(id, data, {
             width: metadata.width,
             height: metadata.height,
             pixelRatio: pixelRatio,
             sdf: sdf
           });
-        case 22:
-          _context.next = 27;
-          break;
         case 24:
-          _context.prev = 24;
-          _context.t0 = _context["catch"](3);
-          throw new Error("Error loading icon image: ".concat(id, "\n").concat(_context.t0));
-        case 27:
+          _context.next = 31;
+          break;
+        case 26:
+          _context.prev = 26;
+          _context.t0 = _context["catch"](5);
+          _msg3 = "Error loading icon image: ".concat(id, "\n").concat(_context.t0);
+          logger.error(_msg3);
+          throw new Error(_msg3);
+        case 31:
         case "end":
           return _context.stop();
       }
-    }, _callee, null, [[3, 24]]);
+    }, _callee, null, [[5, 26]]);
   }));
   return function loadImage(_x, _x2, _x3) {
     return _ref3.apply(this, arguments);
@@ -699,8 +721,20 @@ var render = /*#__PURE__*/function () {
       zoom,
       _options$tilePath,
       tilePath,
+      msg,
+      _msg4,
+      _msg5,
+      _msg6,
+      _msg7,
+      _msg8,
+      _msg9,
+      _msg10,
+      _msg11,
+      _msg12,
+      _msg13,
       viewport,
       localMbtilesMatches,
+      _msg14,
       map,
       buffer,
       _args5 = arguments;
@@ -713,83 +747,105 @@ var render = /*#__PURE__*/function () {
           _options$bounds = options.bounds, bounds = _options$bounds === void 0 ? null : _options$bounds, _options$bearing = options.bearing, bearing = _options$bearing === void 0 ? 0 : _options$bearing, _options$pitch = options.pitch, pitch = _options$pitch === void 0 ? 0 : _options$pitch, _options$token = options.token, token = _options$token === void 0 ? null : _options$token, _options$ratio = options.ratio, ratio = _options$ratio === void 0 ? 1 : _options$ratio, _options$padding = options.padding, padding = _options$padding === void 0 ? 0 : _options$padding, _options$images = options.images, images = _options$images === void 0 ? null : _options$images;
           _options$center = options.center, center = _options$center === void 0 ? null : _options$center, _options$zoom = options.zoom, zoom = _options$zoom === void 0 ? null : _options$zoom, _options$tilePath = options.tilePath, tilePath = _options$tilePath === void 0 ? null : _options$tilePath;
           if (style) {
-            _context5.next = 7;
-            break;
-          }
-          throw new Error('style is a required parameter');
-        case 7:
-          if (width && height) {
             _context5.next = 9;
             break;
           }
-          throw new Error('width and height are required parameters and must be non-zero');
+          msg = 'style is a required parameter';
+          logger.error(msg);
+          throw new Error(msg);
         case 9:
+          if (width && height) {
+            _context5.next = 13;
+            break;
+          }
+          _msg4 = 'width and height are required parameters and must be non-zero';
+          logger.error(_msg4);
+          throw new Error(_msg4);
+        case 13:
           if (!(center !== null)) {
-            _context5.next = 16;
+            _context5.next = 26;
             break;
           }
           if (!(center.length !== 2)) {
-            _context5.next = 12;
-            break;
-          }
-          throw new Error("Center must be longitude,latitude.  Invalid value found: ".concat((0, _toConsumableArray2["default"])(center)));
-        case 12:
-          if (!(Math.abs(center[0]) > 180)) {
-            _context5.next = 14;
-            break;
-          }
-          throw new Error("Center longitude is outside world bounds (-180 to 180 deg): ".concat(center[0]));
-        case 14:
-          if (!(Math.abs(center[1]) > 90)) {
-            _context5.next = 16;
-            break;
-          }
-          throw new Error("Center latitude is outside world bounds (-90 to 90 deg): ".concat(center[1]));
-        case 16:
-          if (!(zoom !== null && (zoom < 0 || zoom > 22))) {
             _context5.next = 18;
             break;
           }
-          throw new Error("Zoom level is outside supported range (0-22): ".concat(zoom));
+          _msg5 = "Center must be longitude,latitude.  Invalid value found: ".concat((0, _toConsumableArray2["default"])(center));
+          logger.error(_msg5);
+          throw new Error(_msg5);
         case 18:
-          if (!(bearing !== null && (bearing < 0 || bearing > 360))) {
-            _context5.next = 20;
-            break;
-          }
-          throw new Error("bearing is outside supported range (0-360): ".concat(bearing));
-        case 20:
-          if (!(pitch !== null && (pitch < 0 || pitch > 60))) {
+          if (!(Math.abs(center[0]) > 180)) {
             _context5.next = 22;
             break;
           }
-          throw new Error("pitch is outside supported range (0-60): ".concat(pitch));
+          _msg6 = "Center longitude is outside world bounds (-180 to 180 deg): ".concat(center[0]);
+          logger.error(_msg6);
+          throw new Error(_msg6);
         case 22:
-          if (!(bounds !== null)) {
+          if (!(Math.abs(center[1]) > 90)) {
+            _context5.next = 26;
+            break;
+          }
+          _msg7 = "Center latitude is outside world bounds (-90 to 90 deg): ".concat(center[1]);
+          logger.error(_msg7);
+          throw new Error(_msg7);
+        case 26:
+          if (!(zoom !== null && (zoom < 0 || zoom > 22))) {
             _context5.next = 30;
+            break;
+          }
+          _msg8 = "Zoom level is outside supported range (0-22): ".concat(zoom);
+          logger.error(_msg8);
+          throw new Error(_msg8);
+        case 30:
+          if (!(bearing !== null && (bearing < 0 || bearing > 360))) {
+            _context5.next = 34;
+            break;
+          }
+          _msg9 = "bearing is outside supported range (0-360): ".concat(bearing);
+          logger.error(_msg9);
+          throw new Error(_msg9);
+        case 34:
+          if (!(pitch !== null && (pitch < 0 || pitch > 60))) {
+            _context5.next = 38;
+            break;
+          }
+          _msg10 = "pitch is outside supported range (0-60): ".concat(pitch);
+          logger.error(_msg10);
+          throw new Error(_msg10);
+        case 38:
+          if (!(bounds !== null)) {
+            _context5.next = 52;
             break;
           }
           if (!(bounds.length !== 4)) {
-            _context5.next = 25;
+            _context5.next = 43;
             break;
           }
-          throw new Error("Bounds must be west,south,east,north.  Invalid value found: ".concat((0, _toConsumableArray2["default"])(bounds)));
-        case 25:
+          _msg11 = "Bounds must be west,south,east,north.  Invalid value found: ".concat((0, _toConsumableArray2["default"])(bounds));
+          logger.error(_msg11);
+          throw new Error(_msg11);
+        case 43:
           if (!padding) {
-            _context5.next = 30;
+            _context5.next = 52;
             break;
           }
           if (!(Math.abs(padding) >= width / 2)) {
-            _context5.next = 28;
+            _context5.next = 48;
             break;
           }
-          throw new Error('Padding must be less than width / 2');
-        case 28:
+          _msg12 = 'Padding must be less than width / 2';
+          logger.error(_msg12);
+          throw new Error(_msg12);
+        case 48:
           if (!(Math.abs(padding) >= height / 2)) {
-            _context5.next = 30;
+            _context5.next = 52;
             break;
           }
-          throw new Error('Padding must be less than height / 2');
-        case 30:
+          _msg13 = 'Padding must be less than height / 2';
+          logger.error(_msg13);
+          throw new Error(_msg13);
+        case 52:
           // calculate zoom and center from bounds and image dimensions
           if (bounds !== null && (zoom === null || center === null)) {
             viewport = _geoViewport["default"].viewport(bounds,
@@ -808,11 +864,13 @@ var render = /*#__PURE__*/function () {
           }
           localMbtilesMatches = JSON.stringify(style).match(MBTILES_REGEXP);
           if (!(localMbtilesMatches && !tilePath)) {
-            _context5.next = 35;
+            _context5.next = 59;
             break;
           }
-          throw new Error('Style has local mbtiles file sources, but no tilePath is set');
-        case 35:
+          _msg14 = 'Style has local mbtiles file sources, but no tilePath is set';
+          logger.error(_msg14);
+          throw new Error(_msg14);
+        case 59:
           if (localMbtilesMatches) {
             localMbtilesMatches.forEach(function (name) {
               var mbtileFilename = _path["default"].normalize(_path["default"].format({
@@ -821,10 +879,12 @@ var render = /*#__PURE__*/function () {
                 ext: '.mbtiles'
               }));
               if (!_fs["default"].existsSync(mbtileFilename)) {
-                throw new Error("Mbtiles file ".concat(_path["default"].format({
+                var _msg15 = "Mbtiles file ".concat(_path["default"].format({
                   name: name,
                   ext: '.mbtiles'
-                }), " in style file is not found in: ").concat(_path["default"].resolve(tilePath)));
+                }), " in style file is not found in: ").concat(_path["default"].resolve(tilePath));
+                logger.error(_msg15);
+                throw new Error(_msg15);
               }
             });
           }
@@ -833,10 +893,10 @@ var render = /*#__PURE__*/function () {
             ratio: ratio
           });
           map.load(style);
-          _context5.next = 40;
+          _context5.next = 64;
           return loadImages(map, images);
-        case 40:
-          _context5.next = 42;
+        case 64:
+          _context5.next = 66;
           return renderMap(map, {
             zoom: zoom,
             center: center,
@@ -845,10 +905,10 @@ var render = /*#__PURE__*/function () {
             bearing: bearing,
             pitch: pitch
           });
-        case 42:
+        case 66:
           buffer = _context5.sent;
           return _context5.abrupt("return", toPNG(buffer, width, height, ratio));
-        case 44:
+        case 68:
         case "end":
           return _context5.stop();
       }

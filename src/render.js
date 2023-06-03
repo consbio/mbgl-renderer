@@ -26,7 +26,6 @@ const logger = pino({
 })
 
 maplibre.on('message', (msg) => {
-    // console.log(msg.severity, msg.class, msg.text)
     switch (msg.severity) {
         case 'ERROR': {
             logger.error(msg.text)
@@ -71,7 +70,9 @@ const normalizeMapboxSourceURL = (url, token) => {
         urlObject.query.access_token = token
         return urlLib.format(urlObject)
     } catch (e) {
-        throw new Error(`Could not normalize Mapbox source URL: ${url}\n${e}`)
+        const msg = `Could not normalize Mapbox source URL: ${url}\n${e}`
+        logger.error(msg)
+        throw new Error(msg)
     }
 }
 
@@ -91,7 +92,9 @@ const normalizeMapboxTileURL = (url, token) => {
         urlObject.query.access_token = token
         return urlLib.format(urlObject)
     } catch (e) {
-        throw new Error(`Could not normalize Mapbox tile URL: ${url}\n${e}`)
+        const msg = `Could not normalize Mapbox tile URL: ${url}\n${e}`
+        logger.error(msg)
+        throw new Error(msg)
     }
 }
 
@@ -112,7 +115,9 @@ export const normalizeMapboxStyleURL = (url, token) => {
         urlObject.host = 'api.mapbox.com'
         return urlLib.format(urlObject)
     } catch (e) {
-        throw new Error(`Could not normalize Mapbox style URL: ${url}\n${e}`)
+        const msg = `Could not normalize Mapbox style URL: ${url}\n${e}`
+        logger.error(msg)
+        throw new Error(msg)
     }
 }
 
@@ -142,7 +147,9 @@ export const normalizeMapboxSpriteURL = (url, token) => {
         urlObject.host = 'api.mapbox.com'
         return urlLib.format(urlObject)
     } catch (e) {
-        throw new Error(`Could not normalize Mapbox sprite URL: ${url}\n${e}`)
+        const msg = `Could not normalize Mapbox sprite URL: ${url}\n${e}`
+        logger.error(msg)
+        throw new Error(msg)
     }
 }
 
@@ -163,7 +170,9 @@ export const normalizeMapboxGlyphURL = (url, token) => {
         urlObject.host = 'api.mapbox.com'
         return urlLib.format(urlObject)
     } catch (e) {
-        throw new Error(`Could not normalize Mapbox glyph URL: ${url}\n${e}`)
+        const msg = `Could not normalize Mapbox glyph URL: ${url}\n${e}`
+        logger.error(msg)
+        throw new Error(msg)
     }
 }
 
@@ -310,11 +319,9 @@ const getRemoteTile = (url, callback) => {
                 }
                 default: {
                     // assume error
-                    return callback(
-                        new Error(
-                            `request for remote tile failed: ${url} (status: ${res.statusCode})`
-                        )
-                    )
+                    const msg = `request for remote tile failed: ${url} (status: ${res.statusCode})`
+                    logger.error(msg)
+                    return callback(new Error(msg))
                 }
             }
         }
@@ -346,11 +353,9 @@ const getRemoteAsset = (url, callback) => {
                     return callback(null, { data })
                 }
                 default: {
-                    return callback(
-                        new Error(
-                            `request for remote asset failed: ${res.request.uri.href} (status: ${res.statusCode})`
-                        )
-                    )
+                    const msg = `request for remote asset failed: ${res.request.uri.href} (status: ${res.statusCode})`
+                    logger.error(msg)
+                    return callback(new Error(msg))
                 }
             }
         }
@@ -386,7 +391,9 @@ const requestHandler =
     ({ url, kind }, callback) => {
         const isMapbox = isMapboxURL(url)
         if (isMapbox && !token) {
-            return callback(new Error('mapbox access token is required'))
+            const msg = 'mapbox access token is required'
+            logger.error(msg)
+            return callback(new Error(msg))
         }
 
         try {
@@ -459,14 +466,15 @@ const requestHandler =
                 }
                 default: {
                     // NOT HANDLED!
-                    throw new Error(`error Request kind not handled: ${kind}`)
+                    const msg = `error Request kind not handled: ${kind}`
+                    logger.error(msg)
+                    throw new Error(msg)
                 }
             }
         } catch (err) {
-            logger.error(
-                `Error while making resource request to: ${url}\n${err}`
-            )
-            return callback(err)
+            const msg = `Error while making resource request to: ${url}\n${err}`
+            logger.error(msg)
+            return callback(msg)
         }
     }
 
@@ -479,7 +487,9 @@ const requestHandler =
  */
 const loadImage = async (map, id, { url, pixelRatio = 1, sdf = false }) => {
     if (!url) {
-        throw new Error(`Invalid url for image: ${id}`)
+        const msg = `Invalid url for image: ${id}`
+        logger.error(msg)
+        throw new Error(msg)
     }
 
     try {
@@ -500,7 +510,9 @@ const loadImage = async (map, id, { url, pixelRatio = 1, sdf = false }) => {
             sdf,
         })
     } catch (e) {
-        throw new Error(`Error loading icon image: ${id}\n${e}`)
+        const msg = `Error loading icon image: ${id}\n${e}`
+        logger.error(msg)
+        throw new Error(msg)
     }
 }
 
@@ -606,66 +618,78 @@ export const render = async (style, width = 1024, height = 1024, options) => {
     let { center = null, zoom = null, tilePath = null } = options
 
     if (!style) {
-        throw new Error('style is a required parameter')
+        const msg = 'style is a required parameter'
+        logger.error(msg)
+        throw new Error(msg)
     }
     if (!(width && height)) {
-        throw new Error(
+        const msg =
             'width and height are required parameters and must be non-zero'
-        )
+        logger.error(msg)
+        throw new Error(msg)
     }
 
     if (center !== null) {
         if (center.length !== 2) {
-            throw new Error(
-                `Center must be longitude,latitude.  Invalid value found: ${[
-                    ...center,
-                ]}`
-            )
+            const msg = `Center must be longitude,latitude.  Invalid value found: ${[
+                ...center,
+            ]}`
+
+            logger.error(msg)
+            throw new Error(msg)
         }
 
         if (Math.abs(center[0]) > 180) {
-            throw new Error(
-                `Center longitude is outside world bounds (-180 to 180 deg): ${center[0]}`
-            )
+            const msg = `Center longitude is outside world bounds (-180 to 180 deg): ${center[0]}`
+            logger.error(msg)
+            throw new Error(msg)
         }
 
         if (Math.abs(center[1]) > 90) {
-            throw new Error(
-                `Center latitude is outside world bounds (-90 to 90 deg): ${center[1]}`
-            )
+            const msg = `Center latitude is outside world bounds (-90 to 90 deg): ${center[1]}`
+            logger.error(msg)
+            throw new Error(msg)
         }
     }
 
     if (zoom !== null && (zoom < 0 || zoom > 22)) {
-        throw new Error(`Zoom level is outside supported range (0-22): ${zoom}`)
+        const msg = `Zoom level is outside supported range (0-22): ${zoom}`
+        logger.error(msg)
+        throw new Error(msg)
     }
 
     if (bearing !== null && (bearing < 0 || bearing > 360)) {
-        throw new Error(
-            `bearing is outside supported range (0-360): ${bearing}`
-        )
+        const msg = `bearing is outside supported range (0-360): ${bearing}`
+        logger.error(msg)
+        throw new Error(msg)
     }
 
     if (pitch !== null && (pitch < 0 || pitch > 60)) {
-        throw new Error(`pitch is outside supported range (0-60): ${pitch}`)
+        const msg = `pitch is outside supported range (0-60): ${pitch}`
+        logger.error(msg)
+        throw new Error(msg)
     }
 
     if (bounds !== null) {
         if (bounds.length !== 4) {
-            throw new Error(
-                `Bounds must be west,south,east,north.  Invalid value found: ${[
-                    ...bounds,
-                ]}`
-            )
+            const msg = `Bounds must be west,south,east,north.  Invalid value found: ${[
+                ...bounds,
+            ]}`
+            logger.error(msg)
+            throw new Error(msg)
         }
 
         if (padding) {
             // padding must not be greater than width / 2 and height / 2
             if (Math.abs(padding) >= width / 2) {
-                throw new Error('Padding must be less than width / 2')
+                const msg = 'Padding must be less than width / 2'
+                logger.error(msg)
+                throw new Error(msg)
             }
             if (Math.abs(padding) >= height / 2) {
-                throw new Error('Padding must be less than height / 2')
+                const msg = 'Padding must be less than height / 2'
+                logger.error(msg)
+                throw new Error(msg)
             }
         }
     }
@@ -695,9 +719,10 @@ export const render = async (style, width = 1024, height = 1024, options) => {
 
     const localMbtilesMatches = JSON.stringify(style).match(MBTILES_REGEXP)
     if (localMbtilesMatches && !tilePath) {
-        throw new Error(
+        const msg =
             'Style has local mbtiles file sources, but no tilePath is set'
-        )
+        logger.error(msg)
+        throw new Error(msg)
     }
 
     if (localMbtilesMatches) {
@@ -710,14 +735,13 @@ export const render = async (style, width = 1024, height = 1024, options) => {
                 })
             )
             if (!fs.existsSync(mbtileFilename)) {
-                throw new Error(
-                    `Mbtiles file ${path.format({
-                        name,
-                        ext: '.mbtiles',
-                    })} in style file is not found in: ${path.resolve(
-                        tilePath
-                    )}`
-                )
+                const msg = `Mbtiles file ${path.format({
+                    name,
+                    ext: '.mbtiles',
+                })} in style file is not found in: ${path.resolve(tilePath)}`
+
+                logger.error(msg)
+                throw new Error(msg)
             }
         })
     }
