@@ -48,6 +48,7 @@ _maplibreGlNative["default"].on('message', function (msg) {
     case 'WARNING':
       {
         if (msg["class"] === 'ParseStyle') {
+          // can't throw an exception here or it crashes NodeJS process
           logger.error("Error parsing style: ".concat(msg.text));
         } else {
           logger.warn(msg.text);
@@ -730,11 +731,9 @@ var render = /*#__PURE__*/function () {
       _msg9,
       _msg10,
       _msg11,
-      _msg12,
-      _msg13,
       viewport,
       localMbtilesMatches,
-      _msg14,
+      _msg12,
       map,
       buffer,
       _args5 = arguments;
@@ -747,105 +746,92 @@ var render = /*#__PURE__*/function () {
           _options$bounds = options.bounds, bounds = _options$bounds === void 0 ? null : _options$bounds, _options$bearing = options.bearing, bearing = _options$bearing === void 0 ? 0 : _options$bearing, _options$pitch = options.pitch, pitch = _options$pitch === void 0 ? 0 : _options$pitch, _options$token = options.token, token = _options$token === void 0 ? null : _options$token, _options$ratio = options.ratio, ratio = _options$ratio === void 0 ? 1 : _options$ratio, _options$padding = options.padding, padding = _options$padding === void 0 ? 0 : _options$padding, _options$images = options.images, images = _options$images === void 0 ? null : _options$images;
           _options$center = options.center, center = _options$center === void 0 ? null : _options$center, _options$zoom = options.zoom, zoom = _options$zoom === void 0 ? null : _options$zoom, _options$tilePath = options.tilePath, tilePath = _options$tilePath === void 0 ? null : _options$tilePath;
           if (style) {
-            _context5.next = 9;
+            _context5.next = 8;
             break;
           }
           msg = 'style is a required parameter';
-          logger.error(msg);
           throw new Error(msg);
-        case 9:
+        case 8:
           if (width && height) {
-            _context5.next = 13;
+            _context5.next = 11;
             break;
           }
           _msg4 = 'width and height are required parameters and must be non-zero';
-          logger.error(_msg4);
           throw new Error(_msg4);
-        case 13:
+        case 11:
           if (!(center !== null)) {
-            _context5.next = 26;
+            _context5.next = 21;
             break;
           }
           if (!(center.length !== 2)) {
-            _context5.next = 18;
+            _context5.next = 15;
             break;
           }
           _msg5 = "Center must be longitude,latitude.  Invalid value found: ".concat((0, _toConsumableArray2["default"])(center));
-          logger.error(_msg5);
           throw new Error(_msg5);
-        case 18:
+        case 15:
           if (!(Math.abs(center[0]) > 180)) {
-            _context5.next = 22;
+            _context5.next = 18;
             break;
           }
           _msg6 = "Center longitude is outside world bounds (-180 to 180 deg): ".concat(center[0]);
-          logger.error(_msg6);
           throw new Error(_msg6);
-        case 22:
+        case 18:
           if (!(Math.abs(center[1]) > 90)) {
-            _context5.next = 26;
+            _context5.next = 21;
             break;
           }
           _msg7 = "Center latitude is outside world bounds (-90 to 90 deg): ".concat(center[1]);
-          logger.error(_msg7);
           throw new Error(_msg7);
-        case 26:
+        case 21:
           if (!(zoom !== null && (zoom < 0 || zoom > 22))) {
-            _context5.next = 30;
+            _context5.next = 24;
             break;
           }
           _msg8 = "Zoom level is outside supported range (0-22): ".concat(zoom);
-          logger.error(_msg8);
           throw new Error(_msg8);
-        case 30:
+        case 24:
           if (!(bearing !== null && (bearing < 0 || bearing > 360))) {
-            _context5.next = 34;
+            _context5.next = 27;
             break;
           }
           _msg9 = "bearing is outside supported range (0-360): ".concat(bearing);
-          logger.error(_msg9);
           throw new Error(_msg9);
-        case 34:
+        case 27:
           if (!(pitch !== null && (pitch < 0 || pitch > 60))) {
-            _context5.next = 38;
+            _context5.next = 30;
             break;
           }
           _msg10 = "pitch is outside supported range (0-60): ".concat(pitch);
-          logger.error(_msg10);
           throw new Error(_msg10);
-        case 38:
+        case 30:
           if (!(bounds !== null)) {
-            _context5.next = 52;
+            _context5.next = 39;
             break;
           }
           if (!(bounds.length !== 4)) {
-            _context5.next = 43;
+            _context5.next = 34;
             break;
           }
           _msg11 = "Bounds must be west,south,east,north.  Invalid value found: ".concat((0, _toConsumableArray2["default"])(bounds));
-          logger.error(_msg11);
           throw new Error(_msg11);
-        case 43:
+        case 34:
           if (!padding) {
-            _context5.next = 52;
+            _context5.next = 39;
             break;
           }
           if (!(Math.abs(padding) >= width / 2)) {
-            _context5.next = 48;
+            _context5.next = 37;
             break;
           }
-          _msg12 = 'Padding must be less than width / 2';
-          logger.error(_msg12);
-          throw new Error(_msg12);
-        case 48:
+          throw new Error('Padding must be less than width / 2');
+        case 37:
           if (!(Math.abs(padding) >= height / 2)) {
-            _context5.next = 52;
+            _context5.next = 39;
             break;
           }
-          _msg13 = 'Padding must be less than height / 2';
-          logger.error(_msg13);
-          throw new Error(_msg13);
-        case 52:
+          throw new Error('Padding must be less than height / 2');
+        case 39:
           // calculate zoom and center from bounds and image dimensions
           if (bounds !== null && (zoom === null || center === null)) {
             viewport = _geoViewport["default"].viewport(bounds,
@@ -864,13 +850,12 @@ var render = /*#__PURE__*/function () {
           }
           localMbtilesMatches = JSON.stringify(style).match(MBTILES_REGEXP);
           if (!(localMbtilesMatches && !tilePath)) {
-            _context5.next = 59;
+            _context5.next = 45;
             break;
           }
-          _msg14 = 'Style has local mbtiles file sources, but no tilePath is set';
-          logger.error(_msg14);
-          throw new Error(_msg14);
-        case 59:
+          _msg12 = 'Style has local mbtiles file sources, but no tilePath is set';
+          throw new Error(_msg12);
+        case 45:
           if (localMbtilesMatches) {
             localMbtilesMatches.forEach(function (name) {
               var mbtileFilename = _path["default"].normalize(_path["default"].format({
@@ -879,12 +864,11 @@ var render = /*#__PURE__*/function () {
                 ext: '.mbtiles'
               }));
               if (!_fs["default"].existsSync(mbtileFilename)) {
-                var _msg15 = "Mbtiles file ".concat(_path["default"].format({
+                var _msg13 = "Mbtiles file ".concat(_path["default"].format({
                   name: name,
                   ext: '.mbtiles'
                 }), " in style file is not found in: ").concat(_path["default"].resolve(tilePath));
-                logger.error(_msg15);
-                throw new Error(_msg15);
+                throw new Error(_msg13);
               }
             });
           }
@@ -893,10 +877,10 @@ var render = /*#__PURE__*/function () {
             ratio: ratio
           });
           map.load(style);
-          _context5.next = 64;
+          _context5.next = 50;
           return loadImages(map, images);
-        case 64:
-          _context5.next = 66;
+        case 50:
+          _context5.next = 52;
           return renderMap(map, {
             zoom: zoom,
             center: center,
@@ -905,10 +889,10 @@ var render = /*#__PURE__*/function () {
             bearing: bearing,
             pitch: pitch
           });
-        case 66:
+        case 52:
           buffer = _context5.sent;
           return _context5.abrupt("return", toPNG(buffer, width, height, ratio));
-        case 68:
+        case 54:
         case "end":
           return _context5.stop();
       }

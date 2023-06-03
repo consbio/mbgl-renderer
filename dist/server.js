@@ -214,10 +214,9 @@ var renderImage = function renderImage(params, response, next, tilePath, logger)
       images: images
     }).then(function (data, rejected) {
       if (rejected) {
-        logger.error('render request rejected', rejected);
         return next(new _restifyErrors["default"].InternalServerError({
           cause: rejected
-        }, 'Error processing render request'));
+        }, "Error processing render request: ".concat(rejected)));
       }
       return response.sendRaw(200, data, {
         'content-type': 'image/png'
@@ -226,19 +225,13 @@ var renderImage = function renderImage(params, response, next, tilePath, logger)
       if (err instanceof _restifyErrors["default"].InternalServerError) {
         return next(err);
       }
-      logger.error('Error processing render request', err);
-      return next(new _restifyErrors["default"].InternalServerError({
-        cause: err
-      }, 'Error processing render request'));
+      return next(new _restifyErrors["default"].InternalServerError("Error processing render request: ".concat(err)));
     });
   } catch (err) {
     if (err instanceof _restifyErrors["default"].InternalServerError) {
       return next(err);
     }
-    logger.error('Error processing render request', err);
-    return next(new _restifyErrors["default"].InternalServerError({
-      cause: err
-    }, 'Error processing render request'));
+    return next(new _restifyErrors["default"].InternalServerError("Error processing render request: ".concat(err)));
   }
   return null;
 };
