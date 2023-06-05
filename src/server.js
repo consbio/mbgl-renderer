@@ -244,11 +244,10 @@ const renderImage = (params, response, next, tilePath, logger) => {
         })
             .then((data, rejected) => {
                 if (rejected) {
-                    logger.error('render request rejected', rejected)
                     return next(
                         new restifyErrors.InternalServerError(
                             { cause: rejected },
-                            'Error processing render request'
+                            `Error processing render request: ${rejected}`
                         )
                     )
                 }
@@ -261,11 +260,9 @@ const renderImage = (params, response, next, tilePath, logger) => {
                     return next(err)
                 }
 
-                logger.error('Error processing render request', err)
                 return next(
                     new restifyErrors.InternalServerError(
-                        { cause: err },
-                        'Error processing render request'
+                        `Error processing render request: ${err}`
                     )
                 )
             })
@@ -274,11 +271,9 @@ const renderImage = (params, response, next, tilePath, logger) => {
             return next(err)
         }
 
-        logger.error('Error processing render request', err)
         return next(
             new restifyErrors.InternalServerError(
-                { cause: err },
-                'Error processing render request'
+                `Error processing render request: ${err}`
             )
         )
     }
