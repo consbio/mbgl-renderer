@@ -81,7 +81,7 @@ RUN dpkgArch="$(dpkg --print-architecture)" && \
   # if this is not defined via a bind point to host
   mkdir /app/tiles
 
-EXPOSE 80
+EXPOSE 8080
 ENV DISPLAY=:99
 
 # Copy just the compiled code into the container
