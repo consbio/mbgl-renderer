@@ -17,15 +17,14 @@ concurrency:
 
 jobs:
   test:
-    name: Test on ${{ matrix.os }} ${{ matrix.platform }}  (NodeJS ${{ matrix.node-version }})
+    name: Test on ${{ matrix.os }}  (NodeJS ${{ matrix.node-version }})
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
         os:
           - "ubuntu-22.04"
-          - "macos-13"
-        platform: ["x86_64"]
+          - "macos-14"
         node-version: ["18", "20", "22"]
 
     steps:
