@@ -4,8 +4,9 @@
 
 #### Breaking changes:
 
-- upgrade minimum supported NodeJS version to 18
+- upgrade minimum supported NodeJS version to 18 (#114)
 - changed logging framework from `morgan` to `pino`; logs are now JSON (#106)
+- changed Docker base image from Debian to Ubuntu (22.04) to align with builds of `maplibre-gl-native` (#114)
 
 #### Enhancements
 
