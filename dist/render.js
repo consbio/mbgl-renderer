@@ -13,7 +13,7 @@ var _fs = _interopRequireDefault(require("fs"));
 var _path = _interopRequireDefault(require("path"));
 var _sharp = _interopRequireDefault(require("sharp"));
 var _zlib = _interopRequireDefault(require("zlib"));
-var _geoViewport = _interopRequireDefault(require("@mapbox/geo-viewport"));
+var _geoViewport = require("@placemarkio/geo-viewport");
 var _maplibreGlNative = _interopRequireDefault(require("@maplibre/maplibre-gl-native"));
 var _mbtiles = _interopRequireDefault(require("@mapbox/mbtiles"));
 var _pino = _interopRequireDefault(require("pino"));
@@ -63,14 +63,12 @@ _maplibreGlNative["default"].on('message', function (msg) {
       }
   }
 });
-var isMapboxURL = function isMapboxURL(url) {
+var isMapboxURL = exports.isMapboxURL = function isMapboxURL(url) {
   return url.startsWith('mapbox://');
 };
-exports.isMapboxURL = isMapboxURL;
-var isMapboxStyleURL = function isMapboxStyleURL(url) {
+var isMapboxStyleURL = exports.isMapboxStyleURL = function isMapboxStyleURL(url) {
   return url.startsWith('mapbox://styles/');
 };
-exports.isMapboxStyleURL = isMapboxStyleURL;
 var isMBTilesURL = function isMBTilesURL(url) {
   return url.startsWith('mbtiles://');
 };
@@ -126,7 +124,7 @@ var normalizeMapboxTileURL = function normalizeMapboxTileURL(url, token) {
  * @param {string} url - url to mapbox source in style json, e.g. "url": "mapbox://styles/mapbox/streets-v9"
  * @param {string} token - mapbox public token
  */
-var normalizeMapboxStyleURL = function normalizeMapboxStyleURL(url, token) {
+var normalizeMapboxStyleURL = exports.normalizeMapboxStyleURL = function normalizeMapboxStyleURL(url, token) {
   try {
     var urlObject = _url["default"].parse(url);
     urlObject.query = {
@@ -151,8 +149,7 @@ var normalizeMapboxStyleURL = function normalizeMapboxStyleURL(url, token) {
  *
  * Returns {string} - url, e.g., "https://api.mapbox.com/styles/v1/mapbox/streets-v9/sprite.png?access_token=<token>"
  */
-exports.normalizeMapboxStyleURL = normalizeMapboxStyleURL;
-var normalizeMapboxSpriteURL = function normalizeMapboxSpriteURL(url, token) {
+var normalizeMapboxSpriteURL = exports.normalizeMapboxSpriteURL = function normalizeMapboxSpriteURL(url, token) {
   try {
     var extMatch = /(\.png|\.json)$/g.exec(url);
     var ratioMatch = /(@\d+x)\./g.exec(url);
@@ -180,8 +177,7 @@ var normalizeMapboxSpriteURL = function normalizeMapboxSpriteURL(url, token) {
  *
  * Returns {string} - url, e.g., "https://api.mapbox.com/styles/v1/mapbox/streets-v9/sprite.png?access_token=<token>"
  */
-exports.normalizeMapboxSpriteURL = normalizeMapboxSpriteURL;
-var normalizeMapboxGlyphURL = function normalizeMapboxGlyphURL(url, token) {
+var normalizeMapboxGlyphURL = exports.normalizeMapboxGlyphURL = function normalizeMapboxGlyphURL(url, token) {
   try {
     var urlObject = _url["default"].parse(url);
     urlObject.query = urlObject.query || {};
@@ -202,7 +198,6 @@ var normalizeMapboxGlyphURL = function normalizeMapboxGlyphURL(url, token) {
  *
  * @param {String} url - URL to resolve
  */
-exports.normalizeMapboxGlyphURL = normalizeMapboxGlyphURL;
 var resolveNamefromURL = function resolveNamefromURL(url) {
   return url.split('://')[1].split('/')[0];
 };
@@ -502,7 +497,7 @@ var requestHandler = function requestHandler(tilePath, token) {
  * @param {Object} options - options object with {url, pixelRatio, sdf}.  url is required
  */
 var loadImage = /*#__PURE__*/function () {
-  var _ref3 = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee(map, id, _ref2) {
+  var _ref3 = (0, _asyncToGenerator2["default"])(/*#__PURE__*/_regenerator["default"].mark(function _callee(map, id, _ref2) {
     var url, _ref2$pixelRatio, pixelRatio, _ref2$sdf, sdf, msg, imgBuffer, _img, img, metadata, data, _msg3;
     return _regenerator["default"].wrap(function _callee$(_context) {
       while (1) switch (_context.prev = _context.next) {
@@ -574,7 +569,7 @@ var loadImage = /*#__PURE__*/function () {
  * @param {Object} images - object with {id: {url, ...other image properties}}
  */
 var loadImages = /*#__PURE__*/function () {
-  var _ref4 = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee3(map, images) {
+  var _ref4 = (0, _asyncToGenerator2["default"])(/*#__PURE__*/_regenerator["default"].mark(function _callee3(map, images) {
     var imageRequests;
     return _regenerator["default"].wrap(function _callee3$(_context3) {
       while (1) switch (_context3.prev = _context3.next) {
@@ -583,8 +578,8 @@ var loadImages = /*#__PURE__*/function () {
             _context3.next = 4;
             break;
           }
-          imageRequests = Object.entries(images).map( /*#__PURE__*/function () {
-            var _ref5 = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee2(image) {
+          imageRequests = Object.entries(images).map(/*#__PURE__*/function () {
+            var _ref5 = (0, _asyncToGenerator2["default"])(/*#__PURE__*/_regenerator["default"].mark(function _callee2(image) {
               return _regenerator["default"].wrap(function _callee2$(_context2) {
                 while (1) switch (_context2.prev = _context2.next) {
                   case 0:
@@ -640,7 +635,7 @@ var renderMap = function renderMap(map, options) {
  * @returns
  */
 var toPNG = /*#__PURE__*/function () {
-  var _ref6 = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee4(buffer, width, height, ratio) {
+  var _ref6 = (0, _asyncToGenerator2["default"])(/*#__PURE__*/_regenerator["default"].mark(function _callee4(buffer, width, height, ratio) {
     var i, alpha, norm;
     return _regenerator["default"].wrap(function _callee4$(_context4) {
       while (1) switch (_context4.prev = _context4.next) {
@@ -677,7 +672,7 @@ var toPNG = /*#__PURE__*/function () {
       }
     }, _callee4);
   }));
-  return function toPNG(_x7, _x8, _x9, _x10) {
+  return function toPNG(_x7, _x8, _x9, _x0) {
     return _ref6.apply(this, arguments);
   };
 }();
@@ -697,8 +692,8 @@ var toPNG = /*#__PURE__*/function () {
  * @param {String} tilePath - path to directory containing local mbtiles files that are
  * referenced from the style.json as "mbtiles://<tileset>"
  */
-var render = /*#__PURE__*/function () {
-  var _ref7 = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee5(style) {
+var render = exports.render = /*#__PURE__*/function () {
+  var _ref7 = (0, _asyncToGenerator2["default"])(/*#__PURE__*/_regenerator["default"].mark(function _callee5(style) {
     var width,
       height,
       options,
@@ -729,11 +724,11 @@ var render = /*#__PURE__*/function () {
       _msg7,
       _msg8,
       _msg9,
-      _msg10,
-      _msg11,
+      _msg0,
+      _msg1,
       viewport,
       localMbtilesMatches,
-      _msg12,
+      _msg10,
       map,
       buffer,
       _args5 = arguments;
@@ -802,8 +797,8 @@ var render = /*#__PURE__*/function () {
             _context5.next = 30;
             break;
           }
-          _msg10 = "pitch is outside supported range (0-60): ".concat(pitch);
-          throw new Error(_msg10);
+          _msg0 = "pitch is outside supported range (0-60): ".concat(pitch);
+          throw new Error(_msg0);
         case 30:
           if (!(bounds !== null)) {
             _context5.next = 39;
@@ -813,8 +808,8 @@ var render = /*#__PURE__*/function () {
             _context5.next = 34;
             break;
           }
-          _msg11 = "Bounds must be west,south,east,north.  Invalid value found: ".concat((0, _toConsumableArray2["default"])(bounds));
-          throw new Error(_msg11);
+          _msg1 = "Bounds must be west,south,east,north.  Invalid value found: ".concat((0, _toConsumableArray2["default"])(bounds));
+          throw new Error(_msg1);
         case 34:
           if (!padding) {
             _context5.next = 39;
@@ -834,10 +829,12 @@ var render = /*#__PURE__*/function () {
         case 39:
           // calculate zoom and center from bounds and image dimensions
           if (bounds !== null && (zoom === null || center === null)) {
-            viewport = _geoViewport["default"].viewport(bounds,
+            viewport = (0, _geoViewport.viewport)(bounds,
             // add padding to width and height to effectively
             // zoom out the target zoom level.
-            [width - 2 * padding, height - 2 * padding], undefined, undefined, undefined, true);
+            [width - 2 * padding, height - 2 * padding], {
+              allowFloat: true
+            });
             zoom = Math.max(viewport.zoom - 1, 0);
             /* eslint-disable prefer-destructuring */
             center = viewport.center;
@@ -853,8 +850,8 @@ var render = /*#__PURE__*/function () {
             _context5.next = 45;
             break;
           }
-          _msg12 = 'Style has local mbtiles file sources, but no tilePath is set';
-          throw new Error(_msg12);
+          _msg10 = 'Style has local mbtiles file sources, but no tilePath is set';
+          throw new Error(_msg10);
         case 45:
           if (localMbtilesMatches) {
             localMbtilesMatches.forEach(function (name) {
@@ -864,11 +861,11 @@ var render = /*#__PURE__*/function () {
                 ext: '.mbtiles'
               }));
               if (!_fs["default"].existsSync(mbtileFilename)) {
-                var _msg13 = "Mbtiles file ".concat(_path["default"].format({
+                var _msg11 = "Mbtiles file ".concat(_path["default"].format({
                   name: name,
                   ext: '.mbtiles'
                 }), " in style file is not found in: ").concat(_path["default"].resolve(tilePath));
-                throw new Error(_msg13);
+                throw new Error(_msg11);
               }
             });
           }
@@ -898,10 +895,8 @@ var render = /*#__PURE__*/function () {
       }
     }, _callee5);
   }));
-  return function render(_x11) {
+  return function render(_x1) {
     return _ref7.apply(this, arguments);
   };
 }();
-exports.render = render;
-var _default = render;
-exports["default"] = _default;
+var _default = exports["default"] = render;

@@ -1,5 +1,8 @@
 #!/bin/sh
 
+# use NMV to activate node
+. $NVM_DIR/nvm.sh && nvm use node
+
 # Start Xvfb
 echo "Starting Xvfb"
 Xvfb ${DISPLAY} -screen 0 "1024x768x24" -ac +extension GLX +render -noreset  -nolisten tcp  &

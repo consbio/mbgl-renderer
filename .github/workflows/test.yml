@@ -17,21 +17,19 @@ concurrency:
 
 jobs:
   test:
-    name: Test on ${{ matrix.os }} ${{ matrix.platform }}  (NodeJS ${{ matrix.node-version }})
+    name: Test on ${{ matrix.os }}  (NodeJS ${{ matrix.node-version }})
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
         os:
           - "ubuntu-22.04"
-          - "ubuntu-20.04"
-          - "macos-12"
-        platform: ["x86_64"]
-        node-version: ["16", "18"]
+          - "macos-14"
+        node-version: ["18", "20", "22"]
 
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
 
@@ -49,6 +47,7 @@ jobs:
               libuv1-dev \
               libprotobuf-dev \
               libxxf86vm-dev \
+              libwebp-dev \
               xvfb \
               x11-utils
             wget --no-verbose http://archive.ubuntu.com/ubuntu/pool/main/i/icu/libicu66_66.1-2ubuntu2.1_amd64.deb

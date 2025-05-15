@@ -3,7 +3,9 @@
     "sources": {
         "basemap": {
             "type": "raster",
-            "tiles": ["http://a.tile.stamen.com/toner/{z}/{x}/{y}.png"],
+            "tiles": [
+                "http://tiles.stadiamaps.com/tiles/stamen-toner/{z}/{x}/{y}.png"
+            ],
             "tileSize": 256
         },
         "geojson": {

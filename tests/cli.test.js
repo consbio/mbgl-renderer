@@ -6,8 +6,9 @@ import sharp from 'sharp'
 import { createTempDir } from 'jest-fixtures'
 
 import { imageDiff, cliEndpoint, skipIf } from './util'
+import metadata from '../package.json' with { type: 'json' }
 
-import { version } from '../package.json'
+const { version } = metadata
 
 // Load MAPBOX_API_TOKEN from .env.test
 dotenv.config()
@@ -52,7 +53,7 @@ test('creates image with default parameters', async () => {
         '.'
     )
 
-    expect(result.stdout).toContain('-------- Export Mapbox GL Map --------')
+    expect(result.stdout).toContain('-------- Export MapLibre GL Map --------')
     expect(result.stdout).toContain(filePath)
     expect(fs.existsSync(filePath)).toBeTruthy()
 

@@ -1,4 +1,4 @@
-# Static Map Renderer using Mapbox GL
+# Static Map Renderer using MapLibre GL
 
 [![Coverage Status](https://coveralls.io/repos/github/consbio/mbgl-renderer/badge.svg?branch=main)](https://coveralls.io/github/consbio/mbgl-renderer?branch=main)
 
@@ -41,8 +41,9 @@ or
 
 ### Supported versions of NodeJS:
 
-- 16
 - 18
+- 20
+- 22
 
 Only NodeJS versions with `@maplibre/maplibre-gl-native` binaries built by MapLibre are supported via `npm install`, otherwise you need to build `@maplibre/maplibre-gl-native` from source yourself. See [build instructions](https://github.com/maplibre/maplibre-gl-native/tree/main/platform/node) for more information.
 
