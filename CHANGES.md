@@ -1,6 +1,6 @@
 ## Changes
 
-### 0.9.0 (in development)
+### 0.9.0
 
 #### Breaking changes:
 
