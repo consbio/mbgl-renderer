@@ -1,6 +1,7 @@
 import { cliEndpoint } from './util'
+import metadata from '../package.json' with { type: 'json' }
 
-import { version } from '../package.json'
+const { version } = metadata
 
 const cli = cliEndpoint('./dist/server')
 

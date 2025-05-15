@@ -6,5 +6,4 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports["default"] = void 0;
 var _render = _interopRequireDefault(require("./render"));
-var _default = _render["default"];
-exports["default"] = _default;
+var _default = exports["default"] = _render["default"];

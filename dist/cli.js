@@ -7,8 +7,9 @@ var _slicedToArray2 = _interopRequireDefault(require("@babel/runtime/helpers/sli
 var _fs = _interopRequireDefault(require("fs"));
 var _commander = require("commander");
 var _request = _interopRequireDefault(require("request"));
-var _package = require("../package.json");
-var _render = require("./render");
+var _package = _interopRequireDefault(require("../package.json"));
+var _render = require("./render.js");
+var version = _package["default"].version;
 var raiseError = function raiseError(msg) {
   console.error('error', msg);
   process.exit(1);
@@ -21,7 +22,7 @@ var validateDimension = function validateDimension(value) {
     throw new _commander.InvalidArgumentError('Must be greater than 0');
   }
 };
-_commander.program.version(_package.version).name('mbgl-render').usage('<style> <image> <width> <height> [options]').description('Export a Mapbox GL map to image.  You must provide either center and zoom, or bounds.').argument('<style>', 'style JSON', function (styleFilename) {
+_commander.program.version(version).name('mbgl-render').usage('<style> <image> <width> <height> [options]').description('Export a MapLibre GL map to image.  You must provide either center and zoom, or bounds.').argument('<style>', 'style JSON', function (styleFilename) {
   var isMapboxStyle = (0, _render.isMapboxStyleURL)(styleFilename);
   if (!(isMapboxStyle || _fs["default"].existsSync(styleFilename))) {
     throw new _commander.InvalidArgumentError('File does not exist');
@@ -123,7 +124,7 @@ if (imagesFilename !== null) {
   }
   images = JSON.parse(_fs["default"].readFileSync(imagesFilename));
 }
-console.log('\n\n-------- Export Mapbox GL Map --------');
+console.log('\n\n-------- Export MapLibre GL Map --------');
 console.log('style: %j', styleFilename);
 console.log("output image: ".concat(imgFilename, " (").concat(width, "w x ").concat(height, "h)"));
 if (tilePath !== null) {

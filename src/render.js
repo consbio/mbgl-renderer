@@ -4,7 +4,7 @@ import path from 'path'
 // sharp must be before zlib and other imports or sharp gets wrong version of zlib and breaks on some servers
 import sharp from 'sharp'
 import zlib from 'zlib'
-import geoViewport from '@mapbox/geo-viewport'
+import { viewport as geoViewport } from '@placemarkio/geo-viewport'
 import maplibre from '@maplibre/maplibre-gl-native'
 import MBTiles from '@mapbox/mbtiles'
 import pino from 'pino'
@@ -682,15 +682,12 @@ export const render = async (style, width = 1024, height = 1024, options) => {
 
     // calculate zoom and center from bounds and image dimensions
     if (bounds !== null && (zoom === null || center === null)) {
-        const viewport = geoViewport.viewport(
+        const viewport = geoViewport(
             bounds,
             // add padding to width and height to effectively
             // zoom out the target zoom level.
             [width - 2 * padding, height - 2 * padding],
-            undefined,
-            undefined,
-            undefined,
-            true
+            { allowFloat: true }
         )
         zoom = Math.max(viewport.zoom - 1, 0)
         /* eslint-disable prefer-destructuring */

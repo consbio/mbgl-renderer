@@ -3,8 +3,10 @@ import fs from 'fs'
 import { program, InvalidArgumentError } from 'commander'
 import webRequest from 'request'
 
-import { version } from '../package.json'
-import { render, isMapboxStyleURL, normalizeMapboxStyleURL } from './render'
+import metadata from '../package.json' with { type: 'json' }
+import { render, isMapboxStyleURL, normalizeMapboxStyleURL } from './render.js'
+
+const { version } = metadata
 
 const raiseError = (msg) => {
     console.error('error', msg)
@@ -24,7 +26,7 @@ program
     .name('mbgl-render')
     .usage('<style> <image> <width> <height> [options]')
     .description(
-        'Export a Mapbox GL map to image.  You must provide either center and zoom, or bounds.'
+        'Export a MapLibre GL map to image.  You must provide either center and zoom, or bounds.'
     )
     .argument('<style>', 'style JSON', (styleFilename) => {
         const isMapboxStyle = isMapboxStyleURL(styleFilename)
@@ -178,7 +180,7 @@ if (imagesFilename !== null) {
     images = JSON.parse(fs.readFileSync(imagesFilename))
 }
 
-console.log('\n\n-------- Export Mapbox GL Map --------')
+console.log('\n\n-------- Export MapLibre GL Map --------')
 console.log('style: %j', styleFilename)
 console.log(`output image: ${imgFilename} (${width}w x ${height}h)`)
 if (tilePath !== null) {

@@ -6,8 +6,10 @@ import restifyErrors from 'restify-errors'
 import { program, InvalidOptionArgumentError } from 'commander'
 import pino from 'restify-pino-logger'
 
-import { version } from '../package.json'
-import { render } from './render'
+import metadata from '../package.json' with { type: 'json' }
+import { render } from './render.js'
+
+const { version } = metadata
 
 const parseListToFloat = (text) => text.split(',').map(Number)
 
